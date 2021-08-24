@@ -90,9 +90,9 @@ siteMap = ggplot() +
   geom_sf(data = countries, fill = "white", color = "gray40", size = 0.25) +
   geom_sf(data = frt, fill = "gray80", size = 0) +
   geom_point(data = popLabs, aes(x = longDD, y = latDD, fill = region), shape = 21, size = 2) +
-  geom_sf_text(data = countyNames, aes(label = ID), nudge_x = c(0.1, 0, 0.1), 
+  geom_sf_text(data = countyNames, aes(label = ID), nudge_x = c(0.1, 0, 0.1),
                nudge_y = c(0, -.025, -0.1)) +
-  scale_fill_manual(values = flPal, name = "Population:") + 
+  scale_fill_manual(values = flPal, name = "Population:") +
   coord_sf(xlim = c(-80.6, -79.2), ylim = c(26, 27.2)) +
   scale_x_continuous(breaks = c(seq(-80.6, -79.2, by = 0.2)), labels = longLab) +
   scale_y_continuous(breaks = c(seq(26, 27.2, by = 0.2)), labels = latLab) +
@@ -121,11 +121,11 @@ seflMap = ggdraw() +
   draw_plot(floridaMap, x = 0.63, y = 0.655, width = 0.35, height = 0.35) +
   draw_image(pastPic, x = 0.63, y = 0.21, width = 0.336, height = 0.336)
 
-# seflMap 
-  
+# seflMap
+
 ggsave("../figures/pastMap.png", plot = seflMap, width = 12, height = 13, units = "cm", dpi = 300)
 ggsave("../figures/pastMap.tiff", plot = seflMap, width = 12, height = 12, units = "cm", dpi = 300)
-ggsave("../figures/pastMap.eps", plot = seflMap, width = 12, height = 12, units = "cm", dpi = 300)  
+ggsave("../figures/pastMap.eps", plot = seflMap, width = 12, height = 12, units = "cm", dpi = 300)
 
 ```
 
@@ -175,12 +175,10 @@ head(pastPcoaValues)
  # 2-column tab-delimited table of individual assignments to populations; must be in the same order as samples in the bam list or vcf file.
 pastI2P = read.csv("data_files/poritesastreoidesMetaData_clonesremoved.csv") %>% select("sample" = tube_id, "pop" = region)
 
-##not sure if I'm adapting this right for not having depth as a factor  
 row.names(pastI2P) = pastI2P[,1]
-
 pastPcoaValues=cbind(pastI2P, pastPcoaValues)
 pastPcoaValues =as.data.frame(pastPcoaValues, sample = rownames(pastPcoaValues))
-colnames(pastPcoaValues)[c(4, 5)] = c("PCo1", "PCo2")
+colnames(pastPcoaValues)[c(3,4)] = c("PCo1", "PCo2")
 head(pastPcoaValues)
 
 ```
