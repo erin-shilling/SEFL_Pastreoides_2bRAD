@@ -63,15 +63,13 @@ head(pastPcoaVar)
 # Format data to plot
 pastPcoaValues = pastMds$points
 head(pastPcoaValues)
- # 2-column tab-delimited table of individual assignments to populations; must be in the same order as samples in the bam list or vcf file.
+# 2-column tab-delimited table of individual assignments to populations; must be in the same order as samples in the bam list or vcf file.
 pastI2P = read.csv("poritesastreoidesMetaData_clonesremoved.csv") %>% select("sample" = tube_id, "pop" = region)
 
-##not sure if I'm adapting this right for not having depth as a factor  
 row.names(pastI2P) = pastI2P[,1]
-pastI2P$pop = paste(pastI2P$pop, sep = " ")
 pastPcoaValues=cbind(pastI2P, pastPcoaValues)
 pastPcoaValues =as.data.frame(pastPcoaValues, sample = rownames(pastPcoaValues))
-colnames(pastPcoaValues)[c(4,5)] = c("PCo1", "PCo2")
+colnames(pastPcoaValues)[c(3,4)] = c("PCo1", "PCo2")
 head(pastPcoaValues)
 
 ```
