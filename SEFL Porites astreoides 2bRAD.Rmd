@@ -9,7 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 # setup rmarkdown environment first
 knitr::opts_chunk$set(warning = FALSE, fig.align = 'left')
-knitr::opts_knit$set(root.dir = 'C:/Users/erin_/Documents/Voss Lab (M.S.)/Lab Work/P.astreoides popgen/koko/pastNoClones')
+knitr::opts_knit$set(root.dir = 'data_files')
 ```
 
 # About this document
@@ -18,18 +18,127 @@ All analyses were performed in R version 4.1.1. This is the code that accompanie
 
 ```{r, loading required packages & setup}
 if (!require("pacman")) install.packages("pacman")
-pacman::p_load(vcfR, Rcpp, adgenet, dplyr, poppr, stAMPP, gdata)
+
+pacman::p_load_gh("pmartinezarbizu/pairwiseAdonis/pairwiseAdonis", "ropensci/rnaturalearthhires")
+pacman::p_load("cowplot", "ggrepel", "ggspatial", "maps", "paletteer", "patchwork", "rgdal", "rnaturalearth", "sf", "tidyverse", "reshape2", "MCMC.OTU", "pairwiseAdonis", "RColorBrewer", "Redmonder", "flextable", "lubridate", "officer", "adegenet", "dendextend", "gdata", "ggdendro", "hierfstat", "Imap", "kableExtra", "poppr", "reshape2", "StAMPP", "vcfR", "vegan", "boa", "measurements", "magick", "rgeos")
 
 ```
 
+
+## Map and shapefile data
+Here we are setting up shape files and base maps as well as sample meta data.
+
+```{r, map data}
+pastSamples = read.csv("data_files/poritesastreoidesMetaData_clonesremoved.csv", header = TRUE) %>% select(sample = tube_id, !sample_id)
+
+pastSamples$region = factor(pastSamples$region)
+pastSamples$region = factor(pastSamples$region, levels = levels(pastSamples$region)[c(4, 2, 5, 1, 3)])
+pastSamples$collection_date = mdy(pastSamples$collection_date) %>% format("%d %b %Y")
+pastSamples$depthM = conv_unit(pastSamples$collection_depth_ft, from = "ft", to = "m") %>% round(1)
+
+seflSites = pastSamples %>% group_by(region)%>% summarize(latDD = first(site_lat), longDD = first(site_long), depthRangeM = paste(min(depthM), "-", max(depthM), sep = ""), n = n(), date = as.character(min(collection_date))) %>% droplevels() %>% as.data.frame()
+
+states = st_as_sf(ne_states(country = c("United States of America")), scale = "large")
+countries = st_as_sf(ne_countries(country = c("Cuba", "The Bahamas"), scale = "large"))
+florida = read_sf("data_files/shp/flCountiesLo.shp") %>% st_transform(crs = 4326)
+frt = read_sf("data_files/shp/flReefs.shp") %>% st_transform(crs = 4326)
+
+countyNames = st_as_sf(maps::map("county", plot = FALSE, fill = TRUE)) %>% st_transform(crs = 4326) %>% filter(grepl("florida", ID)) %>% filter(grepl("palm beach|broward|martin", ID))
+countyNames$ID = c("Broward \nCounty", "Martin \nCounty", "Palm Beach \nCounty")
+
+popLabs = pastSamples %>% group_by(region)%>% summarize(latDD = first(site_lat), longDD = first(site_long))
+levels(popLabs$region) = c("St. Lucie", "Jupiter", "West Palm", "Boynton", "Ft. Lauderdale")
+
+```
+
+<br>
+
+## Florida polygon
+Next we build a hi-res polygon of FL with the study site marked and a zoomed in map of the colony locations. We use `ggspatial` to add a north arrow and scale bar to the main map.
+```{r, fl inset}
+floridaMap = ggplot() +
+  geom_sf(data = states, fill = "white", size = 0.25) +
+  geom_sf(data = countries, fill = "white", size = 0.25) +
+  geom_rect(aes(xmin = -80.6, xmax = -79.2, ymin = 26, ymax = 27.2), color = paletteer_d("vapoRwave::vapoRwave")[8], fill = NA) +
+  coord_sf(xlim = c(-87, -77), ylim = c(23, 31)) +
+  annotation_north_arrow(location = "tr", which_north = "true", style = north_arrow_minimal(), height = unit(1.2, "cm"), pad_x = unit(-0.25, "cm")) +
+  theme_bw() +
+  theme(panel.background = element_rect(fill = "aliceblue"),
+        panel.border = element_rect(color = "black", size = 0.75, fill = NA),
+        plot.background = element_blank(),
+        axis.title = element_blank(),
+        axis.ticks = element_blank(),
+        axis.text = element_blank(),
+        legend.position = "none")
+
+# floridaMap
+
+```
+
+<br>
+
+## Final map of sites
+Create a map of study sites with insets and legend
+```{r study map}
+flPal = paletteer_d("rcartocolor::Sunset")[c(7, 6, 4, 3, 2)]
+
+latLab = paste(format(abs(seq(26, 27.2, by = 0.2)), nsmall = 1), "ºN", sep = "")
+longLab = paste(format(abs(seq(-80.6, -79.2, by = 0.2)), nsmall = 1), "ºW", sep = "")
+
+siteMap = ggplot() +
+  geom_sf(data = florida, fill = "white", color = "gray40", size = 0.25) +
+  geom_sf(data = countries, fill = "white", color = "gray40", size = 0.25) +
+  geom_sf(data = frt, fill = "gray80", size = 0) +
+  geom_point(data = popLabs, aes(x = longDD, y = latDD, fill = region), shape = 21, size = 2) +
+  geom_sf_text(data = countyNames, aes(label = ID), nudge_x = c(0.1, 0, 0.1), 
+               nudge_y = c(0, -.025, -0.1)) +
+  scale_fill_manual(values = flPal, name = "Population:") + 
+  coord_sf(xlim = c(-80.6, -79.2), ylim = c(26, 27.2)) +
+  scale_x_continuous(breaks = c(seq(-80.6, -79.2, by = 0.2)), labels = longLab) +
+  scale_y_continuous(breaks = c(seq(26, 27.2, by = 0.2)), labels = latLab) +
+  annotation_scale(location = "br") +
+  guides(fill = guide_legend(ncol = 3)) +
+  theme_bw() +
+  theme(panel.background = element_rect(fill = "aliceblue"),
+        panel.border = element_rect(color = "black", size = 0.75, fill = NA),
+        plot.background = element_blank(),
+        axis.ticks = element_line(color = "black"),
+        axis.text = element_text(color = "black"),
+        axis.title = element_blank(),
+        legend.background = element_blank(),
+        legend.title = element_text(size = 10),
+        legend.text = element_text(size = 8),
+        legend.key = element_blank(),
+        legend.position = "bottom",
+        legend.direction = "horizontal")
+
+#add a picture of P. astreoides
+pastPic = image_read("../data/past.png") %>%
+  image_border("black", "10x10")
+
+seflMap = ggdraw() +
+  draw_plot(siteMap) +
+  draw_plot(floridaMap, x = 0.63, y = 0.655, width = 0.35, height = 0.35) +
+  draw_image(pastPic, x = 0.63, y = 0.21, width = 0.336, height = 0.336)
+
+# seflMap 
+  
+ggsave("../figures/pastMap.png", plot = seflMap, width = 12, height = 13, units = "cm", dpi = 300)
+ggsave("../figures/pastMap.tiff", plot = seflMap, width = 12, height = 12, units = "cm", dpi = 300)
+ggsave("../figures/pastMap.eps", plot = seflMap, width = 12, height = 12, units = "cm", dpi = 300)  
+
+```
+
+<br>
+
 ```{r, Analysis of Molecular Variance}
 #reading in bcf file
-pastVcf = read.vcfR("pastNoClones.bcf", verbose = TRUE)
+pastVcf = read.vcfR("data_files/pastNoClones.bcf", verbose = TRUE)
 #convert to genlight files for poppr
 pastGenlightPopulation = vcfR2genlight(pastVcf, n.cores = 1)
 
 #taking metadata file, without technical replicates & clones, reads in population data for each sample
-popData = read.csv("poritesastreoidesMetaData_clonesremoved.csv") %>% select("sample" = tube_id, "pop" = region)
+popData = read.csv("data_files/poritesastreoidesMetaData_clonesremoved.csv") %>% select("sample" = tube_id, "pop" = region)
 
 #setting up amova
 strata(pastGenlightPopulation) = data.frame(popData)
@@ -53,7 +162,7 @@ amovaP = amovasignif$pvalue[3]
 Only significant differences between populations, explains 2.73% of variation
 
 ```{r, PCoA with IBS}
-pastMa = as.matrix(read.table("pastNoClones.ibsMat"))
+pastMa = as.matrix(read.table("data_files/pastNoClones.ibsMat"))
 pastMds = cmdscale(pastMa, eig = TRUE, x.ret = TRUE)
 
 # Determine percent variation captured on each axis
@@ -64,14 +173,14 @@ head(pastPcoaVar)
 pastPcoaValues = pastMds$points
 head(pastPcoaValues)
  # 2-column tab-delimited table of individual assignments to populations; must be in the same order as samples in the bam list or vcf file.
-pastI2P = read.csv("poritesastreoidesMetaData_clonesremoved.csv") %>% select("sample" = tube_id, "pop" = region)
+pastI2P = read.csv("data_files/poritesastreoidesMetaData_clonesremoved.csv") %>% select("sample" = tube_id, "pop" = region)
 
 ##not sure if I'm adapting this right for not having depth as a factor  
 row.names(pastI2P) = pastI2P[,1]
-pastI2P$pop = paste(pastI2P$pop, sep = " ")
+
 pastPcoaValues=cbind(pastI2P, pastPcoaValues)
 pastPcoaValues =as.data.frame(pastPcoaValues, sample = rownames(pastPcoaValues))
-colnames(pastPcoaValues)[c(4,5)] = c("PCo1", "PCo2")
+colnames(pastPcoaValues)[c(4, 5)] = c("PCo1", "PCo2")
 head(pastPcoaValues)
 
 ```
@@ -114,10 +223,3 @@ snpFstMa$Pop = factor(row.names(snpFstMa)
 ```
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
