@@ -1,0 +1,123 @@
+---
+title: "SEFL Porites astreoides 2bRAD"
+author: "Erin Shilling"
+date: "8/23/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# setup rmarkdown environment first
+knitr::opts_chunk$set(warning = FALSE, fig.align = 'left')
+knitr::opts_knit$set(root.dir = 'C:/Users/erin_/Documents/Voss Lab (M.S.)/Lab Work/P.astreoides popgen/koko/pastNoClones')
+```
+
+# About this document
+***
+All analyses were performed in R version 4.1.1. This is the code that accompanies the publication (). Here you will find all the code to repeat the statistical analyses performed in R for the manuscript.
+
+```{r, loading required packages & setup}
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(vcfR, Rcpp, adgenet, dplyr, poppr, stAMPP, gdata)
+
+```
+
+```{r, Analysis of Molecular Variance}
+#reading in bcf file
+pastVcf = read.vcfR("pastNoClones.bcf", verbose = TRUE)
+#convert to genlight files for poppr
+pastGenlightPopulation = vcfR2genlight(pastVcf, n.cores = 1)
+
+#taking metadata file, without technical replicates & clones, reads in population data for each sample
+popData = read.csv("poritesastreoidesMetaData_clonesremoved.csv") %>% select("sample" = tube_id, "pop" = region)
+
+#setting up amova
+strata(pastGenlightPopulation) = data.frame(popData)
+setPop(pastGenlightPopulation) = ~pop
+#Runs AMOVA looking at samples by region
+amova <- poppr.amova(pastGenlightPopulation, ~pop)
+amova
+
+set.seed(694)
+amovasignif <- randtest(amova, nrepet = 99)
+amovasignif$names
+
+amovasignif$obs
+
+amovasignif$pvalue
+
+amovaPerc = paste(round(amova$componentsofcovariance$`%`[1], 2), "%",sep="")
+amovaP = amovasignif$pvalue[3]
+
+```
+Only significant differences between populations, explains 2.73% of variation
+
+```{r, PCoA with IBS}
+pastMa = as.matrix(read.table("pastNoClones.ibsMat"))
+pastMds = cmdscale(pastMa, eig = TRUE, x.ret = TRUE)
+
+# Determine percent variation captured on each axis
+# Calculate the eigenvalues so later we can figure out % variation shown on each Principal Coordinate
+pastPcoaVar = round(pastMds$eig/sum(pastMds$eig)*100, 1)
+head(pastPcoaVar)
+# Format data to plot
+pastPcoaValues = pastMds$points
+head(pastPcoaValues)
+ # 2-column tab-delimited table of individual assignments to populations; must be in the same order as samples in the bam list or vcf file.
+pastI2P = read.csv("poritesastreoidesMetaData_clonesremoved.csv") %>% select("sample" = tube_id, "pop" = region)
+
+##not sure if I'm adapting this right for not having depth as a factor  
+row.names(pastI2P) = pastI2P[,1]
+pastI2P$pop = paste(pastI2P$pop, sep = " ")
+pastPcoaValues=cbind(pastI2P, pastPcoaValues)
+pastPcoaValues =as.data.frame(pastPcoaValues, sample = rownames(pastPcoaValues))
+colnames(pastPcoaValues)[c(4,5)] = c("PCo1", "PCo2")
+head(pastPcoaValues)
+
+```
+
+```{r, Pairwise Fst}
+pastVcf = read.vcfR("pastNoClones.bcf", verbose = FALSE)
+pastGenlightPopulation = vcfR2genlight(pastVcf, n.cores = 1)
+locNames(pastGenlightPopulation) = paste(pastVcf@fix[,1],pastVcf@fix[,2],sep="_")
+
+popData = read.csv("poritesastreoidesMetaData_clonesremoved.csv") %>% select("sample" = tube_id, "pop" = region)
+
+strata(pastGenlightPopulation) = data.frame(popData)
+setPop(pastGenlightPopulation) = ~pop
+
+pastGenlightPopulation$pop = factor(pastGenlightPopulation$pop)
+set.seed(694)
+#99 permutations
+sefl.fst <- stamppFst(pastGenlightPopulation, nboots = 99, percent = 95, nclusters = 2)
+sefl.fst$Fsts
+
+sefl.fst$Pvalues
+
+snpFstMa <- as.matrix(sefl.fst$Fsts)
+upperTriangle(snpFstMa, byrow = TRUE) <- lowerTriangle(snpFstMa)
+snpFstMa[upper.tri(snpFstMa)] <- NA
+snpFstMa <- as.data.frame(snpFstMa)
+
+snpFstMa$Pop = factor(row.names(snpFstMa)
+
+```
+
+```{r, }
+
+
+```
+
+```{r, }
+
+
+```
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
