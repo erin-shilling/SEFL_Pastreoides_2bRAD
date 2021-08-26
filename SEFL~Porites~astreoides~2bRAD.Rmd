@@ -358,11 +358,14 @@ zooxMaps$Symbiodinium = rowSums(zooxMaps[2:6])
 zooxMaps$Breviolum = rowSums(zooxMaps[7:10])
 zooxMaps$Cladocopium = rowSums(zooxMaps[11:16])
 zooxMaps$Durusdinium = rowSums(zooxMaps[17:20])
+
 zooxMaps = zooxMaps[,c(1, 21:24)]
 zooxProp = zooxMaps
+
 zooxProp$sum = apply(zooxProp[, c(2:length(zooxProp[1,]))], 1, function(x) {
 sum(x, na.rm = T)
 })
+
 #turn them into proportions
 zooxProp = cbind(zooxProp$sample, (zooxProp[, c(2:(ncol(zooxProp)-1))]
 / zooxProp$sum))
@@ -375,7 +378,8 @@ sum(x, na.rm = T)
 #bind it to metadata
 dfZoox = popData %>% left_join(zooxProp)
 dfZoox$pop = as.factor(dfZoox$pop)
-#setting up for plotting
+
+# setting up for plotting
 dfZoox = dfZoox[order(dfZoox$pop),]
 sampleCounts = plyr::count(dfZoox, c('pop'))
 meltedList = reshape2::melt(lapply(sampleCounts$freq,function(x){c(1:x)}))
@@ -385,10 +389,10 @@ zDat = melt(dfZoox, id.vars = c("sample", "pop", "barPlotOrder"), variable.name 
 colPalZoox = brewer.pal(4, "BrBG")
 names(colPalZoox) = levels(zDat$Symbiont)
 
-#plotting
+# plotting
 colPalZoox = c("#247EA3", "#FFBF46", "#6A9FA1", "Purple3")
 
-popAnno = data.frame(x1 = c(0.6, 0.6, 0.6, 0.6, 0.6), x2 = c(30.4, 15.4, 13.4, 14.4, 15.4),
+popAnno = data.frame(x1 = c(0.5, 0.5, 0.5, 0.5, 0.5), x2 = c(30.5, 15.5, 13.5, 14.5, 15.5),
                      y1 = -0.065, y2 = -0.065, pop = c("St. Lucie Reef", "Jupiter", "West Palm Beach", "Boynton Beach", "Pompano/LBTS"))
 
 popAnno$pop = factor(popAnno$pop)
