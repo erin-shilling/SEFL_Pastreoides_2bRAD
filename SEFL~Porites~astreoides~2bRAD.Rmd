@@ -330,9 +330,93 @@ ggsave("figures/fstHeatMap.eps", plot = snpHeatmap, width = 30, height = 9, unit
 ![](figures/fstHeatMap.png)
 <br>
 
-```{r, }
+```{r, Symbiont genus assignment}
+#read in sample metadata with clones, remove technical replicates
+popData = read.csv("data_files/poritesastreoidesMetaData.csv")[-c(28, 29, 47, 48, 80, 81),] %>% select("sample" = tube_id, "pop" = region)
+#treat populations as a factor & order them North-->South
+popData$pop = factor(popData$pop)
+popData$pop = factor(popData$pop, levels = levels(popData$pop)[c(4, 2, 5, 1, 3)])
+#read in zoox reads data with clones & technical replicates removed
+zoox = read.delim("data_files/zooxReads_withclones_techrepsrem", header = FALSE, check.names = FALSE)
+head(zoox)
+zoox$V2[is.na(zoox$V2)] <- as.character(zoox$V1[is.na(zoox$V2)])
+zoox$V1 = gsub("P.*", "chr", zoox$V1)
+zoox$V2 = gsub(".trim.*", "", zoox$V2)
+zoox = zoox %>% filter(zoox$V1 != "*")
+zooxLst = split(zoox$V2, as.integer(gl(length(zoox$V2), 20, length(zoox$V2))))
+zooxMaps = NULL
+for(i in zooxLst){
+  zooxMaps = rbind(zooxMaps, data.frame(t(i)))
+}
+colnames(zooxMaps) = c("sample",zoox$V1[c(2:20)])
+for(i in c(2:20)){
+  zooxMaps[,i] = as.numeric(zooxMaps[,i])
+  }
+str(zooxMaps)
+zooxMaps$Symbiodinium = rowSums(zooxMaps[2:6])
+zooxMaps$Breviolum = rowSums(zooxMaps[7:10])
+zooxMaps$Cladocopium = rowSums(zooxMaps[11:16])
+zooxMaps$Durusdinium = rowSums(zooxMaps[17:20])
+zooxMaps = zooxMaps[,c(1, 21:24)]
+zooxProp = zooxMaps
+zooxProp$sum = apply(zooxProp[, c(2:length(zooxProp[1,]))], 1, function(x) {
+sum(x, na.rm = T)
+})
+#turn them into proportions
+zooxProp = cbind(zooxProp$sample, (zooxProp[, c(2:(ncol(zooxProp)-1))]
+/ zooxProp$sum))
+colnames(zooxProp)[1] = "sample"
+head(zooxProp)
+apply(zooxProp[, c(2:(ncol(zooxProp)))], 1, function(x) {
+sum(x, na.rm = T)
+})
 
+#bind it to metadata
+dfZoox = popData %>% left_join(zooxProp)
+dfZoox$pop = as.factor(dfZoox$pop)
+#setting up for plotting
+dfZoox = dfZoox[order(dfZoox$pop),]
+sampleCounts = plyr::count(dfZoox, c('pop'))
+meltedList = reshape2::melt(lapply(sampleCounts$freq,function(x){c(1:x)}))
+dfZoox$barPlotOrder = meltedList$value
+dfZoox = dfZoox[c(1,ncol(dfZoox),2:(ncol(dfZoox)-1))]
+zDat = melt(dfZoox, id.vars = c("sample", "pop", "barPlotOrder"), variable.name = "Symbiont", value.name = "Fraction")
+colPalZoox = brewer.pal(4, "BrBG")
+names(colPalZoox) = levels(zDat$Symbiont)
 
+#plotting
+zooxPlotA = ggplot(data = zDat, aes(x = barPlotOrder, y = Fraction, fill = Symbiont, order = barPlotOrder)) +
+  geom_bar(stat = "identity", position = "stack", colour = "grey25", width = 1) +
+  xlab("Population") +
+  scale_x_discrete(expand = c(0, 0)) +
+  scale_y_continuous(expand = c(0, 0), labels = function(x) paste0(x*100, "%")) +
+  scale_fill_manual(values = colPalZoox, name = "Symbiodiniaceae genus") +
+  coord_cartesian(ylim = c(-.01,1.01)) +
+  facet_grid( ~ pop, drop = TRUE, scales = "free", switch = "both", space = "free") +
+  theme_bw()
+
+zooxPlot = zooxPlotA + theme(plot.title = element_text(hjust = 0.5),
+  panel.grid = element_blank(),
+  panel.background = element_rect(fill = "black", colour = "grey25"),
+  panel.border = element_rect(fill = NA, color = "black", size = 1, linetype = "solid"),
+  panel.spacing.x = grid:::unit(0.05, "lines"),
+  panel.spacing.y = grid:::unit(0.05, "lines"),
+  axis.text.x = element_blank(),
+  axis.text.y = element_blank(),
+  axis.ticks.x = element_blank(),
+  axis.ticks.y = element_blank(),
+  axis.title = element_blank(),
+  strip.background.x = element_blank(),
+  strip.background.y = element_blank(),
+  strip.text = element_text(size = 12),
+  strip.text.y.left = element_text(angle = 90),
+  legend.key.size = unit(0.75, "line"),
+  legend.key = element_blank(),
+  legend.position = "bottom",
+  legend.title = element_text())
+
+zooxPlot
+ggsave("figures/zooxPlot.tiff", plot = zooxPlot, width = 30, height = 15, units = "cm", dpi = 300)
 ```
 
 ```{r, }
