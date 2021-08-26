@@ -193,7 +193,7 @@ pastPcoaPlotA = ggplot(pastPCoA, aes(x = PCo1, y = PCo2, color = pop, fill = pop
   #ellipses
   stat_ellipse(data = pastPCoA, type = "t", geom = "polygon", alpha = 0.1) +
   #individual's indicated by small transparent circles
-  geom_point(aes(x = PCo1, y = PCo2), size = 3, alpha = 0.3, show.legend = FALSE) + 
+  geom_point(aes(x = PCo1, y = PCo2), size = 3, alpha = 0.3, show.legend = FALSE) +
   #population centroids indicated by large circles
   geom_point(aes(x = mean.x, y = mean.y), size = 5, color = "black", shape = 21) +
    annotate(geom = "text", x = 0.1, y = -0.25, label = bquote("AMOVA:"~.(amovaPerc)*","~italic(p)~" = "~.(amovaP))) +
@@ -240,7 +240,7 @@ strata(pastGenlightPopulation) = data.frame(popData)
 setPop(pastGenlightPopulation) = ~pop
 
 pastGenlightPopulation$pop = factor(pastGenlightPopulation$pop)
-pastGenlightPopulation$pop = factor(pastGenlightPopulation$pop, 
+pastGenlightPopulation$pop = factor(pastGenlightPopulation$pop,
                                 levels(pastGenlightPopulation$pop)[c(4, 1, 2, 3, 5)])
 
 set.seed(694)
@@ -357,11 +357,14 @@ zooxMaps$Symbiodinium = rowSums(zooxMaps[2:6])
 zooxMaps$Breviolum = rowSums(zooxMaps[7:10])
 zooxMaps$Cladocopium = rowSums(zooxMaps[11:16])
 zooxMaps$Durusdinium = rowSums(zooxMaps[17:20])
+
 zooxMaps = zooxMaps[,c(1, 21:24)]
 zooxProp = zooxMaps
+
 zooxProp$sum = apply(zooxProp[, c(2:length(zooxProp[1,]))], 1, function(x) {
 sum(x, na.rm = T)
 })
+
 #turn them into proportions
 zooxProp = cbind(zooxProp$sample, (zooxProp[, c(2:(ncol(zooxProp)-1))]
 / zooxProp$sum))
@@ -374,7 +377,8 @@ sum(x, na.rm = T)
 #bind it to metadata
 dfZoox = popData %>% left_join(zooxProp)
 dfZoox$pop = as.factor(dfZoox$pop)
-#setting up for plotting
+
+# setting up for plotting
 dfZoox = dfZoox[order(dfZoox$pop),]
 sampleCounts = plyr::count(dfZoox, c('pop'))
 meltedList = reshape2::melt(lapply(sampleCounts$freq,function(x){c(1:x)}))
@@ -386,20 +390,33 @@ zDat = melt(dfZoox, id.vars = c("sample", "pop", "barPlotOrder"), variable.name 
 colPalZoox = brewer.pal(4, "BrBG")
 names(colPalZoox) = levels(zDat$Symbiont)
 
-#plotting
-zooxPlotA = ggplot(data = zDat, aes(x = barPlotOrder, y = Fraction, fill = Symbiont, order = barPlotOrder)) +
-  geom_bar(stat = "identity", position = "stack", colour = "grey25", width = 1) +
+# plotting
+colPalZoox = c("#247EA3", "#FFBF46", "#6A9FA1", "Purple3")
+
+popAnno = data.frame(x1 = c(0.5, 0.5, 0.5, 0.5, 0.5), x2 = c(30.5, 15.5, 13.5, 14.5, 15.5),
+                     y1 = -0.065, y2 = -0.065, pop = c("St. Lucie Reef", "Jupiter", "West Palm Beach", "Boynton Beach", "Pompano/LBTS"))
+
+popAnno$pop = factor(popAnno$pop)
+popAnno$pop = factor(popAnno$pop, levels = levels(popAnno$pop)[c(4, 2, 5, 1, 3)])
+
+dfZoox = zDat %>% left_join(popAnno, by = "pop")
+
+zooxSNPA = ggplot(data = dfZoox, aes(x = barPlotOrder, y = Fraction, fill = Symbiont, order = barPlotOrder)) +
+  geom_bar(stat = "identity", position = "stack", colour = "grey25", width = 1, size = 0.2) +
   xlab("Population") +
-  scale_x_discrete(expand = c(0, 0)) +
-  scale_y_continuous(expand = c(0, 0), labels = function(x) paste0(x*100, "%")) +
+  scale_x_discrete(expand = c(0.001, 0.001)) +
+  scale_y_continuous(expand = c(-.001, -0.001)) +
+  scale_color_manual(values = flPal) +
+  geom_segment(aes(x = x1, xend = x2, y = y1, yend = y2, color = pop), size = 7) +
   scale_fill_manual(values = colPalZoox, name = "Symbiodiniaceae genus") +
-  coord_cartesian(ylim = c(-.01,1.01)) +
-  facet_grid( ~ pop, drop = TRUE, scales = "free", switch = "both", space = "free") +
+  coord_cartesian(ylim = c(-.01,1.01), clip = "off") +
+  facet_grid(~ pop, drop = TRUE, space = "free", scales = "free", switch = "both") +
+  guides(color = "none") +
   theme_bw()
 
-zooxPlot = zooxPlotA + theme(plot.title = element_text(hjust = 0.5),
+zooxSNP = zooxSNPA + theme(plot.title = element_text(),
   panel.grid = element_blank(),
-  panel.background = element_rect(fill = "black", colour = "grey25"),
+  panel.background = element_rect(fill = "gray25", colour = "grey25"),
   panel.border = element_rect(fill = NA, color = "black", size = 1, linetype = "solid"),
   panel.spacing.x = grid:::unit(0.05, "lines"),
   panel.spacing.y = grid:::unit(0.05, "lines"),
@@ -410,15 +427,20 @@ zooxPlot = zooxPlotA + theme(plot.title = element_text(hjust = 0.5),
   axis.title = element_blank(),
   strip.background.x = element_blank(),
   strip.background.y = element_blank(),
-  strip.text = element_text(size = 12),
-  strip.text.y.left = element_text(angle = 90),
+  strip.text = element_text(size = 10),
+  strip.text.y.left = element_text(size = 10, angle = 90),
+  strip.text.x.bottom = element_text(vjust = -.05, color = "black"),
   legend.key.size = unit(0.75, "line"),
+  legend.title = element_text(size = 10),
+  legend.text = element_text(size = 8),
   legend.key = element_blank(),
-  legend.position = "bottom",
-  legend.title = element_text())
+  legend.position = "bottom")
 
-zooxPlot
-ggsave("figures/zooxPlot.tiff", plot = zooxPlot, width = 30, height = 15, units = "cm", dpi = 300)
+# zooxSNP
+
+ggsave("figures/zooxSNP.png", plot = zooxSNP, width = 20, height = 8, units = "cm", dpi = 300)
+ggsave("figures/zooxSNP.eps", plot = zooxSNP, width = 20, height = 8, units = "cm", dpi = 300)
+ggsave("figures/zooxSNP.tiff", plot = zooxSNP, width = 20, height = 8, units = "cm", dpi = 300)
 ```
 
 ```{r, }
