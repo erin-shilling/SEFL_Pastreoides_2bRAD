@@ -1,0 +1,1 @@
+chrom	pos	nAlleles	nChr	majAl	majFreq	minAl	minFreq	pop	inbred

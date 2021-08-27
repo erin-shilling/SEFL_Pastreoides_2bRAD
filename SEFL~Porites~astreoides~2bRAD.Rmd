@@ -535,8 +535,6 @@ ggsave("figures/heterozygosityPlot.png", plot = hetPlots, width = 22, height = 1
 ggsave("figures/heterozygosityPlot.pdf", plot = hetPlots, width = 22, height = 16, units = "cm", dpi = 300)
 
 ```
-#![](figures/heterozygosityPlot.png)
-
 
 ## Outliers
 ```{r, outlier}
