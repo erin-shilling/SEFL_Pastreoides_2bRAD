@@ -402,7 +402,7 @@ pastFam = pastFam %>% arrange(Region.a)
 pastFam$sample.a = factor(pastFam$sample.a)
 pastFam$sample.a = factor(pastFam$sample.a, levels = unique(pastFam$sample.a))
 #replacing the last sample name which was just NA
-pastFam$sample.a = factor(pastFam$sample.a, levels = c("P087", levels(pastFam$sample.a)))
+pastFam$sample.a = factor(pastFam$sample.a, levels = c(levels(pastFam$sample.a),"P087"))
 pastFam$sample.b = factor(pastFam$sample.b)
 pastFam$sample.b = factor(pastFam$sample.b, levels = levels(pastFam$sample.a))
 sampleOrder = levels(pastFam$sample.a)
@@ -421,19 +421,17 @@ pastFam$region = factor(pastFam$region, levels = levels(pastFam$region)[c(4, 2, 
 
 relateHeatmapA = ggplot(data = pastFam, aes(sample.a, sample.b, fill = relate)) +
   geom_tile(color = "white")+
-  geom_segment(data = pastFam, aes(x = sample.a, xend = sample.a, y = 0, yend = -4, color = region), size = 1) +
-  geom_segment(data = pastFam, aes(x = 0, xend = -4, y = sample.a, yend = sample.a, color = region), size = 1) +
-  scale_color_manual(values = flPal, guide = NULL) + 
-  geom_vline(xintercept = c(3.5, 13.5, 20.5, 30.5), size = 0.1, color = "black") +
-  geom_hline(yintercept = c(6.5, 16.5, 23.5, 33.5), size = 0.1, color = "black") +
-  scale_fill_gradientn(colors = paletteer_d("RColorBrewer::RdPu"), space = "Lab", name = "       Relatedness", na.value = "black", guide = guide_colorbar(order = 1)) +
+  geom_segment(data = pastFam, aes(x = sample.a, xend = sample.a, y = .5, yend = -1, color = region), size = 4.5) +
+  geom_segment(data = pastFam, aes(x = .5, xend = -1, y = sample.a, yend = sample.a, color = region), size = 4.5) +
+  scale_color_manual(values = flPal, guide = NULL, name = "Region") + 
+  geom_vline(xintercept = c(0.5,3.5, 13.5, 20.5, 30.5), size = 0.1, color = "black") +
+  geom_hline(yintercept = c(0.5,6.5, 16.5, 23.5, 33.5), size = 0.1, color = "black") +
+  scale_fill_gradientn(colors = paletteer_d("RColorBrewer::RdPu"), space = "Lab", name = "Relatedness", na.value = "black", guide = guide_colorbar(order = 1)) +
   guides(color = guide_legend(override.aes = list(size = 7), order = 2), fill = guide_colorbar(order = 1)) +
   scale_y_discrete(limits = rev(levels(pastFam$sample.b))) +
-  coord_cartesian(xlim = c(-3.5,36)) +
   theme_minimal()
+
 relateHeatmap = relateHeatmapA + theme(
-  # axis.text.x = element_text(size = 10, color = "black", angle = 90),
-  # axis.text.y = element_text(size = 10, color = "black"),
   axis.text.x = element_blank(),
   axis.text.y = element_blank(),
   axis.title.x = element_blank(),
@@ -442,19 +440,18 @@ relateHeatmap = relateHeatmapA + theme(
   panel.border = element_blank(),
   panel.background = element_blank(),
   axis.ticks = element_blank(),
-  # legend.position = c(0.5, 0.9),
-  # legend.direction = "horizontal",
   legend.title = element_text(size = 14),
   legend.text = element_text(size = 14),
   plot.title = element_text(size = 16)
 )
-relateHeatmap
-ggsave("figures/relateHeatmap.png", plot = relateHeatmap, width = 27, height = 22, units = "cm", dpi = 300)
 
-#![](../figures/relateHeatmap.png)
+# relateHeatmap
 
+ggsave("figures/relateHeatmap.png", plot = relateHeatmap, width = 20, height = 14, units = "cm", dpi = 300)
 
 ```
+#![](../figures/relateHeatmap.png)
+
 
 ```{r, plots for heterozygosity and inbreeding}
 
