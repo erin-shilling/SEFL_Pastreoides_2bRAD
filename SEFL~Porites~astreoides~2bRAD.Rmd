@@ -330,13 +330,226 @@ ggsave("figures/fstHeatMap.eps", plot = snpHeatmap, width = 30, height = 9, unit
 ![](figures/fstHeatMap.png)
 <br>
 
-```{r, Symbiont genus assignment}
+##Heterozygosity & Inbreeding
+```{r, popStats}
+popData = read.csv("data_files/poritesastreoidesMetaData_clonesremoved.csv") %>% select("sample" = tube_id, "Region" = region) # Reads in population data
+
+popData$a = c(0:35)
+popData$Region = factor(popData$Region)
+popData$Region = factor(popData$Region, levels = levels(popData$Region)[c(4, 2, 5, 1, 3)])
+hetAll = read.table("data_files/hetAllSites")
+
+colnames(hetAll) = c("sample", "All")
+hetAll$sample = popData$sample
+
+HetSNPs = read.table("data_files/HetSNPs")
+colnames(HetSNPs) = c("sample", "SNPs")
+HetSNPs$sample = popData$sample
+
+pastBreed = read.delim("data_files/newres")
+pastBreed2 = pastBreed %>% group_by(a) %>% select("inbreed" = Fa)
+pastBreed3 = pastBreed %>% group_by(b) %>% select("inbreed" = Fb)
+pastBreed = bind_rows(pastBreed2, pastBreed3) %>% group_by(a) %>% summarize("inbreed" = mean(inbreed))
+
+pastRelate = read.delim("data_files/newres")
+pastRelate2 = pastRelate %>% group_by(a, b) %>% select("relate" = rab)
+pastRelate2 = pastRelate2 %>% left_join(popData, by = "a") %>% left_join(popData, by = c("b" = "a"), suffix = c(".a", ".b")) 
+# pastRelate2$popDepth.a = paste(pastRelate2$Region.a, pastRelate2$Depth.a, sep = " ")
+# pastRelate2$popDepth.b = paste(pastRelate2$Region.b, pastRelate2$Depth.b, sep = " ")
+pastRelate = pastRelate2 %>% filter(Region.a == Region.b) %>% rename(Region = Region.a)
+het = left_join(popData, hetAll, by = "sample") %>% left_join(HetSNPs, by = "sample") %>% mutate("inbreed" = pastBreed$inbreed)
+hetStats = het %>% group_by(Region) %>% dplyr::summarise(N = n(), meanAll = mean(All), sdAll = sd(All), seAll = sd(All)/sqrt(N), meanSnps = mean(SNPs), sdSnps = sd(SNPs), seSnps = sd(SNPs)/sqrt(N), meanInbreed = mean(inbreed), sdInbreed = sd(inbreed), seInbreed = sd(inbreed)/sqrt(N))
+min(hetStats$meanAll, na.rm = TRUE)
+max(hetStats$meanAll, na.rm = TRUE)
+min(hetStats$meanSnps, na.rm = TRUE)
+max(hetStats$meanSnps, na.rm = TRUE)
+hetAllLm = lm(data = het, All~Region)
+hetSnpLm = lm(data = het, SNPs~Region)
+inbreedLm = lm(data = het, inbreed~Region)
+relateLm = lm(data = pastRelate, relate~Region)
+hetAllANOVA = summary(aov(hetAllLm))
+hetAllANOVA
+hetSnpANOVA = summary(aov(hetSnpLm))
+hetSnpANOVA
+inbreedANOVA = summary(aov(inbreedLm))
+inbreedANOVA
+relateANOVA = summary(aov(relateLm))
+relateANOVA
+hetTab = hetStats
+
+##may want to format this table for manuscript if it's interesting
+```
+
+```{r, Individual relatedness heatmap}
+Individual relatedness heatmap
+```{r, relate map}
+pastFam = pastRelate2 
+# pastFam$popDepth.a = factor(pastFam$popDepth.a)
+# pastFam$popDepth.b = factor(pastFam$popDepth.b)
+# pastFam$popDepth.a = factor(pastFam$popDepth.a, levels = levels(pastFam$popDepth.a)[c(8, 7, 2, 1, 6, 5, 4, 3)])
+# pastFam$popDepth.b = factor(pastFam$popDepth.b, levels = levels(pastFam$popDepth.b)[c(8, 7, 2, 1, 6, 5, 4, 3)])
+# pastMatDat = pastFam %>% as.data.frame () %>% select(sample.a, sample.b, relate)
+nameVals <- sort(unique(unlist(pastMatDat[1:2])))
+
+# construct 0 matrix of correct dimensions with row and column names
+pastMat <- matrix(0, length(nameVals), length(nameVals), dimnames = list(nameVals, nameVals))
+
+# fill in the matrix with matrix indexing on row and column names
+pastMat[as.matrix(pastMatDat[c("sample.a", "sample.b")])] <- pastMatDat[["relate"]]
+lowerTriangle(pastMat, byrow = TRUE) <- upperTriangle(pastMat)
+# pastFam = pastFam %>% arrange(popDepth.a)
+pastFam$sample.a = factor(pastFam$sample.a)
+pastFam$sample.a = factor(pastFam$sample.a, levels = unique(pastFam$sample.a))
+pastFam$sample.a = factor(pastFam$sample.a, levels = c("SFK220", levels(pastFam$sample.a)))
+pastFam$sample.b = factor(pastFam$sample.b)
+pastFam$sample.b = factor(pastFam$sample.b, levels = levels(pastFam$sample.a))
+sampleOrder = levels(pastFam$sample.a)
+
+# test = pastMat
+pastMat <- pastMat[,sampleOrder] %>%
+  .[sampleOrder,]
+diag(pastMat)<-NA
+# pastMat[upper.tri(pastMat)] <- NA
+pastMat <- as.data.frame(pastMat)
+pastMat$sample.a = factor(colnames(pastMat))
+# popData = read.csv("data_files/poritesastreoidesMetaData_clonesremoved.csv") %>% select("sample.a" = tube_id, "region" = region) %>% mutate(popDepth = paste(region, depth, sep = "\\n"))
+pastMat = pastMat %>% left_join(popData)
+pastMat$sample.a = factor(pastMat$sample.a, levels = unique(sampleOrder))
+# pastFam = melt(pastMat, id.vars = c("sample.a", "region", "depth", "popDepth"), value.name = "relate", variable.name = "sample.b", na.rm = FALSE)
+# pastFam = pastFam %>% add_row(sample.a = NA, region = "Region", depth = "Depth Zone", popDepth = NA, sample.b = NA, relate = NA) %>% add_row(sample.a = NA, region = NA, depth = " ", popDepth = NA, sample.b = NA, relate = NA)
+sintFam$region = factor(sintFam$region)
+sintFam$region = factor(sintFam$region, levels = levels(sintFam$region)[c(2, 5, 1, 4, 3)])
+sintFam$depth = factor(sintFam$depth)
+sintFam$depth = factor(sintFam$depth, levels = levels(sintFam$depth)[c(1, 2, 4, 3)])
+legend_ord = c(levels(sintFam$region), levels(sintFam$depth))
+relateHeatmapA = ggplot(data = sintFam, aes(sample.a, sample.b, fill = relate)) +
+  geom_tile(color = "white")+
+  geom_segment(data = sintFam, aes(x = sample.a, xend = sample.a, y = 0, yend = -4, color = region), size = 1) +
+  geom_segment(data = sintFam, aes(x = 0, xend = -4, y = sample.a, yend = sample.a, color = region), size = 1) +
+  # scale_color_manual(values = flPal, guide = NULL) + 
+  geom_vline(xintercept = c(30.5, 60.5, 90.5, 120.5, 150.5, 175.5, 205.5), size = 0.1, color = "black") +
+  geom_hline(yintercept = c(15.5, 45.5, 70.5, 100.5, 130.5, 160.5, 190.5), size = 0.1, color = "black") +
+  geom_segment(data = sintFam, aes(x = sample.a, xend = sample.a, y = -2, yend = -4, color =      depth), size = 1) +
+  geom_segment(data = sintFam, aes(x = -2, xend = -4, y = sample.a, yend = sample.a, color =      depth), size = 1) +
+  scale_fill_gradientn(colors = paletteer_d("RColorBrewer::RdPu"), space = "Lab", name = "       Relatedness", na.value = "black", guide = guide_colorbar(order = 1)) +
+  scale_color_manual(breaks = legend_ord, values = c("Region" = "white", "Upper Keys" = "#28ADA8", "Lower Keys" = "#3F86BC", "Tortugas Bank" = "#7A3A9A", "Riley's Hump"  = "#392682", " " = "white", "Depth Zone" = "white", "Shallow" = "gray75", "Mesophotic" = "gray35"), na.value = "white", name = NULL, guide = guide_legend(override.aes = list(size = 7), order = 2)) +
+  guides(color = guide_legend(override.aes = list(size = 7), order = 2), fill = guide_colorbar(order = 1), color = guide_legend(override.aes = list(size = 7), order = 3)) +
+  scale_y_discrete(limits = rev(levels(sintFam$sample.b))) +
+  coord_cartesian(xlim = c(-3.5,220)) +
+  theme_minimal()
+relateHeatmap = relateHeatmapA + theme(
+  # axis.text.x = element_text(size = 10, color = "black", angle = 90),
+  # axis.text.y = element_text(size = 10, color = "black"),
+  axis.text.x = element_blank(),
+  axis.text.y = element_blank(),
+  axis.title.x = element_blank(),
+  axis.title.y = element_blank(),
+  panel.grid.major = element_blank(),
+  panel.border = element_blank(),
+  panel.background = element_blank(),
+  axis.ticks = element_blank(),
+  # legend.position = c(0.5, 0.9),
+  # legend.direction = "horizontal",
+  legend.title = element_text(size = 14),
+  legend.text = element_text(size = 14),
+  plot.title = element_text(size = 16)
+)
+# relateHeatmap
+ggsave("../figures/relateHeatmap.png", plot = relateHeatmap, width = 27, height = 22, units = "cm", dpi = 300)
+
+#![](../figures/relateHeatmap.png)
+
+
+```
+
+```{r, plots for heterozygosity and inbreeding}
+
+
+```
+
+##Outliers
+```{r, outlier}
+
+
+```
+
+##Minor allele frequencies of the outliers by population
+```{r, minor allele frequencies}
+
+
+```
+
+```{r, minor allele frequencies/densities}
+
+
+```
+
+```{r, linear regression of minor allele frequencies by depth}
+
+
+```
+
+##Inbred outliers
+```{r, subsetting out shallow pop for inbred (may not need this chunk?)}
+
+
+```
+
+```{r, inbred minor allele frequencies}
+
+
+```
+
+```{r, inbred minor allele frequencies/densities}
+
+
+```
+
+```{r, inbred minor allele freq linear regression plots}
+
+
+```
+
+##P. astreoides isolation by distance
+```{r, geographic distances}
+
+
+```
+
+##Mantel isolation by distance test between individuals
+#Using IBS and geographic distance matrices
+```{r, mantel snps geo}
+
+
+```
+
+##Mantel isolation by distance test between populations
+#Using Nei's genetic distance and geographic distance matrices
+```{r, mantel pops}
+
+
+```
+
+#ADMIXTURE plot
+#Population structure plot from NGSadmix/CLUMPAK results.
+#Based on most probable values for K
+```{r, ADMIXTURE}
+
+
+```
+
+```{r, }
+
+
+```
+
+```{r, Symbiont genus assignment with clones included}
 #read in sample metadata with clones, remove technical replicates
 popData = read.csv("data_files/poritesastreoidesMetaData.csv") [-c(27, 28, 46, 47, 79, 80),] %>% select("sample" = tube_id, "pop" = region)
 #treat populations as a factor & order them North-->South
 popData$pop = factor(popData$pop)
-popData$pop = factor(popData$pop, levels = levels(popData$pop)[c(4, 2, 5, 1, 3)])
-#read in zoox reads data with clones & technical replicates removed
+popData$pop = factor(popData$pop, levels = levels(popData_wclones$pop)[c(4, 2, 5, 1, 3)])
+#read in zoox reads data with clones incl, technical replicates removed
 zoox = read.delim("data_files/zooxReads_withclones_techrepsrem", header = FALSE, check.names = FALSE)
 head(zoox)
 zoox$V2[is.na(zoox$V2)] <- as.character(zoox$V1[is.na(zoox$V2)])
@@ -346,7 +559,7 @@ zoox = zoox %>% filter(zoox$V1 != "*")
 zooxLst = split(zoox$V2, as.integer(gl(length(zoox$V2), 20, length(zoox$V2))))
 zooxMaps = NULL
 for(i in zooxLst){
-  zooxMaps = rbind(zooxMaps, data.frame(t(i)))
+  zoox = rbind(zooxMaps, data.frame(t(i)))
 }
 colnames(zooxMaps) = c("sample",zoox$V1[c(2:20)])
 for(i in c(2:20)){
@@ -375,7 +588,7 @@ sum(x, na.rm = T)
 })
 
 #bind it to metadata
-dfZoox = popData %>% left_join(zooxProp)
+dfZoox = popData_wclones %>% left_join(zooxProp)
 dfZoox$pop = as.factor(dfZoox$pop)
 
 # setting up for plotting
@@ -392,6 +605,7 @@ names(colPalZoox) = levels(zDat$Symbiont)
 
 # plotting
 colPalZoox = c("#247EA3", "#FFBF46", "#6A9FA1", "Purple3")
+flPal = paletteer_d("rcartocolor::Sunset")[c(7, 6, 4, 3, 1)]
 
 popAnno = data.frame(x1 = c(0.5, 0.5, 0.5, 0.5, 0.5), x2 = c(30.5, 15.5, 13.5, 14.5, 15.5),
                      y1 = -0.065, y2 = -0.065, pop = c("St. Lucie Reef", "Jupiter", "West Palm Beach", "Boynton Beach", "Pompano/LBTS"))
@@ -436,16 +650,14 @@ zooxSNP = zooxSNPA + theme(plot.title = element_text(),
   legend.key = element_blank(),
   legend.position = "bottom")
 
-# zooxSNP
+# zooxSNP with clones
 
 ggsave("figures/zooxSNP.png", plot = zooxSNP, width = 20, height = 8, units = "cm", dpi = 300)
 ggsave("figures/zooxSNP.eps", plot = zooxSNP, width = 20, height = 8, units = "cm", dpi = 300)
 ggsave("figures/zooxSNP.tiff", plot = zooxSNP, width = 20, height = 8, units = "cm", dpi = 300)
 ```
 
-```{r, }
+```{r, Symbiont genus assignment with clones included}
 
 
 ```
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
