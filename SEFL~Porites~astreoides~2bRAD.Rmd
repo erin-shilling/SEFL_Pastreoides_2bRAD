@@ -538,7 +538,45 @@ ggsave("figures/heterozygosityPlot.pdf", plot = hetPlots, width = 22, height = 1
 
 ## Outliers
 ```{r, outlier}
-
+bayescan = read.table("data_files/fkSint.baye_fst.txt",header=T) %>% mutate(loc = rownames(.), out.05 = ifelse(qval < 0.05, 1, 0), out.1 = ifelse(qval < 0.1, 1, 0))
+bayescan[bayescan[, 3]<=0.0001, 3] = 0.0001
+bayeScEnv = read.table("data_files/fkSint.bayeS_fst.txt", header=T) %>% filter(qval_g < 0.05) %>% mutate(loc = rownames(.), depthOut = 1) %>% select(loc, depthOut)
+bayescan = bayescan %>% left_join(bayeScEnv) 
+bayescan$depthOut = bayescan$depthOut %>% replace_na(0)
+sum(bayescan$out.05)
+sum(bayescan$out.1)
+sum(bayescan$depthOut)
+for(i in 1:nrow(bayescan)){
+  if(bayescan$depthOut[i] == 1){
+    bayescan$out.05[i] = 2
+  }
+}
+bayescanPlotA = ggplot(data = bayescan, aes(x = log10(qval), y = fst, color = as.factor(out.05), alpha = as.factor(out.05))) +  
+  geom_point(size = 1) +
+  geom_vline(xintercept = log10(0.05), linetype = 2, color = purple) +
+  xlab(expression(log[10]*"("*italic("q")*"-value)")) +
+  ylab(expression(italic("F")[ST])) +
+  scale_x_reverse() +
+  scale_color_manual(values = c("grey45", purple, pink)) +
+  scale_alpha_manual(values = c(0.25, 0.25, 0.5)) +
+  theme_bw()
+bayescanPlot = bayescanPlotA +
+        theme(axis.title.x = element_text(color = "black", size = 12),
+        axis.text.x = element_text(color = "black", size = 12),
+        axis.ticks.x = element_line(color = "black"),
+        axis.title.y = element_text(color = "black", size = 12),
+        axis.text.y = element_text(color = "black", size = 10),
+        axis.ticks.y = element_line(color = "black"),
+        legend.position = "none",
+        legend.key.size = unit(0.3, 'cm'),
+        panel.border = element_rect(color = "black"),
+        panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+# bayescanPlot
+ggsave("../figures/outliers.pdf", plot = bayescanPlot, width = 14, height = 8, units = "cm", dpi = 300)
+ggsave("../figures/outliers.png", plot = bayescanPlot, width = 14, height = 8, units = "cm", dpi = 300)
 
 ```
 
