@@ -450,7 +450,7 @@ relateHeatmap = relateHeatmapA + theme(
 ggsave("figures/relateHeatmap.png", plot = relateHeatmap, width = 20, height = 14, units = "cm", dpi = 300)
 
 ```
-#![](../figures/relateHeatmap.png)
+#![](figures/relateHeatmap.png)
 
 
 ```{r, plots for heterozygosity and inbreeding}
@@ -534,6 +534,8 @@ ggsave("figures/heterozygosityPlot.png", plot = hetPlots, width = 22, height = 1
 ggsave("figures/heterozygosityPlot.pdf", plot = hetPlots, width = 22, height = 16, units = "cm", dpi = 300)
 
 ```
+#![](figures/heterozygosityPlot.png)
+
 
 ##Outliers
 ```{r, outlier}
@@ -613,10 +615,10 @@ ggsave("figures/heterozygosityPlot.pdf", plot = hetPlots, width = 22, height = 1
 
 ```{r, Symbiont genus assignment with clones included}
 #read in sample metadata with clones, remove technical replicates
-popData = read.csv("data_files/poritesastreoidesMetaData.csv") [-c(27, 28, 46, 47, 79, 80),] %>% select("sample" = tube_id, "pop" = region)
+popDataClones = read.csv("data_files/poritesastreoidesMetaData.csv") [-c(27, 28, 46, 47, 79, 80),] %>% select("sample" = tube_id, "pop" = region)
 #treat populations as a factor & order them North-->South
-popData$pop = factor(popData$pop)
-popData$pop = factor(popData$pop, levels = levels(popData_wclones$pop)[c(4, 2, 5, 1, 3)])
+popDataClones$pop = factor(popDataClones$pop)
+popDataClones$pop = factor(popDataClones$pop, levels = levels(popDataClones$pop)[c(4, 2, 5, 1, 3)])
 #read in zoox reads data with clones incl, technical replicates removed
 zoox = read.delim("data_files/zooxReads_withclones_techrepsrem", header = FALSE, check.names = FALSE)
 head(zoox)
@@ -624,12 +626,17 @@ zoox$V2[is.na(zoox$V2)] <- as.character(zoox$V1[is.na(zoox$V2)])
 zoox$V1 = gsub("P.*", "chr", zoox$V1)
 zoox$V2 = gsub(".trim.*", "", zoox$V2)
 zoox = zoox %>% filter(zoox$V1 != "*")
+
 zooxLst = split(zoox$V2, as.integer(gl(length(zoox$V2), 20, length(zoox$V2))))
+
 zooxMaps = NULL
+
 for(i in zooxLst){
-  zoox = rbind(zooxMaps, data.frame(t(i)))
+  zooxMaps = rbind(zooxMaps, data.frame(t(i)))
 }
-colnames(zooxMaps) = c("sample",zoox$V1[c(2:20)])
+
+colnames(zooxMaps) = c("sample", zoox$V1[c(2:20)])
+
 for(i in c(2:20)){
   zooxMaps[,i] = as.numeric(zooxMaps[,i])
   }
@@ -656,7 +663,7 @@ sum(x, na.rm = T)
 })
 
 #bind it to metadata
-dfZoox = popData_wclones %>% left_join(zooxProp)
+dfZoox = popDataClones %>% left_join(zooxProp)
 dfZoox$pop = as.factor(dfZoox$pop)
 
 # setting up for plotting
@@ -725,7 +732,7 @@ ggsave("figures/zooxSNP.eps", plot = zooxSNP, width = 20, height = 8, units = "c
 ggsave("figures/zooxSNP.tiff", plot = zooxSNP, width = 20, height = 8, units = "cm", dpi = 300)
 ```
 
-```{r, Symbiont genus assignment with clones included}
+```{r, Symbiont genus assignment without clones}
 
 
 ```
