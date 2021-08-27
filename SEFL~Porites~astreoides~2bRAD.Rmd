@@ -294,8 +294,9 @@ snpFst$Fst = factor(gsub("\\.000", "", snpFst$Fst))
 snpFst$Fst = factor(gsub("\\-", "", snpFst$Fst))
 
 snpHeatmapA = ggplot(data = snpFst, aes(Pop, Pop2, fill = as.numeric(as.character(Fst))))+
-  geom_tile(color = "white")+
-###mess with next 4 lines to fix sizes of boxes that region names are in
+  geom_tile(color = "white") +
+  
+### mess with next 4 lines to fix sizes of boxes that region names are in
   geom_segment(data = snpFst, aes(x = 0.48, xend = -0.62, y = Pop, yend = Pop, color = region), size = 19) +
   geom_segment(data = snpFst, aes(x = Pop2, xend = Pop2, y = 0.45, yend = -0.6, color = region2), size = 62.5) +
   scale_color_manual(values = flPal[], guide = NULL) +
@@ -330,7 +331,7 @@ ggsave("figures/fstHeatMap.eps", plot = snpHeatmap, width = 30, height = 9, unit
 ![](figures/fstHeatMap.png)
 <br>
 
-##Heterozygosity & Inbreeding
+## Heterozygosity & Inbreeding
 ```{r, popStats}
 popData = read.csv("data_files/poritesastreoidesMetaData_clonesremoved.csv") %>% select("sample" = tube_id, "Region" = region) # Reads in population data
 
@@ -537,13 +538,13 @@ ggsave("figures/heterozygosityPlot.pdf", plot = hetPlots, width = 22, height = 1
 #![](figures/heterozygosityPlot.png)
 
 
-##Outliers
+## Outliers
 ```{r, outlier}
 
 
 ```
 
-##Minor allele frequencies of the outliers by population
+## Minor allele frequencies of the outliers by population
 ```{r, minor allele frequencies}
 
 
@@ -559,7 +560,7 @@ ggsave("figures/heterozygosityPlot.pdf", plot = hetPlots, width = 22, height = 1
 
 ```
 
-##Inbred outliers
+## Inbred outliers
 ```{r, subsetting out shallow pop for inbred (may not need this chunk?)}
 
 
@@ -580,31 +581,126 @@ ggsave("figures/heterozygosityPlot.pdf", plot = hetPlots, width = 22, height = 1
 
 ```
 
-##P. astreoides isolation by distance
+## P. astreoides isolation by distance
 ```{r, geographic distances}
 
 
 ```
 
-##Mantel isolation by distance test between individuals
-#Using IBS and geographic distance matrices
+## Mantel isolation by distance test between individuals
+Using IBS and geographic distance matrices
 ```{r, mantel snps geo}
 
 
 ```
 
-##Mantel isolation by distance test between populations
-#Using Nei's genetic distance and geographic distance matrices
+## Mantel isolation by distance test between populations
+Using Nei's genetic distance and geographic distance matrices
 ```{r, mantel pops}
 
 
 ```
 
-#ADMIXTURE plot
-#Population structure plot from NGSadmix/CLUMPAK results.
-#Based on most probable values for K
+## ADMIXTURE plot
+Population structure plot from NGSadmix/CLUMPAK results.
+Based on most probable values for K
 ```{r, ADMIXTURE}
+kColPal3 = paletteer_c("viridis::viridis", n = 3)
+kColPal7 = paletteer_c("viridis::viridis", n = 7)
 
+admixpops = read.csv("data_files/poritesastreoidesMetaData_clonesremoved.csv") %>% select("sample" = tube_id, "Region" = region)
+
+clumpp3 = read.table("data_files/pastClumppK3", header = FALSE)
+clumpp7 = read.table("data_files/pastClumppK7", header = FALSE)
+clumpp3$V1 = admixpops$sample
+clumpp7$V1 = admixpops$sample
+
+seflPastAdmix = admixpops %>% left_join(clumpp3[,c(1,6:8)], by = c("sample" = "V1")) %>% 
+  left_join(clumpp7[,c(1, 6:12)], by = c("sample" = "V1")) %>% rename("cluster3.1" = "V6.x", "cluster3.2" = "V7.x", "cluster3.3" = "V8.x","cluster7.1" = "V6.y", "cluster7.2" = "V7.y", "cluster7.3" = "V8.y", "cluster7.4" = "V9", "cluster7.5" = "V10", "cluster7.6" = "V11", "cluster7.7" = "V12")
+
+seflPastAdmix$Region = factor(seflPastAdmix$Region)
+seflPastAdmix$Region = factor(seflPastAdmix$Region, levels(seflPastAdmix$Region)[c(4, 2, 5, 1, 3)])
+
+levels(seflPastAdmix$Region)[1] = "St. Lucie"
+
+seflPastAdmix = arrange(seflPastAdmix, Region, -cluster3.1)
+popCounts = seflPastAdmix %>% group_by(Region) %>% summarize(n = n())
+
+popCounts
+
+popCountList = reshape2::melt(lapply(popCounts$n,function(x){c(1:x)}))
+seflPastAdmix$ord = popCountList$value
+
+seflPastAdmixMelt = melt(seflPastAdmix, id.vars=c("sample", "Region", "ord"), variable.name="Ancestry", value.name="Fraction")
+
+seflPastAdmixMelt$Ancestry = factor(seflPastAdmixMelt$Ancestry)
+seflPastAdmixMelt$Ancestry = factor(seflPastAdmixMelt$Ancestry, levels = rev(levels(seflPastAdmixMelt$Ancestry)))
+
+popAnno = data.frame(x1 = c(0.3, 0.3, 0.3, 0.3, 0.3), x2 = c(3.7, 10.7, 7.7, 10.7, 6.7),
+                     y1 = -0.12, y2 = -0.12, sample = NA, Ancestry = NA, ord  = NA, Fraction = NA,
+                     Region= c("St. Lucie", "Jupiter", "West Palm Beach", "Boynton Beach", "Pompano/LBTS"))
+
+popAnno$Region = factor(popAnno$Region)
+popAnno$Region = factor(popAnno$Region, levels = levels(popAnno$Region)[c(4, 2, 5, 1, 3)])
+
+admixTheme = theme_bw()+
+  theme(plot.title = element_text(hjust = 0, size = 10),
+  panel.grid = element_blank(),
+  panel.background = element_rect(fill = "gray25", colour = "gray25"),
+  panel.border = element_rect(fill = NA, color = "black", size = 1, linetype = "solid"),
+  panel.spacing.x = grid:::unit(0.05, "lines"),
+  panel.spacing.y = grid:::unit(0.05, "lines"),
+  axis.text.x = element_blank(),
+  axis.text.y = element_blank(),
+  axis.ticks.x = element_blank(),
+  axis.ticks.y = element_blank(),
+  axis.title = element_blank(),
+  strip.background.x = element_blank(),
+  strip.background.y = element_blank(),
+  strip.text = element_text(size = 8),
+  strip.text.y.left = element_text(size = 10, angle = 90),
+  strip.text.x.bottom = element_text(vjust = -.1, color = "black"),
+  legend.key = element_blank(),
+  legend.position = "none",
+  legend.title = element_text(size = 8))
+
+admixPlotK3A = ggplot(data = subset(seflPastAdmixMelt, subset = seflPastAdmixMelt$Ancestry %in% c("cluster3.1", "cluster3.2", "cluster3.3")), aes(x = ord, y = Fraction, fill = Ancestry, order = sample)) +
+    geom_segment(data = popAnno, aes(x = x1, xend = x2, y = y1, yend = y2, color = Region), size = 7) +
+  geom_bar(stat = "identity", position = "fill", width = 1, colour = "grey25", size = 0.2) +
+  facet_grid(.~ Region, scales = "free", switch = "both", space = "free") +
+  scale_x_discrete(expand = c(0, 0)) +
+  scale_y_continuous(expand = c(0.001, 0.001)) +
+  scale_fill_manual(values = kColPal3) +
+  scale_color_manual(values = flPal) +
+  ggtitle(expression(paste(italic("K")," = 3", sep =""))) +
+  # coord_cartesian(expand = TRUE, clip = "off")
+  coord_cartesian(ylim = c(-0.01, 1.01), clip = "off")
+
+admixPlotK3 = admixPlotK3A + admixTheme
+
+admixPlotK7A = ggplot(data = subset(seflPastAdmixMelt, subset = !(seflPastAdmixMelt$Ancestry %in% c("cluster3.1", "cluster3.2", "cluster3.3"))), aes(x = ord, y = Fraction, fill = Ancestry, order = sample)) +
+    geom_segment(data = popAnno, aes(x = x1, xend = x2, y = y1, yend = y2, color = Region), size = 7) +
+  geom_bar(stat = "identity", position = "fill", width = 1, colour = "grey25", size = 0.2) +
+  facet_grid(.~ Region, scales = "free", switch = "both", space = "free") +
+  scale_x_discrete(expand = c(0, 0)) +
+  scale_y_continuous(expand = c(0.001, 0.001)) +
+  scale_fill_manual(values = kColPal7) +
+  scale_color_manual(values = flPal) +
+  ggtitle(expression(paste(italic("K")," = 7", sep =""))) +
+  # coord_cartesian(expand = TRUE, clip = "off")
+  coord_cartesian(ylim = c(-.01, 1.01), clip = "off")
+ 
+admixPlotK7 = admixPlotK7A + admixTheme
+# admixPlotK4 = admixPlotK4A + admixTheme + 
+#   theme(strip.text.y.left = element_blank())
+
+admixPlot = (admixPlotK3 / admixPlotK7)
+
+# admixPlot
+
+ggsave("figures/admixturePlot.png", plot = admixPlot, width = 15, height = 10, units = "cm", dpi = 300)
+ggsave("figures/admixturePlot.eps", plot = admixPlot, width = 15, height = 10, units = "cm", dpi = 300)
+ggsave("figures/admixturePlot.eps", plot = admixPlot, width = 15, height = 10, units = "cm", dpi = 300)
 
 ```
 
