@@ -37,8 +37,8 @@ pastSamples$depthM = conv_unit(pastSamples$collection_depth_ft, from = "ft", to 
 
 seflSites = pastSamples %>% group_by(region)%>% summarize(latDD = first(site_lat), longDD = first(site_long), depthRangeM = paste(min(depthM), "-", max(depthM), sep = ""), n = n(), date = as.character(min(collection_date))) %>% droplevels() %>% as.data.frame()
 
-states = st_as_sf(ne_states(country = c("United States of America")), scale = "large")
-countries = st_as_sf(ne_countries(country = c("Cuba", "The Bahamas"), scale = "large"))
+states = st_as_sf(ne_states(country = c("United States of America")))
+countries = st_as_sf(ne_countries(country = c("Cuba", "The Bahamas")))
 florida = read_sf("data_files/shp/flCountiesLo.shp") %>% st_transform(crs = 4326)
 frt = read_sf("data_files/shp/flReefs.shp") %>% st_transform(crs = 4326)
 
@@ -454,7 +454,84 @@ ggsave("figures/relateHeatmap.png", plot = relateHeatmap, width = 20, height = 1
 
 
 ```{r, plots for heterozygosity and inbreeding}
+hetMelt = melt(het, id.vars = c("sample", "Region"), variable.name = "type", value.name = "heterozygosity")
 
+hetTheme = theme(axis.title.x = element_text(color = "black", size = 12),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.title.y = element_text(color = "black", size = 12),
+        axis.text.y = element_text(color = "black", size = 10),
+        axis.ticks.y = element_line(color = "black"),
+        legend.position = "right",
+        legend.key.size = unit(0.5, 'cm'),
+        panel.border = element_rect(color = "black"),
+        panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+
+dodge <- position_dodge(width = 1)
+
+hetPlotAll = ggplot(data = subset(hetMelt, subset = hetMelt$type == "All"),aes(x = Region, y = heterozygosity, fill = Region)) +
+  geom_point(aes(color = Region),shape = 21, position = position_jitterdodge(seed = 1, dodge.width = 1), size = 2, alpha = 0.7) +
+  # geom_violin(size = 0.5, alpha = 0.7, position = dodge, color = "gray35") +
+  geom_boxplot(size = 0.5, alpha = 0.7, position = dodge, color = "gray35", outlier.shape = NA) +
+  xlab("Region") +
+  ylab("Heterozygosity") +
+  ggtitle("All loci") +
+  scale_fill_manual(values = flPal) +  
+  scale_color_manual(values = flPal) +
+  theme_bw() +
+  hetTheme
+  
+hetPlotSnps = ggplot(data = subset(hetMelt, subset = hetMelt$type == "SNPs"),aes(x = Region, y = heterozygosity, fill = Region)) +
+  geom_point(aes(color = Region),shape = 21, position = position_jitterdodge(seed = 1, dodge.width = 1), size = 2, alpha = 0.7) +
+  # geom_violin(size = 0.5, alpha = 0.7, position = dodge, color = "gray35") +
+  geom_boxplot(size = 0.5, alpha = 0.7, position = dodge, color = "gray35", outlier.shape = NA) +
+  xlab("Region") +
+  ylab("Heterozygosity") +
+  ggtitle("SNPs") +
+  scale_fill_manual(values = flPal) +
+  scale_color_manual(values = flPal) +
+  theme_bw() +
+  hetTheme
+
+inbreedingPlot = ggplot(data = het, aes(x = Region, y = inbreed, fill = Region)) +
+  geom_point(aes(color = Region),shape = 21, position = position_jitterdodge(seed = 1, dodge.width = 1), size = 2, alpha = 0.7) +
+  # geom_violin(size = 0.5, alpha = 0.7, position = dodge, color = "gray35") +
+  geom_boxplot(size = 0.5, alpha = 0.7, position = dodge, color = "gray35", outlier.shape = NA) +
+  xlab("Region") +
+  ylab("Inbreeding coefficient") +
+  ggtitle("Inbreeding") +
+  scale_fill_manual(values = flPal) +  
+  scale_color_manual(values = flPal) +
+  theme_bw() +
+  hetTheme
+
+relatePlot = ggplot(data = pastRelate, aes(x = Region, y = relate, fill = Region)) +
+  geom_point(aes(color = Region),shape = 21, position = position_jitterdodge(seed = 1, dodge.width = 1), size = 2, alpha = 0.7) +
+  # geom_violin(size = 0.5, alpha = 0.7, position = dodge, color = "gray35") +
+  geom_boxplot(size = 0.5, alpha = 0.7, position = dodge, color = "gray35", outlier.shape = NA) +
+  xlab("Region") +
+  ylab("Relatedness") +
+  ggtitle("Relatedness") +
+  scale_fill_manual(values = flPal) +  
+  scale_color_manual(values = flPal) +
+  theme_bw() +
+  hetTheme
+
+hetPlots = ((hetPlotAll | hetPlotSnps) / (inbreedingPlot | relatePlot)) +
+  plot_annotation(tag_levels = 'A') +
+  plot_layout(guides = "collect")& 
+  theme(plot.tag = element_text(size = 16),
+        legend.title = element_text(size = 12),
+        legend.text = element_text(size = 10),
+        legend.position = "right")
+
+# hetPlots
+
+ggsave("figures/heterozygosityPlot.png", plot = hetPlots, width = 22, height = 16, units = "cm", dpi = 300)
+ggsave("figures/heterozygosityPlot.pdf", plot = hetPlots, width = 22, height = 16, units = "cm", dpi = 300)
 
 ```
 
