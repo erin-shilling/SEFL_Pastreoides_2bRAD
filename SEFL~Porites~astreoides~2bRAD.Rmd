@@ -536,11 +536,12 @@ ggsave("figures/heterozygosityPlot.pdf", plot = hetPlots, width = 22, height = 1
 
 ```
 
-## Outliers
+## Outliers- have not gotten this to run successfully yet
 ```{r, outlier}
-bayescan = read.table("data_files/fkSint.baye_fst.txt",header=T) %>% mutate(loc = rownames(.), out.05 = ifelse(qval < 0.05, 1, 0), out.1 = ifelse(qval < 0.1, 1, 0))
+bayescan = read.table("data_files/seflpast.baye_fst.txt",header=T) %>% mutate(loc = rownames(.), out.05 = ifelse(qval < 0.05, 1, 0), out.1 = ifelse(qval < 0.1, 1, 0))
 bayescan[bayescan[, 3]<=0.0001, 3] = 0.0001
-bayeScEnv = read.table("data_files/fkSint.bayeS_fst.txt", header=T) %>% filter(qval_g < 0.05) %>% mutate(loc = rownames(.), depthOut = 1) %>% select(loc, depthOut)
+##try to run this next line it says object qval_g not found
+bayeScEnv = read.table("data_files/seflpast.baye_fst.txt", header=T) %>% filter(qval_g < 0.05) %>% mutate(loc = rownames(.), depthOut = 1) %>% select(loc, depthOut)
 bayescan = bayescan %>% left_join(bayeScEnv) 
 bayescan$depthOut = bayescan$depthOut %>% replace_na(0)
 sum(bayescan$out.05)
@@ -560,6 +561,7 @@ bayescanPlotA = ggplot(data = bayescan, aes(x = log10(qval), y = fst, color = as
   scale_color_manual(values = c("grey45", purple, pink)) +
   scale_alpha_manual(values = c(0.25, 0.25, 0.5)) +
   theme_bw()
+
 bayescanPlot = bayescanPlotA +
         theme(axis.title.x = element_text(color = "black", size = 12),
         axis.text.x = element_text(color = "black", size = 12),
@@ -574,7 +576,9 @@ bayescanPlot = bayescanPlotA +
         plot.background = element_rect(fill = "white"),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank())
-# bayescanPlot
+
+bayescanPlot
+
 ggsave("../figures/outliers.pdf", plot = bayescanPlot, width = 14, height = 8, units = "cm", dpi = 300)
 ggsave("../figures/outliers.png", plot = bayescanPlot, width = 14, height = 8, units = "cm", dpi = 300)
 
@@ -619,21 +623,84 @@ ggsave("../figures/outliers.png", plot = bayescanPlot, width = 14, height = 8, u
 
 ## P. astreoides isolation by distance
 ```{r, geographic distances}
-
-
+ReplaceLowerOrUpperTriangle = function(m, triangle.to.replace) {
+  if (nrow(m) != ncol(m))
+    stop("Supplied matrix must be square.")
+  if (tolower(triangle.to.replace) == "lower")
+    tri = lower.tri(m)
+  else if (tolower(triangle.to.replace) == "upper")
+    tri = upper.tri(m)
+  else
+    stop("triangle.to.replace must be set to 'lower' or 'upper'.")
+  m[tri] = t(m)[tri]
+  return(m)
+}
+  # If triangle.to.replace="lower", replaces the lower triangle of a square matrix with its upper triangle.
+  # If triangle.to.replace="upper", replaces the upper triangle of a square matrix with its lower triangle.
+GeoDistanceInMetresMatrix = function(df.geopoints) {
+  # Returns a matrix (M) of distances between geographic points. M[i,j] = M[j,i] = Distance between (df.geopoints$lat[i], df.geopoints$lon[i]) and (df.geopoints$lat[j], df.geopoints$lon[j]). The row and column names are given by df.geopoints$name.
+  
+  GeoDistanceInMetres = function(g1, g2) {
+    # Returns a vector of distances. (But if g1$index > g2$index, returns zero.) The 1st value in the returned vector is the distance between g1[[1]] and g2[[1]]. The 2nd value in the returned vector is the distance between g1[[2]] and g2[[2]]. Etc. Each g1[[x]] or g2[[x]] must be a list with named elements "index", "lat" and "lon". E.g. g1 = list(list("index"=1, "lat"=12.1, "lon"=10.1), list("index"=3, "lat"=12.1, "lon"=13.2))
+    
+    DistM = function(g1, g2) {
+      require("Imap")
+      return(ifelse(
+        g1$index > g2$index,
+        0,
+        gdist(lat.1 = g1$lat, lon.1 = g1$lon, lat.2 = g2$lat, lon.2 = g2$lon, units = "m")))
+    }
+    return(mapply(DistM, g1, g2))
+  }
+  
+  n.geopoints = nrow(df.geopoints)
+  
+  # The index column is used to ensure we only do calculations for the upper triangle of points
+  df.geopoints$index = 1:n.geopoints
+  
+  # Create a list of lists
+  list.geopoints = by(df.geopoints[, c("index", "lat", "lon")], 1:n.geopoints, function(x) {
+    return(list(x))
+  })
+  
+  # Get a matrix of distances (in metres)
+  mat.distances = ReplaceLowerOrUpperTriangle(outer(list.geopoints, list.geopoints, GeoDistanceInMetres), "lower")
+  
+  # Set the row and column names
+  rownames(mat.distances) = df.geopoints$name
+  colnames(mat.distances) = df.geopoints$name
+  return(mat.distances)}
 ```
 
 ## Mantel isolation by distance test between individuals
 Using IBS and geographic distance matrices
 ```{r, mantel snps geo}
-
-
+pastIBS = read.table("data_files/pastNoClones.ibsMat")%>% as.matrix() %>% as.dist(diag = FALSE)
+coords = read.csv("data_files/poritesastreoidesMetaData_clonesremoved.csv") %>% select(name = tube_id, lat = site_lat, lon = site_long)
+pastGeo = as.dist(GeoDistanceInMetresMatrix(coords)/1000, diag = FALSE)
+set.seed(694) 
+seflPastMantel = mantel.randtest(pastIBS, pastGeo, nrepet = 9999)
+seflPastMantel
 ```
 
 ## Mantel isolation by distance test between populations
 Using Nei's genetic distance and geographic distance matrices
 ```{r, mantel pops}
-
+pastVcf = read.vcfR("data_files/pastNoClones.bcf", verbose = FALSE)
+pastGenlight = vcfR2genlight(pastVcf, n.cores = 1)
+popdata = read.csv("data_files/poritesastreoidesMetaData_clonesremoved.csv") %>% select(sample = tube_id, region)
+strata(pastGenlight) = data.frame(popdata)
+setPop(pastGenlight)= ~region
+pastNeiDist = as.dist(stamppNeisD(pastGenlight, pop = TRUE), diag = F)
+popCoords = read.csv("data_files/poritesastreoidesMetaData_clonesremoved.csv") %>% group_by(region) %>% summarize(lat = mean(site_lat), lon = mean(site_long)) %>% as.data.frame()
+popCoords$region = factor(popCoords$region)
+popCoords$region = factor(popCoords$region, levels = levels(popCoords$region)[c(4, 2, 5, 1, 3)])
+popCoords = popCoords %>% arrange(levels(popCoords$region))
+# row.names(popCoords) = popCoords$population
+pastPopsGeo = as.dist(GeoDistanceInMetresMatrix(popCoords)/1000, diag = F)
+set.seed(694)
+pastPopIBD = mantel.randtest(pastPopsGeo, pastNeiDist, nrepet = 9999)
+pastPopIBD
 
 ```
 
@@ -740,11 +807,6 @@ ggsave("figures/admixturePlot.eps", plot = admixPlot, width = 15, height = 10, u
 
 ```
 
-```{r, }
-
-
-```
-
 ```{r, Symbiont genus assignment with clones included}
 #read in sample metadata with clones, remove technical replicates
 popDataClones = read.csv("data_files/poritesastreoidesMetaData.csv") [-c(27, 28, 46, 47, 79, 80),] %>% select("sample" = tube_id, "pop" = region)
@@ -752,6 +814,7 @@ popDataClones = read.csv("data_files/poritesastreoidesMetaData.csv") [-c(27, 28,
 popDataClones$pop = factor(popDataClones$pop)
 popDataClones$pop = factor(popDataClones$pop, levels = levels(popDataClones$pop)[c(4, 2, 5, 1, 3)])
 #read in zoox reads data with clones incl, technical replicates removed
+##why are samples 16, 17, 41 not in this file?? removed in koko step?
 zoox = read.delim("data_files/zooxReads_withclones_techrepsrem", header = FALSE, check.names = FALSE)
 head(zoox)
 zoox$V2[is.na(zoox$V2)] <- as.character(zoox$V1[is.na(zoox$V2)])
@@ -864,7 +927,119 @@ ggsave("figures/zooxSNP.eps", plot = zooxSNP, width = 20, height = 8, units = "c
 ggsave("figures/zooxSNP.tiff", plot = zooxSNP, width = 20, height = 8, units = "cm", dpi = 300)
 ```
 
+#need to figure out how to fix panels, left blank chunks for several regions?
 ```{r, Symbiont genus assignment without clones}
+#read in sample metadata without clones
+popData = read.csv("data_files/poritesastreoidesMetaData_clonesremoved.csv") %>% select("sample" = tube_id, "pop" = region_short)
+#treat populations as a factor & order them North-->South
+popData$pop = factor(popData$pop)
+popData$pop = factor(popData$pop, levels = levels(popData$pop)[c(4, 2, 5, 1, 3)])
+#read in zoox reads data with clones incl, technical replicates removed
+#changed 28-1 to 28-2 to match metadata, other 28- reps were missing, same for 77-1 to 77-3
+zoox = read.delim("data_files/zooxReads_withoutclonesortechreps", header = FALSE, check.names = FALSE)
+head(zoox)
+zoox$V2[is.na(zoox$V2)] <- as.character(zoox$V1[is.na(zoox$V2)])
+zoox$V1 = gsub("P.*", "chr", zoox$V1)
+zoox$V2 = gsub(".trim.*", "", zoox$V2)
+zoox = zoox %>% filter(zoox$V1 != "*")
+zooxLst = split(zoox$V2, as.integer(gl(length(zoox$V2), 20, length(zoox$V2))))
+zooxMaps = NULL
+for(i in zooxLst){
+  zooxMaps = rbind(zooxMaps, data.frame(t(i)))
+}
+colnames(zooxMaps) = c("sample", zoox$V1[c(2:20)])
+for(i in c(2:20)){
+  zooxMaps[,i] = as.numeric(zooxMaps[,i])
+  }
+str(zooxMaps)
 
+zooxMaps$Symbiodinium = rowSums(zooxMaps[2:6])
+zooxMaps$Breviolum = rowSums(zooxMaps[7:10])
+zooxMaps$Cladocopium = rowSums(zooxMaps[11:16])
+zooxMaps$Durusdinium = rowSums(zooxMaps[17:20])
+
+zooxMaps = zooxMaps[,c(1, 21:24)]
+zooxProp = zooxMaps
+
+zooxProp$sum = apply(zooxProp[, c(2:length(zooxProp[1,]))], 1, function(x) {
+sum(x, na.rm = T)
+})
+
+#turn them into proportions
+zooxProp = cbind(zooxProp$sample, (zooxProp[, c(2:(ncol(zooxProp)-1))]
+/ zooxProp$sum))
+colnames(zooxProp)[1] = "sample"
+head(zooxProp)
+apply(zooxProp[, c(2:(ncol(zooxProp)))], 1, function(x) {
+sum(x, na.rm = T)
+})
+
+#bind it to metadata
+dfZoox = popData %>% left_join(zooxProp)
+dfZoox$pop = as.factor(dfZoox$pop)
+
+# setting up for plotting
+dfZoox = dfZoox[order(dfZoox$pop),]
+sampleCounts = plyr::count(dfZoox, c('pop'))
+meltedList = reshape2::melt(lapply(sampleCounts$freq,function(x){c(1:x)}))
+dfZoox$barPlotOrder = meltedList$value
+dfZoox = dfZoox[c(1,ncol(dfZoox),2:(ncol(dfZoox)-1))]
+zDat = melt(dfZoox, id.vars = c("sample", "pop", "barPlotOrder"), variable.name = "Symbiont", value.name = "Fraction")
+
+colPalZoox = brewer.pal(4, "BrBG")
+names(colPalZoox) = levels(zDat$Symbiont)
+
+# plotting
+colPalZoox = c("#247EA3", "#FFBF46", "#6A9FA1", "Purple3")
+flPal = paletteer_d("rcartocolor::Sunset")[c(7, 6, 4, 3, 1)]
+
+popAnno = data.frame(x1 = c(0.5, 0.5, 0.5, 0.5, 0.5), x2 = c(3.5, 10.5, 7.5, 10.5, 6.5),
+                     y1 = -0.065, y2 = -0.065, pop = c("SLR", "Jupiter", "West Palm Beach", "Boynton Beach", "Pompano/LBTS"))
+
+popAnno$pop = factor(popAnno$pop)
+popAnno$pop = factor(popAnno$pop, levels = levels(popAnno$pop)[c(4, 2, 5, 1, 3)])
+
+dfZoox = zDat %>% left_join(popAnno, by = "pop")
+
+zooxSNPA = ggplot(data = dfZoox, aes(x = barPlotOrder, y = Fraction, fill = Symbiont, order = barPlotOrder)) +
+  geom_bar(stat = "identity", position = "stack", colour = "grey25", width = 1, size = 0.2) +
+  xlab("Population") +
+  scale_x_discrete(expand = c(0.001, 0.001)) +
+  scale_y_continuous(expand = c(-.001, -0.001)) +
+  scale_color_manual(values = flPal) +
+  geom_segment(aes(x = x1, xend = x2, y = y1, yend = y2, color = pop), size = 7) +
+  scale_fill_manual(values = colPalZoox, name = "Symbiodiniaceae genus") +
+  coord_cartesian(ylim = c(-.01,1.01), clip = "off") +
+  facet_grid(~ pop, drop = TRUE, space = "free", scales = "free", switch = "both") +
+  guides(color = "none") +
+  theme_bw()
+
+zooxSNP = zooxSNPA + theme(plot.title = element_text(),
+  panel.grid = element_blank(),
+  panel.background = element_rect(fill = "gray25", colour = "grey25"),
+  panel.border = element_rect(fill = NA, color = "black", size = 1, linetype = "solid"),
+  panel.spacing.x = grid:::unit(0.05, "lines"),
+  panel.spacing.y = grid:::unit(0.05, "lines"),
+  axis.text.x = element_blank(),
+  axis.text.y = element_blank(),
+  axis.ticks.x = element_blank(),
+  axis.ticks.y = element_blank(),
+  axis.title = element_blank(),
+  strip.background.x = element_blank(),
+  strip.background.y = element_blank(),
+  strip.text = element_text(size = 10),
+  strip.text.y.left = element_text(size = 10, angle = 90),
+  strip.text.x.bottom = element_text(vjust = -.05, color = "black"),
+  legend.key.size = unit(0.75, "line"),
+  legend.title = element_text(size = 10),
+  legend.text = element_text(size = 8),
+  legend.key = element_blank(),
+  legend.position = "bottom")
+
+# zooxSNP without clones
+
+ggsave("figures/zooxSNP_noclones.png", plot = zooxSNP, width = 20, height = 8, units = "cm", dpi = 300)
+ggsave("figures/zooxSNP_noclones.eps", plot = zooxSNP, width = 20, height = 8, units = "cm", dpi = 300)
+ggsave("figures/zooxSNP_noclones.tiff", plot = zooxSNP, width = 20, height = 8, units = "cm", dpi = 300)
 
 ```
