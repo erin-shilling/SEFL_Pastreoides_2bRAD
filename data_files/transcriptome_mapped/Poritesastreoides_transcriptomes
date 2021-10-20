@@ -1,0 +1,366 @@
+#Downloading transcriptomes available
+
+cd 2bRAD/past
+mkdir transcriptome
+cd transcriptome
+
+#Version 1 Nia Walker 2019, DOI: 10.1111/mec.15265
+#Includes data from coral larvae (non-probing and probing the crustose coralline alga Titanoderma prototypum) collected between 1 and 3 days after release.
+wget https://dataverse.harvard.edu/file.xhtml?persistentId=doi:10.7910/DVN/CX9HWD/QRHYOB&version=3.1
+#rename to walker2019_released
+
+#Version 2 Nia Walker 2019, DOI: 10.1111/mec.15265
+#Includes data from coral larvae (non-probing and probing the crustose coralline alga Titanoderma prototypum) collected between 1 and 3 days after release, and fully metamorphosed spat (with crustose coralline algae, or the bacteria Pseudoalteromonas sp. PS5) collected between 1 and 3 days after metamorphosing.
+wget https://dataverse.harvard.edu/file.xhtml?persistentId=doi:10.7910/DVN/CX9HWD/GY2NXO&version=3.1
+#rename to walker2019_meta
+
+#version from GIGAdb (http://gigadb.org/dataset/100207)
+#with symbiont transcriptome reads removed
+#Mansour, T, A; Rosenthal, J, J; Brown, Loretta M Roberson, C, T (2016). GigaScience Database. http://dx.doi.org/10.5524/100207
+wget https://ftp.cngb.org/pub/gigadb/pub/10.5524/100001_101000/100207/p_ast2016.fasta
+#rename to mansour2016
+
+#version from Misha Matz lab website
+#with symbiont transcriptome reads removed
+#Kenkel, Meyer and Matz, Mol Ecol 2013, 22: 4322-4334
+wget https://www.dropbox.com/s/dzvr219crsbgt0n/pastreoides_2014.zip?dl=0&file_subpath=%2Fpastreoides_2014%2Fpastreoides_may2014
+unzip pastreoides_2014.zip?dl=0
+#rename to kenkel2013
+
+# Creating genome indices for bowtie2
+# put whichever of the paths to the transcriptome file names I want to try where it says GENOME_FASTA
+
+~~~~~~~~~~~~~~~~~~FOR WALKER V1~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+echo 'bowtie2-build ~/2bRAD/past/transcriptome/walker2019_released ~/2bRAD/past/transcriptome/walker2019_released' >btb
+launcher_creator.py -j btb -n btb -t 6:00:00 -e eshilling2013@fau.edu -q shortq7
+sbatch btb.slurm
+
+#index with samtools
+samtools faidx ~/2bRAD/past/transcriptome/walker2019_released
+
+# Making directory for mapping reads to a reference genome and formatting bam files
+cd ~/2bRAD/past/sefl
+mkdir past_mapped_walker2019_released
+srun cp ~/2bRAD/past/sefl/filteredReads/*.trim.gz ~/2bRAD/past/sefl/past_mapped_walker2019_released
+cd ~/2bRAD/past/sefl/past_mapped_walker2019_released
+
+#unzip the files
+gunzip *trim.gz
+
+# Mapping reads to a reference genome with soft-clipping (Bowtie2 --local option) to avoid indels near read ends
+2bRAD_bowtie2_launcher.pl '\.trim$' ~/2bRAD/past/transcriptome/walker2019_released > maps
+launcher_creator.py -j maps -n maps -t 6:00:00 -e eshilling2013@fau.edu -q shortq7
+sbatch maps.slurm
+
+# Produces sam files, check to make sure that this matches number of trim Files
+ls *.sam | wc -l
+
+# Calculate alignment rates
+
+>alignmentRates
+for F in `ls *.trim`; do
+M=`grep -E '^[ATGCN]+$' $F | wc -l | grep -f - maps.e* -A 4 | tail -1 | perl -pe 's/maps\.e\d+-|% overall alignment rate//g'` ;
+echo "$F.sam $M">>alignmentRates;
+done
+
+###alignment rates of ~45%
+
+~~~~~~~~~~~~~~~~~~FOR WALKER V2~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+echo 'bowtie2-build ~/2bRAD/past/transcriptome/walker2019_meta ~/2bRAD/past/transcriptome/walker2019_meta' >btb
+launcher_creator.py -j btb -n btb -t 6:00:00 -e eshilling2013@fau.edu -q shortq7
+sbatch btb.slurm
+
+#index with samtools
+samtools faidx ~/2bRAD/past/transcriptome/walker2019_meta
+
+# Making directory for mapping reads to a reference genome and formatting bam files
+cd ~/2bRAD/past/sefl
+mkdir past_mapped_walker2019_meta
+srun cp ~/2bRAD/past/sefl/filteredReads/*.trim.gz ~/2bRAD/past/sefl/past_mapped_walker2019_meta
+cd ~/2bRAD/past/sefl/past_mapped_walker2019_meta
+
+#unzip the files
+gunzip *trim.gz
+
+# Mapping reads to a reference genome with soft-clipping (Bowtie2 --local option) to avoid indels near read ends
+2bRAD_bowtie2_launcher.pl '\.trim$' ~/2bRAD/past/transcriptome/walker2019_meta > maps
+launcher_creator.py -j maps -n maps -t 6:00:00 -e eshilling2013@fau.edu -q shortq7
+sbatch maps.slurm
+
+# Produces sam files, check to make sure that this matches number of trim Files
+ls *.sam | wc -l
+
+# Calculate alignment rates
+>alignmentRates
+for F in `ls *.trim`; do
+M=`grep -E '^[ATGCN]+$' $F | wc -l | grep -f - maps.e* -A 4 | tail -1 | perl -pe 's/maps\.e\d+-|% overall alignment rate//g'` ;
+echo "$F.sam $M">>alignmentRates;
+done
+
+#see output
+less alignmentRates
+
+###alignment rates of ~55%
+
+~~~~~~~~~~~~~~~~~~FOR MANSOUR~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+echo 'bowtie2-build ~/2bRAD/past/transcriptome/mansour2016 ~/2bRAD/past/transcriptome/mansour2016' >btb
+launcher_creator.py -j btb -n btb -t 6:00:00 -e eshilling2013@fau.edu -q shortq7
+sbatch btb.slurm
+
+#index with samtools
+samtools faidx ~/2bRAD/past/transcriptome/mansour2016
+
+# Making directory for mapping reads to a reference genome and formatting bam files
+cd ~/2bRAD/past/sefl
+mkdir past_mapped_mansour2016
+srun cp ~/2bRAD/past/sefl/filteredReads/*.trim.gz ~/2bRAD/past/sefl/past_mapped_mansour2016
+cd ~/2bRAD/past/sefl/past_mapped_mansour2016
+
+#unzip the files
+gunzip *trim.gz
+
+# Mapping reads to a reference genome with soft-clipping (Bowtie2 --local option) to avoid indels near read ends
+2bRAD_bowtie2_launcher.pl '\.trim$' ~/2bRAD/past/transcriptome/mansour2016 > maps
+launcher_creator.py -j maps -n maps -t 6:00:00 -e eshilling2013@fau.edu -q shortq7
+sbatch maps.slurm
+
+# Produces sam files, check to make sure that this matches number of trim Files
+ls *.sam | wc -l
+
+# Calculate alignment rates
+>alignmentRates
+for F in `ls *.trim`; do
+M=`grep -E '^[ATGCN]+$' $F | wc -l | grep -f - maps.e* -A 4 | tail -1 | perl -pe 's/maps\.e\d+-|% overall alignment rate//g'` ;
+echo "$F.sam $M">>alignmentRates;
+done
+
+#see output
+less alignmentRates
+
+###alignment rates of ~29%
+
+~~~~~~~~~~~~~~~~~~FOR KENKEL~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+echo 'bowtie2-build ~/2bRAD/past/transcriptome/kenkel2013 ~/2bRAD/past/transcriptome/kenkel2013' >btb
+launcher_creator.py -j btb -n btb -t 6:00:00 -e eshilling2013@fau.edu -q shortq7
+sbatch btb.slurm
+
+#index with samtools
+samtools faidx ~/2bRAD/past/transcriptome/kenkel2013
+
+# Making directory for mapping reads to a reference genome and formatting bam files
+cd ~/2bRAD/past/sefl
+mkdir past_mapped_kenkel2013
+srun cp ~/2bRAD/past/sefl/filteredReads/*.trim.gz ~/2bRAD/past/sefl/past_mapped_kenkel2013
+cd ~/2bRAD/past/sefl/past_mapped_kenkel2013
+
+#unzip the files
+gunzip *trim.gz
+
+# Mapping reads to a reference genome with soft-clipping (Bowtie2 --local option) to avoid indels near read ends
+2bRAD_bowtie2_launcher.pl '\.trim$' ~/2bRAD/past/transcriptome/kenkel2013 > maps
+launcher_creator.py -j maps -n maps -t 6:00:00 -e eshilling2013@fau.edu -q shortq7
+sbatch maps.slurm
+
+# Produces sam files, check to make sure that this matches number of trim Files
+ls *.sam | wc -l
+
+# Calculate alignment rates
+>alignmentRates
+for F in `ls *.trim`; do
+M=`grep -E '^[ATGCN]+$' $F | wc -l | grep -f - maps.e* -A 4 | tail -1 | perl -pe 's/maps\.e\d+-|% overall alignment rate//g'` ;
+echo "$F.sam $M">>alignmentRates;
+done
+
+#see output
+less alignmentRates
+
+###alignment rates of ~9%
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#Move forward with creating bams files for samples
+cd ~/2bRAD/past/sefl
+mkdir past_trans_bams
+srun cp ~/2bRAD/past/sefl/past_mapped_walker2019_meta/*.bt2.sam ~/2bRAD/past/sefl/past_trans_bams
+cd ~/2bRAD/past/sefl/past_trans_bams
+
+#Compressing, sorting and indexing the SAM files, so they become BAM files:
+>s2b
+for file in *.sam; do
+echo "samtools sort -O bam -o ${file/.sam/}.bam $file && samtools index ${file/.sam/}.bam">>s2b;
+done
+
+launcher_creator.py -j s2b -n s2b -t 6:00:00 -N 5 -e eshilling2013@fau.edu -q shortq7
+sbatch s2b.slurm
+
+ls *bam >bams
+
+# should be the same number as number as the good sam files
+# BAM files are the input into various genotype calling / popgen programs, this is the main interim result of the analysis. Archive them!
+
+##try here to collapse unassigned files to samples they belong too? P1-5_TCCG and P1-5_AGGG
+#grouping/concatenating the sequence files that didn't get matched up with their correct barcode
+cat P029.trim.bt2.bam P1-5_AGGG.trim.bt2.bam > P029.trim.bt2.bam.final
+cat P029.trim.bt2.bam.bai P1-5_AGGG.trim.bt2.bam.bai > P029.trim.bt2.bam.bai.final
+cat P053.trim.bt2.bam P1-5_TCCG.trim.bt2.bam > P053.trim.bt2.bam.final
+cat P053.trim.bt2.bam.bai P1-5_TCCG.trim.bt2.bam.bai > P053.trim.bt2.bam.bai.final
+
+#now remove the ones I used to Combine
+rm P029.trim.bt2.bam
+rm P1-5_AGGG.trim.bt2.bam
+rm P029.trim.bt2.bam.bai
+rm P1-5_AGGG.trim.bt2.bam.bai
+rm P053.trim.bt2.bam
+rm P1-5_TCCG.trim.bt2.bam
+rm P053.trim.bt2.bam.bai
+rm P1-5_TCCG.trim.bt2.bam.bai
+
+#and rename "final" files to match others
+mv P029.trim.bt2.bam.final P029.trim.bt2.bam
+mv P029.trim.bt2.bam.bai.final P029.trim.bt2.bam.bai
+mv P053.trim.bt2.bam.final P053.trim.bt2.bam
+mv P053.trim.bt2.bam.bai.final P053.trim.bt2.bam.bai
+
+G E N O T Y P I N G using Walker_2019_meta transcriptome aligned reads
+“FUZZY genotyping” with ANGSD - without calling actual genotypes but working with genotype likelihoods at each SNP. Optimal for low-coverage data (<10x).
+
+#working in: 2bRAD/past/sefl/past_mapped_walker2019_meta
+mkdir ../ANGSD_transcriptome
+cd ../ANGSD_transcriptome
+mv ../past_trans_bams/*.bam* .
+
+ls *bam >bamsClones
+
+#Assessing base qualities and coverage depth
+#ANGSD settings: -minMapQ 20: only highly unique mappings (prob of erroneous mapping =< 1%) -baq 1: realign around indels (not terribly relevant for 2bRAD reads mapped with –local option) -maxDepth: highest total depth (sum over all samples) to assess; set to 10x number of samples -minInd: the minimal number of individuals the site must be genotyped in. Reset to 50% of total N at this stage.
+
+export FILTERS="-uniqueOnly 1 -remove_bads 1 -minMapQ 20 -maxDepth 960 -minInd 47"
+export TODO="-doQsDist 1 -doDepth 1 -doCounts 1 -dumpCounts 2"
+
+echo '#!/bin/bash' >pastDD_trans.sh
+echo angsd -b bamsClones -GL 1 $FILTERS $TODO -P 1 -out dd >>pastDD_trans.sh
+
+sbatch --mem=200GB -o pastDD_trans.o%j -e pastDD_trans.e%j --mail-user=eshilling2013@fau.edu --mail-type=ALL pastDD_trans.sh
+
+#Summarizing results (using Misha Matz modified script by Matteo Fumagalli)
+
+echo '#!/bin/bash' >RQC.sh
+echo Rscript ~/bin/plotQC.R prefix=dd >>RQC.sh
+echo gzip -9 dd.counts >>RQC.sh
+sbatch -e RQC.e%j -o RQC.o%j --dependency=afterok:460550 --mem=200GB RQC.sh
+
+#Proportion of sites covered at >5X:
+
+cat quality.txt
+#scp dd.pdf to laptop to look at distribution of base quality scores, fraction of sites in each sample passing coverage thresholds and fraction of sites passing genotyping rates cutoffs. Use these to guide choices of -minQ, -minIndDepth and -minInd filters in subsequent ANGSD runs
+#Ryan says to use 75-80% for the minIND, so 71 samples for this first round
+#minQ just keep at 30, doesn't really matter since we've already filtered
+#don't bother with minINDDepth for now
+
+#Identifying clones and technical replicates
+FILTERS="-uniqueOnly 1 -remove_bads 1 -minMapQ 20 -minQ 30 -dosnpstat 1 -doHWE 1 -hwe_pval 1e-5 -sb_pval 1e-5 -hetbias_pval 1e-5 -skipTriallelic 1 -minInd 70 -snp_pval 1e-6 -minMaf 0.05"
+TODO="-doMajorMinor 1 -doMaf 1 -doCounts 1 -makeMatrix 1 -doIBS 1 -doCov 1 -doGeno 8 -doBcf 1 -doPost 1 -doGlf 2"
+
+echo '#!/bin/bash' > pastClones.sh
+echo angsd -b bamsClones -GL 1 $FILTERS $TODO -P 1 -out pastClones >>pastClones.sh
+
+sbatch -o pastClones.o%j -e pastClones.e%j -p shortq7 --mem=200GB --mail-type=ALL --mail-user=eshilling2013@fau.edu pastClones.sh
+
+#winSCP all generated files to designated folder for subsequent dendrogram generation in R to identify clones
+
+###RUN THIS PART IN R
+#Use ibs matrix to identify clones with hierarchical clustering in R. scp to local machine and run chunk below in R
+
+library(tidyverse)
+library(magrittr)
+library(ggplot2)
+library(ggdendro)
+cloneBams = read.csv("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/poritesastreoidesMetaData_trans.csv")
+
+cloneMa = as.matrix(read.table("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/transcriptome_mapped/pastClones.ibsMat"))
+dimnames(cloneMa) = list(cloneBams[,1],cloneBams[,1])
+clonesHc = hclust(as.dist(cloneMa),"ave")
+clonePops = cloneBams$region
+cloneDend = cloneMa %>% as.dist() %>% hclust(.,"ave") %>% as.dendrogram()
+cloneDData = cloneDend %>% dendro_data()
+
+# Making the branches hang shorter so we can easily see clonal groups
+cloneDData$segments$yend2 = cloneDData$segments$yend
+for(i in 1:nrow(cloneDData$segments)) {
+  if (cloneDData$segments$yend2[i] == 0) {
+    cloneDData$segments$yend2[i] = (cloneDData$segments$y[i] - 0.01)}}
+
+cloneDendPoints = cloneDData$labels
+cloneDendPoints$pop = clonePops[order.dendrogram(cloneDend)]
+rownames(cloneDendPoints) = cloneDendPoints$label
+
+# Making points at the leaves to place symbols for populations
+point = as.vector(NA)
+for(i in 1:nrow(cloneDData$segments)) {
+  if (cloneDData$segments$yend[i] == 0) {
+    point[i] = cloneDData$segments$y[i] - 0.01
+  } else {
+    point[i] = NA}}
+
+cloneDendPoints$y = point[!is.na(point)]
+
+techReps = c("P028-1", "P028-2", "P028-3", "P046-1", "P046-2", "P046-3", "P077-1", "P077-2", "P077-3")
+
+cloneDendPoints$pop = factor(cloneDendPoints$pop)
+cloneDendPoints$pop = factor(cloneDendPoints$pop,levels(cloneDendPoints$pop)[c(5,3,6,2,4,1)])
+
+cloneDendA = ggplot() +
+  geom_segment(data = segment(cloneDData), aes(x = x, y = y, xend = xend, yend = yend2), size = 0.5) +
+  geom_point(data = cloneDendPoints, aes(x = x, y = y, fill = pop), size = 4, stroke = 0.25, shape = 24) +
+  scale_fill_brewer(palette = "Dark2", name = "Population") +
+  geom_hline(yintercept = 0.165, color = "red", lty = 5, size = 0.75) + # creating a dashed line to indicate a clonal distance threshold
+  geom_text(data = subset(cloneDendPoints, subset = label %in% techReps), aes(x = x, y = (y - .015), label = label), angle = 90) + # spacing technical replicates further from leaf
+  geom_text(data = subset(cloneDendPoints, subset = !label %in% techReps), aes(x = x, y = (y - .010), label = label), angle = 90) +
+  labs(y = "Genetic distance (1 - IBS)") +
+  theme_classic()
+
+cloneDend = cloneDendA + theme(
+  axis.title.x = element_blank(),
+  axis.text.x = element_blank(),
+  axis.line.x = element_blank(),
+  axis.ticks.x = element_blank(),
+  axis.title.y = element_text(size = 12, color = "black", angle = 90),
+  axis.text.y = element_text(size = 10, color = "black"),
+  axis.line.y = element_line(),
+  axis.ticks.y = element_line(),
+  panel.grid = element_blank(),
+  panel.border = element_blank(),
+  panel.background = element_blank(),
+  plot.background = element_blank(),
+  legend.key = element_blank(),
+  legend.title = element_text(size = 12),
+  legend.text = element_text(size = 10),
+  legend.position = "bottom")
+
+cloneDend
+
+ggsave("C:/Users/erin_/Documents/Voss Lab (M.S.)/Lab Work/P.astreoides popgen/cloneDend_trans.png", plot = cloneDend, height = 8, width = 35, units = "in", dpi = 300)
+ggsave("C:/Users/erin_/Documents/Voss Lab (M.S.)/Lab Work/P.astreoides popgen/cloneDend_trans.eps", plot = cloneDend, height = 8, width = 35, units = "in", dpi = 300)
+
+###END OF R DENDROGRAMS
+
+#Removing clones and re-running ANGSD
+mkdir clones_trans
+mv pastClones* clones_trans
+
+ls *.bam > bamsNoClones_trans
+
+cat bamsClones | grep -v 'P018.trim.bt2.bam\|P028-1.trim.bt2.bam\|P028-3.trim.bt2.bam\|P005.trim.bt2.bam\|P012.trim.bt2.bam\|P013.trim.bt2.bam\|P021.trim.bt2.bam\|P023.trim.bt2.bam\|P025.trim.bt2.bam\|P026.trim.bt2.bam\|P030.trim.bt2.bam\|P052.trim.bt2.bam\|P054.trim.bt2.bam\|P059.trim.bt2.bam\|P060.trim.bt2.bam\|P061.trim.bt2.bam\|P062.trim.bt2.bam\|P064.trim.bt2.bam\|P065.trim.bt2.bam\|P066.trim.bt2.bam\|P067.trim.bt2.bam\|P068.trim.bt2.bam\|P069.trim.bt2.bam\|P071.trim.bt2.bam\|P072.trim.bt2.bam\|P075.trim.bt2.bam\|P055.trim.bt2.bam\|P056.trim.bt2.bam\|P058.trim.bt2.bam\|P070.trim.bt2.bam\|P074.trim.bt2.bam\|P076.trim.bt2.bam\|P079.trim.bt2.bam\|P080.trim.bt2.bam\|P081.trim.bt2.bam\|P082.trim.bt2.bam\|P088.trim.bt2.bam\|P089.trim.bt2.bam\|P077-1.trim.bt2.bam\|P077-2.trim.bt2.bam\|P086.trim.bt2.bam\|P090.trim.bt2.bam\|P046-1.trim.bt2.bam\|P046-2.trim.bt2.bam\|P046-3.trim.bt2.bam\|P047.trim.bt2.bam\|P048.trim.bt2.bam\|P050.trim.bt2.bam\|P051.trim.bt2.bam\|P053.trim.bt2.bam\|P063.trim.bt2.bam\|P036.trim.bt2.bam\|P037.trim.bt2.bam\|P039.trim.bt2.bam\|P042.trim.bt2.bam\|P001.trim.bt2.bam\|P007.trim.bt2.bam' >bamsNoClones_trans
+
+##36 "individuals" left after removal of clones
+FILTERS="-uniqueOnly 1 -remove_bads 1 -minMapQ 20 -minQ 30 -dosnpstat 1 -doHWE 1 -hwe_pval 1e-5 -sb_pval 1e-5 -hetbias_pval 1e-5 -skipTriallelic 1 -minInd 27 -snp_pval 1e-6 -minMaf 0.05"
+TODO="-doMajorMinor 1 -doMaf 1 -doCounts 1 -makeMatrix 1 -doIBS 1 -doCov 1 -doGeno 8 -doBcf 1 -doPost 1 -doGlf 2"
+
+echo '#!/bin/bash' > pastNoClones.sh
+echo srun angsd -b bamsNoClones_trans -GL 1 $FILTERS $TODO -P 1 -out pastNoClones >> pastNoClones.sh
+
+sbatch --mem=200GB -o pastNoClones.o%j -e pastNoClones.e%j -p shortq7 --mail-type=ALL --mail-user=eshilling2013@fau.edu pastNoClones.sh
+
+#How many SNPs?
+
+grep "filtering:" pastNoClones.e*
+5,128 SNPs
