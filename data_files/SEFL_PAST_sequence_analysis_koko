@@ -863,7 +863,16 @@ sbatch -e pastBayescan.e%j -o pastBayescan.o%j -p mediumq7 --mail-user eshilling
 
 srun removeBayescanOutliers.pl bayescan=seflpast.baye_fst.txt vcf=pastNoClones.bcf FDR=0.05 mode=extract > seflpastVcfOutliers.vcf
 
-##Ryan has a section here about factors related to depth, I'm not going to do anything with that right now
+##Using BayeScEnv we can look for outliers realted to depth
+
+echo "21.64 14.67 18.38 3.05 6.96" > depth.txt
+
+cp seflpast.bayescan seflpast.bayeScEnv
+
+echo '#!/bin/bash' > pastBayeScEnv.sh
+echo bayescenv seflpast.bayeScEnv -env depth.txt >> pastBayeScEnv.sh
+
+sbatch -e pastBayeScEnv.e%j -o pastBayeScEnv.o%j -p longq7 --mail-user eshilling2013@fau.edu --mail-type=ALL pastBayeScEnv.sh
 
 ##Looking at minor allele frequencies by population Split outlier .vcf by populations
 awk '$2 ~ /jupiter/ {print $1}' seflPastBsPops.txt > jup.pop
