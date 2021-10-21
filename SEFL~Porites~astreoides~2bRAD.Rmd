@@ -23,10 +23,9 @@ pacman::p_load("cowplot", "ggrepel", "ggspatial", "maps", "paletteer", "patchwor
 
 ```
 
-
-## Map and shapefile data
+THIS ONE IS GOOD
+Map and shapefile data
 Here we are setting up shape files and base maps as well as sample meta data.
-
 ```{r, map data}
 pastSamples = read.csv("data_files/poritesastreoidesMetaData_clonesremoved.csv", header = TRUE) %>% select(sample = tube_id, !sample_id)
 
@@ -52,7 +51,8 @@ levels(popLabs$region) = c("St. Lucie", "Jupiter", "West Palm", "Boynton", "Ft. 
 
 <br>
 
-## Florida polygon
+THIS ONE IS GOOD
+Florida polygon
 Next we build a hi-res polygon of FL with the study site marked and a zoomed in map of the colony locations. We use `ggspatial` to add a north arrow and scale bar to the main map.
 ```{r, fl inset}
 floridaMap = ggplot() +
@@ -76,7 +76,8 @@ floridaMap
 
 <br>
 
-## Final map of sites
+THIS ONE IS GOOD
+Final map of sites
 Create a map of study sites with insets and legend
 ```{r, study map}
 flPal = paletteer_d("rcartocolor::Sunset")[c(7, 6, 4, 3, 1)]
@@ -112,7 +113,7 @@ siteMap = ggplot() +
         legend.direction = "horizontal")
 
 #add a picture of P. astreoides
-pastPic = image_read("data_files/past.png") %>%
+pastPic = image_read("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/past.png") %>%
   image_border("black", "10x10")
 
 seflMap = ggdraw() +
@@ -121,23 +122,24 @@ seflMap = ggdraw() +
   draw_image(pastPic, x = 0.63, y = 0.21, width = 0.336, height = 0.336)
 
 # seflMap
-ggsave("figures/pastMap.png", plot = seflMap, width = 12, height = 13, units = "cm", dpi = 300)
-ggsave("figures/pastMap.tiff", plot = seflMap, width = 12, height = 13, units = "cm", dpi = 300)
-ggsave("figures/pastMap.eps", plot = seflMap, width = 12, height = 13, units = "cm", dpi = 300)
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/pastMap.png", plot = seflMap, width = 12, height = 13, units = "cm", dpi = 300)
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/pastMap.tiff", plot = seflMap, width = 12, height = 13, units = "cm", dpi = 300)
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/pastMap.eps", plot = seflMap, width = 12, height = 13, units = "cm", dpi = 300)
 
 ```
 
-![](figures/pastMap.png)
+![](C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/pastMap.png)
 <br>
 
+THIS ONE IS GOOD
 ```{r, Analysis of Molecular Variance}
 #reading in bcf file
-pastVcf = read.vcfR("data_files/pastNoClones.bcf", verbose = TRUE)
+pastVcf = read.vcfR("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/pastNoClones.bcf", verbose = TRUE)
 #convert to genlight files for poppr
 pastGenlightPopulation = vcfR2genlight(pastVcf, n.cores = 1)
 
 #taking metadata file, without technical replicates & clones, reads in population data for each sample
-popData = read.csv("data_files/poritesastreoidesMetaData_clonesremoved.csv") %>% select("sample" = tube_id, "pop" = region)
+popData = read.csv("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/poritesastreoidesMetaData_clonesremoved.csv") %>% select("sample" = tube_id, "pop" = region)
 
 #setting up amova
 strata(pastGenlightPopulation) = data.frame(popData)
@@ -160,8 +162,9 @@ amovaP = amovasignif$pvalue[3]
 ```
 Only significant differences between populations, explains 2.73% of variation
 
+THIS ONE IS GOOD
 ```{r, PCoA with IBS}
-pastMa = as.matrix(read.table("data_files/pastNoClones.ibsMat"))
+pastMa = as.matrix(read.table("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/pastNoClones.ibsMat"))
 pastMds = cmdscale(pastMa, eig = TRUE, x.ret = TRUE)
 
 # Determine percent variation captured on each axis
@@ -171,8 +174,8 @@ head(pastPcoaVar)
 # Format data to plot
 pastPcoaValues = pastMds$points
 head(pastPcoaValues)
- # 2-column tab-delimited table of individual assignments to populations; must be in the same order as samples in the bam list or vcf file.
-pastI2P = read.csv("data_files/poritesastreoidesMetaData_clonesremoved.csv") %>% select("sample" = tube_id, "pop" = region)
+# 2-column tab-delimited table of individual assignments to populations; must be in the same order as samples in the bam list or vcf file.
+pastI2P = read.csv("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/poritesastreoidesMetaData_clonesremoved.csv") %>% select("sample" = tube_id, "pop" = region)
 
 row.names(pastI2P) = pastI2P[,1]
 pastPcoaValues=cbind(pastI2P, pastPcoaValues)
@@ -185,12 +188,14 @@ pastPCoA = merge(pastPcoaValues, aggregate(cbind(mean.x=PCo1,mean.y=PCo2)~pop, p
 pastPCoA$pop = factor(pastPCoA$pop)
 pastPCoA$pop = factor(pastPCoA$pop, levels(pastPCoA$pop)[c(4, 2, 5, 1, 3)])
 
+flPal = paletteer_d("rcartocolor::Sunset")[c(7, 6, 4, 3, 1)]
+
 pastPcoaPlotA = ggplot(pastPCoA, aes(x = PCo1, y = PCo2, color = pop, fill = pop)) +
   geom_hline(yintercept = 0, color = "gray90", size = 0.5) +
   geom_vline(xintercept = 0, color = "gray90", size = 0.5) +
   #ellipses
   stat_ellipse(data = pastPCoA, type = "t", geom = "polygon", alpha = 0.1) +
-  #individual's indicated by small transparent circles
+  #individuals indicated by small transparent circles
   geom_point(aes(x = PCo1, y = PCo2), size = 3, alpha = 0.3, show.legend = FALSE) +
   #population centroids indicated by large circles
   geom_point(aes(x = mean.x, y = mean.y), size = 5, color = "black", shape = 21) +
@@ -217,22 +222,24 @@ pastPcoaPlot = pastPcoaPlotA +
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank())
 
-# pastPcoaPlot
+pastPcoaPlot
 
-ggsave("figures/pcoaPlot.png", plot = pastPcoaPlot, height = 3.5, width = 7, units = "in", dpi = 300)
-ggsave("figures/pcoaPlot.pdf", plot = pastPcoaPlot, height = 3.5, width = 7, units = "in", dpi = 300)
-ggsave("figures/pcoaPlot.tiff", plot = pastPcoaPlot, height = 3.5, width = 7, units = "in", dpi = 300)
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/pcoaPlot.png", plot = pastPcoaPlot, height = 3.5, width = 7, units = "in", dpi = 300)
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/pcoaPlot.pdf", plot = pastPcoaPlot, height = 3.5, width = 7, units = "in", dpi = 300)
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/pcoaPlot.tiff", plot = pastPcoaPlot, height = 3.5, width = 7, units = "in", dpi = 300)
 
 ```
-![](figures/pcoaPlot.png)
+![](C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/pcoaPlot.png)
 <br>
 
+THIS ONE IS GOOD
+Calculating pairwise Fst values between populations & generating heat map of the values
 ```{r, Pairwise Fst}
-pastVcf = read.vcfR("data_files/pastNoClones.bcf", verbose = FALSE)
+pastVcf = read.vcfR("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/pastNoClones.bcf", verbose = FALSE)
 pastGenlightPopulation = vcfR2genlight(pastVcf, n.cores = 1)
 locNames(pastGenlightPopulation) = paste(pastVcf@fix[,1],pastVcf@fix[,2],sep="_")
 
-popData = read.csv("data_files/poritesastreoidesMetaData_clonesremoved.csv") %>% select("sample" = tube_id, "pop" = region)
+popData = read.csv("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/poritesastreoidesMetaData_clonesremoved.csv") %>% select("sample" = tube_id, "pop" = region)
 
 strata(pastGenlightPopulation) = data.frame(popData)
 setPop(pastGenlightPopulation) = ~pop
@@ -249,6 +256,7 @@ sefl.fst$Fsts
 
 sefl.fst$Pvalues
 
+#Generating heat map of pairwise Fst values
 #reordering my samples to stay formatted properly for the matrix, and still have them go north to south
 pop.order = c("Pompano/LBTS", "Boynton Beach", "West Palm Beach", "Jupiter", "St. Lucie Reef")
 
@@ -293,8 +301,7 @@ snpFst$Fst = factor(gsub("\\-", "", snpFst$Fst))
 
 snpHeatmapA = ggplot(data = snpFst, aes(Pop, Pop2, fill = as.numeric(as.character(Fst))))+
   geom_tile(color = "white") +
-  
-### mess with next 4 lines to fix sizes of boxes that region names are in
+
   geom_segment(data = snpFst, aes(x = 0.48, xend = -0.62, y = Pop, yend = Pop, color = region), size = 19) +
   geom_segment(data = snpFst, aes(x = Pop2, xend = Pop2, y = 0.45, yend = -0.6, color = region2), size = 62.5) +
   scale_color_manual(values = flPal[], guide = NULL) +
@@ -321,40 +328,41 @@ snpHeatmap = snpHeatmapA + theme(
   plot.title = element_text(size = 16)
 )
 
-# snpHeatmap
+snpHeatmap
 
-ggsave("figures/fstHeatMap.png", plot = snpHeatmap, width = 30, height = 9, units = "cm", dpi = 300)
-ggsave("figures/fstHeatMap.eps", plot = snpHeatmap, width = 30, height = 9, units = "cm", dpi = 300)
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/fstHeatMap.png", plot = snpHeatmap, width = 30, height = 9, units = "cm", dpi = 300)
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/fstHeatMap.eps", plot = snpHeatmap, width = 30, height = 9, units = "cm", dpi = 300)
 ```
-![](figures/fstHeatMap.png)
+
+![](C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/fstHeatMap.png)
 <br>
 
-## Heterozygosity & Inbreeding
+Heterozygosity & Inbreeding
+Is this running correctly & if so what is it calculating??
 ```{r, popStats}
-popData = read.csv("data_files/poritesastreoidesMetaData_clonesremoved.csv") %>% select("sample" = tube_id, "Region" = region) # Reads in population data
+# Read in population data
+popData = read.csv("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/poritesastreoidesMetaData_clonesremoved.csv") %>% select("sample" = tube_id, "Region" = region)
 
 popData$a = c(0:35)
 popData$Region = factor(popData$Region)
 popData$Region = factor(popData$Region, levels = levels(popData$Region)[c(4, 2, 5, 1, 3)])
-hetAll = read.table("data_files/hetAllSites")
+hetAll = read.table("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/hetAllSites")
 
 colnames(hetAll) = c("sample", "All")
 hetAll$sample = popData$sample
 
-HetSNPs = read.table("data_files/HetSNPs")
+HetSNPs = read.table("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/HetSNPs")
 colnames(HetSNPs) = c("sample", "SNPs")
 HetSNPs$sample = popData$sample
 
-pastBreed = read.delim("data_files/newres")
+pastBreed = read.delim("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/newres")
 pastBreed2 = pastBreed %>% group_by(a) %>% select("inbreed" = Fa)
 pastBreed3 = pastBreed %>% group_by(b) %>% select("inbreed" = Fb)
 pastBreed = bind_rows(pastBreed2, pastBreed3) %>% group_by(a) %>% summarize("inbreed" = mean(inbreed))
 
-pastRelate = read.delim("data_files/newres")
+pastRelate = read.delim("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/newres")
 pastRelate2 = pastRelate %>% group_by(a, b) %>% select("relate" = rab)
 pastRelate2 = pastRelate2 %>% left_join(popData, by = "a") %>% left_join(popData, by = c("b" = "a"), suffix = c(".a", ".b")) 
-# pastRelate2$popDepth.a = paste(pastRelate2$Region.a, pastRelate2$Depth.a, sep = " ")
-# pastRelate2$popDepth.b = paste(pastRelate2$Region.b, pastRelate2$Depth.b, sep = " ")
 pastRelate = pastRelate2 %>% filter(Region.a == Region.b) %>% rename(Region = Region.a)
 het = left_join(popData, hetAll, by = "sample") %>% left_join(HetSNPs, by = "sample") %>% mutate("inbreed" = pastBreed$inbreed)
 hetStats = het %>% group_by(Region) %>% dplyr::summarise(N = n(), meanAll = mean(All), sdAll = sd(All), seAll = sd(All)/sqrt(N), meanSnps = mean(SNPs), sdSnps = sd(SNPs), seSnps = sd(SNPs)/sqrt(N), meanInbreed = mean(inbreed), sdInbreed = sd(inbreed), seInbreed = sd(inbreed)/sqrt(N))
@@ -379,6 +387,7 @@ hetTab = hetStats
 ##may want to format this table for manuscript if it's interesting
 ```
 
+THIS ONE IS GOOD
 ```{r, Individual relatedness heatmap}
 pastFam = pastRelate2
 pastFam$Region.a = factor(pastFam$Region.a)
@@ -411,7 +420,7 @@ pastMat <- pastMat[,sampleOrder] %>%
 diag(pastMat)<-NA
 pastMat <- as.data.frame(pastMat)
 pastMat$sample.a = factor(colnames(pastMat))
-popData = read.csv("data_files/poritesastreoidesMetaData_clonesremoved.csv") %>% select("sample.a" = tube_id, "region" = region)
+popData = read.csv("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/poritesastreoidesMetaData_clonesremoved.csv") %>% select("sample.a" = tube_id, "region" = region)
 pastMat = pastMat %>% left_join(popData)
 pastMat$sample.a = factor(pastMat$sample.a, levels = unique(sampleOrder))
 pastFam = melt(pastMat, id.vars = c("sample.a", "region"), value.name = "relate", variable.name = "sample.b", na.rm = FALSE)
@@ -444,15 +453,19 @@ relateHeatmap = relateHeatmapA + theme(
   plot.title = element_text(size = 16)
 )
 
-# relateHeatmap
+relateHeatmap
 
-ggsave("figures/relateHeatmap.png", plot = relateHeatmap, width = 20, height = 14, units = "cm", dpi = 300)
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/relateHeatmap.png", plot = relateHeatmap, width = 20, height = 14, units = "cm", dpi = 300)
 
 ```
-#![](figures/relateHeatmap.png)
 
+#![](C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/relateHeatmap.png)
+
+THIS ONE IS GOOD
 ```{r, plots for heterozygosity and inbreeding}
 hetMelt = melt(het, id.vars = c("sample", "Region"), variable.name = "type", value.name = "heterozygosity")
+
+flPal = paletteer_d("rcartocolor::Sunset")[c(7, 6, 4, 3, 1)]
 
 hetTheme = theme(axis.title.x = element_text(color = "black", size = 12),
         axis.text.x = element_blank(),
@@ -472,7 +485,6 @@ dodge <- position_dodge(width = 1)
 
 hetPlotAll = ggplot(data = subset(hetMelt, subset = hetMelt$type == "All"),aes(x = Region, y = heterozygosity, fill = Region)) +
   geom_point(aes(color = Region),shape = 21, position = position_jitterdodge(seed = 1, dodge.width = 1), size = 2, alpha = 0.7) +
-  # geom_violin(size = 0.5, alpha = 0.7, position = dodge, color = "gray35") +
   geom_boxplot(size = 0.5, alpha = 0.7, position = dodge, color = "gray35", outlier.shape = NA) +
   xlab("Region") +
   ylab("Heterozygosity") +
@@ -484,7 +496,6 @@ hetPlotAll = ggplot(data = subset(hetMelt, subset = hetMelt$type == "All"),aes(x
   
 hetPlotSnps = ggplot(data = subset(hetMelt, subset = hetMelt$type == "SNPs"),aes(x = Region, y = heterozygosity, fill = Region)) +
   geom_point(aes(color = Region),shape = 21, position = position_jitterdodge(seed = 1, dodge.width = 1), size = 2, alpha = 0.7) +
-  # geom_violin(size = 0.5, alpha = 0.7, position = dodge, color = "gray35") +
   geom_boxplot(size = 0.5, alpha = 0.7, position = dodge, color = "gray35", outlier.shape = NA) +
   xlab("Region") +
   ylab("Heterozygosity") +
@@ -496,7 +507,6 @@ hetPlotSnps = ggplot(data = subset(hetMelt, subset = hetMelt$type == "SNPs"),aes
 
 inbreedingPlot = ggplot(data = het, aes(x = Region, y = inbreed, fill = Region)) +
   geom_point(aes(color = Region),shape = 21, position = position_jitterdodge(seed = 1, dodge.width = 1), size = 2, alpha = 0.7) +
-  # geom_violin(size = 0.5, alpha = 0.7, position = dodge, color = "gray35") +
   geom_boxplot(size = 0.5, alpha = 0.7, position = dodge, color = "gray35", outlier.shape = NA) +
   xlab("Region") +
   ylab("Inbreeding coefficient") +
@@ -508,7 +518,6 @@ inbreedingPlot = ggplot(data = het, aes(x = Region, y = inbreed, fill = Region))
 
 relatePlot = ggplot(data = pastRelate, aes(x = Region, y = relate, fill = Region)) +
   geom_point(aes(color = Region),shape = 21, position = position_jitterdodge(seed = 1, dodge.width = 1), size = 2, alpha = 0.7) +
-  # geom_violin(size = 0.5, alpha = 0.7, position = dodge, color = "gray35") +
   geom_boxplot(size = 0.5, alpha = 0.7, position = dodge, color = "gray35", outlier.shape = NA) +
   xlab("Region") +
   ylab("Relatedness") +
@@ -526,15 +535,18 @@ hetPlots = ((hetPlotAll | hetPlotSnps) / (inbreedingPlot | relatePlot)) +
         legend.text = element_text(size = 10),
         legend.position = "right")
 
-# hetPlots
+hetPlots
 
 ggsave("figures/heterozygosityPlot.png", plot = hetPlots, width = 22, height = 16, units = "cm", dpi = 300)
 ggsave("figures/heterozygosityPlot.pdf", plot = hetPlots, width = 22, height = 16, units = "cm", dpi = 300)
 
 ```
 
-## Outliers- have not gotten this to run successfully yet
-##I have not actually run bayeScEnv with any environmental factors so I do not have a qval_g that has been generated yet
+#![](C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/heterozygosityPlot.png)
+
+TO BE FINISHED
+Outliers
+On 10/21/21 running bayeScEnv with depth as a factor so I do not have a qval_g that has been generated yet; later can also add other factors like chlorophyll, current, etc if want
 ```{r, outlier}
 bayescan = read.table("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/seflpast.baye_fst.txt",header=T) %>% mutate(loc = rownames(.), out.05 = ifelse(qval < 0.05, 1, 0), out.1 = ifelse(qval < 0.1, 1, 0))
 bayescan[bayescan[, 3]<=0.0001, 3] = 0.0001
@@ -584,27 +596,29 @@ ggsave("../figures/outliers.png", plot = bayescanPlot, width = 14, height = 8, u
 
 ```
 
-## Minor allele frequencies of the outliers by population
-##need to edit
+Minor allele frequencies of the outliers by population
 ```{r, minor allele frequencies}
-fkSintAF = read.delim("../data/snps/fkSintAlleleFreq.txt")
-fkSintAF$chromLoc = paste(fkSintAF$chrom,fkSintAF$pos)
-fkSintAF$pop = factor(fkSintAF$pop)
-fkSintAF$pop = factor(fkSintAF$pop, levels = levels(fkSintAF$pop)[c(3, 4, 5, 6, 1, 2, 7, 8)], labels = c("Riley's Hump\nMesophotic", "Riley's Hump\nShallow", "Tortugas Bank\nMesophotic", "Tortugas Bank\nShallow", "Lower Keys\nMesophotic", "Lower Keys\nShallow", "Upper Keys\nMesophotic", "Upper Keys\nShallow"))
-fkSintAF = fknmsSites[-c(66,68,164,166,209,211),] %>%  group_by(region, depthZone) %>% summarize(avgDepthM = mean(depthM)) %>% mutate(pop = paste(region, depthZone, sep = "\n")) %>% select(pop, region, depthZone, avgDepthM) %>% left_join(fkSintAF, .)
-fkSintAF$pop = factor(fkSintAF$pop)
-fkSintAF$pop = factor(fkSintAF$pop, levels = levels(fkSintAF$pop)[c(3, 4, 5, 6, 1, 2, 7, 8)])
-# fkSintAF$depthZone = factor(fkSintAF$depthZone)
-# fkSintAF$depthZone = factor(fkSintAF$depthZone, levels = levels(fkSintAF$depthZone)[c(2, 1)])
-mafPlotA = ggplot(data = fkSintAF, aes(x = chromLoc, y = pop, fill = minFreq)) +  
-  geom_tile()+
-  geom_segment(data = fkSintAF, aes(x = -5, xend = -196, y = pop, yend = pop, color = region), size = 10.5) +
+seflpastAF = read.delim("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/seflpastAlleleFreq.txt")
+
+seflpastAF$chromLoc = paste(seflpastAF$chrom,seflpastAF$pos)
+
+seflpastAF$pop = factor(seflpastAF$pop)
+
+seflpastAF$pop = factor(seflpastAF$pop, levels = levels(seflpastAF$pop)[c(4, 2, 5, 1, 3)], labels = c("St. Lucie", "Jupiter", "West Palm", "Boynton", "LBTS"))
+
+#beginning plot generation
+flPal = paletteer_d("rcartocolor::Sunset")[c(7, 6, 4, 3, 1)]
+
+mafPlotA = ggplot(data = seflpastAF, aes(x = chromLoc, y = pop, fill = minFreq)) +
+  geom_tile() +
+  geom_segment(data = seflpastAF, aes(x = -0.4, xend = -3.5, y = pop, yend = pop, color = pop), size = 10.5) +
   scale_color_manual(values = flPal, guide = NULL) +
-  scale_fill_gradientn(colours = paletteer_d("RColorBrewer::RdPu"), limit = c(0, 1), name = "Minor allele \nfrequency")+
+  scale_fill_gradientn(colours = paletteer_d("RColorBrewer::RdPu"), limit = c(0, 1), name = "Minor allele \nfrequency") +
   xlab("Outlier locus") +
   ylab("Population") +
-  coord_cartesian(xlim = c(-1, 592), clip = "off") +
+  coord_cartesian(xlim = c(0, 11), clip = "off") +
   theme_bw()
+
 mafPlot = mafPlotA +
         theme(axis.title.x = element_text(color = "black", size = 12),
         axis.text.x = element_blank(),
@@ -619,12 +633,14 @@ mafPlot = mafPlotA +
         plot.background = element_rect(fill = "white"),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank())
-# mafPlot
-# ggsave("../figures/outlierMiAF.pdf", plot = mafPlot, width = 14, height = 8, units = "cm", dpi = 300)
-# ggsave("../figures/outlierMiAF.png", plot = mafPlot, width = 14, height = 8, units = "cm", dpi = 300)
+mafPlot
+
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/outlierMiAF.pdf", plot = mafPlot, width = 14, height = 8, units = "cm", dpi = 300)
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/outlierMiAF.png", plot = mafPlot, width = 14, height = 8, units = "cm", dpi = 300)
 
 ```
 
+Have not tried to run yet
 ```{r, minor allele frequencies/densities}
 mafDensPlotA = ggplot(data = fkSintAF, aes(x = minFreq, group = pop, linetype = depthZone, color = region)) + 
   geom_density(alpha = 0.5, size = 0.25) +
@@ -652,6 +668,7 @@ mafDensPlot = mafDensPlotA +
 
 ```
 
+Have not tried to run yet
 ```{r, linear regression of minor allele frequencies by depth}
 mafLm = summary(lm(data = fkSintAF, minFreq ~ avgDepthM))
 r2 = round(mafLm$r.squared, 3)
@@ -683,8 +700,9 @@ mafLrPlot = mafLrPlotA +
 
 ```
 
-## Inbred outliers
-```{r, subsetting out shallow pop for inbred (may not need this chunk?)}
+Inbred outliers
+Have not run this yet,(may not need this chunk?)
+```{r, subsetting out shallow pop for inbred}
 shalInbred = sintBreed
 shalInbred$a = c(1:220)
 bams = read.delim("../data/snps/bamsNoClones", header = FALSE) %>% mutate(a = c(1:220))
@@ -706,6 +724,7 @@ write.table(shalInbredBams$RileysHumpShallow, "../data/snps/shalRHInbred.pop", r
 ```
 Use these files to split outlier ```.vcf``` into inbred//outbred groups in each shallow population 
 
+Have not run this yet
 ```{r, inbred minor allele frequencies}
 shalInbred = shalBams
 shalInbred$inbred = NA
@@ -761,6 +780,7 @@ mafInbredPlot = mafInbredPlotA +
 
 ```
 
+Have not run this yet
 ```{r, inbred minor allele frequencies/densities}
 mafDensInbredPlotA = ggplot(data = fkSintInbredAF, aes(x = minFreq, group = pop, linetype = inbred, color = region)) + 
   geom_density(alpha = 0.5, size = 0.25) +
@@ -788,6 +808,7 @@ mafDensInbredPlot = mafDensInbredPlotA +
 
 ```
 
+Have not run this yet
 ```{r, inbred minor allele freq linear regression plots}
 mafInbredLm = summary(lm(data = fkSintInbredAF, minFreq ~ avgInbreed))
 inbredR2 = round(mafInbredLm$r.squared, 3)
@@ -826,10 +847,11 @@ mafPlots = (mafPlot | mafLrPlot) / (mafInbredPlot | mafLrInbredPlot) +
 ggsave("../figures/outlierMiAF.pdf", plot = mafPlots, width = 28, height = 18, units = "cm", dpi = 300)
 ggsave("../figures/outlierMiAF.png", plot = mafPlots, width = 28, height = 18, units = "cm", dpi = 300)
 ```
-![](../figures/outlierMiAF.png)
+![](C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/outlierMiAF.png)
 <br>
 
-## P. astreoides isolation by distance
+THIS ONE IS GOOD
+P. astreoides isolation by distance
 ```{r, geographic distances}
 ReplaceLowerOrUpperTriangle = function(m, triangle.to.replace) {
   if (nrow(m) != ncol(m))
@@ -843,13 +865,13 @@ ReplaceLowerOrUpperTriangle = function(m, triangle.to.replace) {
   m[tri] = t(m)[tri]
   return(m)
 }
-  # If triangle.to.replace="lower", replaces the lower triangle of a square matrix with its upper triangle.
-  # If triangle.to.replace="upper", replaces the upper triangle of a square matrix with its lower triangle.
+# If triangle.to.replace="lower", replaces the lower triangle of a square matrix with its upper triangle.
+# If triangle.to.replace="upper", replaces the upper triangle of a square matrix with its lower triangle.
 GeoDistanceInMetresMatrix = function(df.geopoints) {
-  # Returns a matrix (M) of distances between geographic points. M[i,j] = M[j,i] = Distance between (df.geopoints$lat[i], df.geopoints$lon[i]) and (df.geopoints$lat[j], df.geopoints$lon[j]). The row and column names are given by df.geopoints$name.
+# Returns a matrix (M) of distances between geographic points. M[i,j] = M[j,i] = Distance between (df.geopoints$lat[i], df.geopoints$lon[i]) and (df.geopoints$lat[j], df.geopoints$lon[j]). The row and column names are given by df.geopoints$name.
   
   GeoDistanceInMetres = function(g1, g2) {
-    # Returns a vector of distances. (But if g1$index > g2$index, returns zero.) The 1st value in the returned vector is the distance between g1[[1]] and g2[[1]]. The 2nd value in the returned vector is the distance between g1[[2]] and g2[[2]]. Etc. Each g1[[x]] or g2[[x]] must be a list with named elements "index", "lat" and "lon". E.g. g1 = list(list("index"=1, "lat"=12.1, "lon"=10.1), list("index"=3, "lat"=12.1, "lon"=13.2))
+# Returns a vector of distances. (But if g1$index > g2$index, returns zero.) The 1st value in the returned vector is the distance between g1[[1]] and g2[[1]]. The 2nd value in the returned vector is the distance between g1[[2]] and g2[[2]]. Etc. Each g1[[x]] or g2[[x]] must be a list with named elements "index", "lat" and "lon". E.g. g1 = list(list("index"=1, "lat"=12.1, "lon"=10.1), list("index"=3, "lat"=12.1, "lon"=13.2))
     
     DistM = function(g1, g2) {
       require("Imap")
@@ -863,24 +885,25 @@ GeoDistanceInMetresMatrix = function(df.geopoints) {
   
   n.geopoints = nrow(df.geopoints)
   
-  # The index column is used to ensure we only do calculations for the upper triangle of points
+# The index column is used to ensure we only do calculations for the upper triangle of points
   df.geopoints$index = 1:n.geopoints
   
-  # Create a list of lists
+# Create a list of lists
   list.geopoints = by(df.geopoints[, c("index", "lat", "lon")], 1:n.geopoints, function(x) {
     return(list(x))
   })
   
-  # Get a matrix of distances (in metres)
+# Get a matrix of distances (in metres)
   mat.distances = ReplaceLowerOrUpperTriangle(outer(list.geopoints, list.geopoints, GeoDistanceInMetres), "lower")
   
-  # Set the row and column names
+# Set the row and column names
   rownames(mat.distances) = df.geopoints$name
   colnames(mat.distances) = df.geopoints$name
   return(mat.distances)}
 ```
 
-## Mantel isolation by distance test between individuals
+THIS ONE IS GOOD
+Mantel isolation by distance test between individuals
 Using IBS and geographic distance matrices
 ```{r, mantel snps geo}
 pastIBS = read.table("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/pastNoClones.ibsMat")%>% as.matrix() %>% as.dist(diag = FALSE)
@@ -933,10 +956,12 @@ pastIBSdistMantel
 ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/distance_mantelPlot.tiff", plot = pastIBSdistMantel, width = 12, height = 7, units = "cm", dpi = 300)
 ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/distance_mantelPlot.pdf", plot = pastIBSdistMantel, width = 12, height = 7, units = "cm", dpi = 300)
 ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/distance_mantelPlot.png", plot = pastIBSdistMantel, width = 12, height = 7, units = "cm", dpi = 300)
-
 ```
 
-## Mantel isolation by distance test between populations
+#![](C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/distance_mantelPlot.png)
+
+THIS ONE IS GOOD
+Mantel isolation by distance test between populations
 Using Nei's genetic distance and geographic distance matrices
 ```{r, mantel pops}
 pastVcf = read.vcfR("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/pastNoClones.bcf", verbose = FALSE)
@@ -956,12 +981,12 @@ pastPopIBD = mantel.randtest(pastPopsGeo, pastNeiDist, nrepet = 9999)
 pastPopIBD
 
 ##NOT SIGNIFICANT
-##NOT MAKING FIGURE FOR
-
+##NOT MAKING FIGURE
 ```
-### Mantel test across depths
-Using IBS and depth distance matrices
 
+THIS ONE IS GOOD
+Mantel test across depths
+Using IBS and depth distance matrices
 ```{r, ibs depth}
 pastIBS = read.table("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/pastNoClones.ibsMat")%>% as.matrix() %>% as.dist(diag = FALSE)
 pastDepths = read.csv("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/poritesastreoidesMetaData_clonesremoved.csv") %>% select(name = tube_id, collection_depth_m) %>% dist(method = "maximum")
@@ -1009,11 +1034,12 @@ ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/depth_man
 ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/depth_mantelPlot.png", plot = pastIBSdepthMantel, width = 12, height = 7, units = "cm", dpi = 300)
 ```
 
-![](../figures/mantelPlot.png)
+![](C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/depth_mantelPlot.png)
 
 <br>
 
-## ADMIXTURE plot
+THIS ONE IS GOOD, MAY WANT TO REMOVE FIGURE FOR K=7
+ADMIXTURE plot
 Population structure plot from NGSadmix/CLUMPAK results.
 Based on most probable values for K
 ```{r, ADMIXTURE}
@@ -1085,7 +1111,6 @@ admixPlotK3A = ggplot(data = subset(seflPastAdmixMelt, subset = seflPastAdmixMel
   scale_fill_manual(values = kColPal3) +
   scale_color_manual(values = flPal) +
   ggtitle(expression(paste(italic("K")," = 3", sep =""))) +
-  # coord_cartesian(expand = TRUE, clip = "off")
   coord_cartesian(ylim = c(-0.01, 1.01), clip = "off")
 
 admixPlotK3 = admixPlotK3A + admixTheme
@@ -1099,7 +1124,6 @@ admixPlotK7A = ggplot(data = subset(seflPastAdmixMelt, subset = !(seflPastAdmixM
   scale_fill_manual(values = kColPal7) +
   scale_color_manual(values = flPal) +
   ggtitle(expression(paste(italic("K")," = 7", sep =""))) +
-  # coord_cartesian(expand = TRUE, clip = "off")
   coord_cartesian(ylim = c(-.01, 1.01), clip = "off")
  
 admixPlotK7 = admixPlotK7A + admixTheme
@@ -1108,23 +1132,24 @@ admixPlotK7 = admixPlotK7A + admixTheme
 
 admixPlot = (admixPlotK3 / admixPlotK7)
 
-# admixPlot
+admixPlot
 
-ggsave("figures/admixturePlot.png", plot = admixPlot, width = 15, height = 10, units = "cm", dpi = 300)
-ggsave("figures/admixturePlot.eps", plot = admixPlot, width = 15, height = 10, units = "cm", dpi = 300)
-ggsave("figures/admixturePlot.eps", plot = admixPlot, width = 15, height = 10, units = "cm", dpi = 300)
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/admixturePlot.png", plot = admixPlot, width = 15, height = 10, units = "cm", dpi = 300)
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/admixturePlot.eps", plot = admixPlot, width = 15, height = 10, units = "cm", dpi = 300)
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/admixturePlot.eps", plot = admixPlot, width = 15, height = 10, units = "cm", dpi = 300)
 
 ```
 
+NEED TO CHECK THIS WHERE IT SAYS SAMPLES ARE MISSING?
 ```{r, Symbiont genus assignment with clones included}
 #read in sample metadata with clones, remove technical replicates
-popDataClones = read.csv("data_files/poritesastreoidesMetaData.csv") [-c(27, 28, 46, 47, 79, 80),] %>% select("sample" = tube_id, "pop" = region)
+popDataClones = read.csv("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/poritesastreoidesMetaData.csv") [-c(27, 28, 46, 47, 79, 80),] %>% select("sample" = tube_id, "pop" = region)
 #treat populations as a factor & order them North-->South
 popDataClones$pop = factor(popDataClones$pop)
 popDataClones$pop = factor(popDataClones$pop, levels = levels(popDataClones$pop)[c(4, 2, 5, 1, 3)])
 #read in zoox reads data with clones incl, technical replicates removed
 ##why are samples 16, 17, 41 not in this file?? removed in koko step?
-zoox = read.delim("data_files/zooxReads_withclones_techrepsrem", header = FALSE, check.names = FALSE)
+zoox = read.delim("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/zooxReads_withclones_techrepsrem", header = FALSE, check.names = FALSE)
 head(zoox)
 zoox$V2[is.na(zoox$V2)] <- as.character(zoox$V1[is.na(zoox$V2)])
 zoox$V1 = gsub("P.*", "chr", zoox$V1)
@@ -1178,7 +1203,7 @@ dfZoox$barPlotOrder = meltedList$value
 dfZoox = dfZoox[c(1,ncol(dfZoox),2:(ncol(dfZoox)-1))]
 zDat = melt(dfZoox, id.vars = c("sample", "pop", "barPlotOrder"), variable.name = "Symbiont", value.name = "Fraction")
 
-##can change this
+# colors
 colPalZoox = brewer.pal(4, "BrBG")
 names(colPalZoox) = levels(zDat$Symbiont)
 
@@ -1229,22 +1254,23 @@ zooxSNP = zooxSNPA + theme(plot.title = element_text(),
   legend.key = element_blank(),
   legend.position = "bottom")
 
-# zooxSNP with clones
+# zooxSNP figure with clones
 
-ggsave("figures/zooxSNP.png", plot = zooxSNP, width = 20, height = 8, units = "cm", dpi = 300)
-ggsave("figures/zooxSNP.eps", plot = zooxSNP, width = 20, height = 8, units = "cm", dpi = 300)
-ggsave("figures/zooxSNP.tiff", plot = zooxSNP, width = 20, height = 8, units = "cm", dpi = 300)
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/zooxSNP.png", plot = zooxSNP, width = 20, height = 8, units = "cm", dpi = 300)
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/zooxSNP.eps", plot = zooxSNP, width = 20, height = 8, units = "cm", dpi = 300)
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/zooxSNP.tiff", plot = zooxSNP, width = 20, height = 8, units = "cm", dpi = 300)
 ```
 
+THIS IS COMPLETE
 ```{r, Symbiont genus assignment without clones}
 #read in sample metadata without clones
-popData = read.csv("data_files/poritesastreoidesMetaData_clonesremoved.csv") %>% select("sample" = tube_id, "pop" = region_short)
+popData = read.csv("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/poritesastreoidesMetaData_clonesremoved.csv") %>% select("sample" = tube_id, "pop" = region_short)
 #treat populations as a factor & order them North-->South
 popData$pop = factor(popData$pop)
 popData$pop = factor(popData$pop, levels = levels(popData$pop)[c(4, 2, 5, 1, 3)])
 #read in zoox reads data with clones incl, technical replicates removed
 #changed 28-1 to 28-2 to match metadata, other 28- reps were missing, same for 77-1 to 77-3
-zoox = read.delim("data_files/zooxReads_withoutclonesortechreps", header = FALSE, check.names = FALSE)
+zoox = read.delim("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/zooxReads_withoutclonesortechreps", header = FALSE, check.names = FALSE)
 head(zoox)
 zoox$V2[is.na(zoox$V2)] <- as.character(zoox$V1[is.na(zoox$V2)])
 zoox$V1 = gsub("P.*", "chr", zoox$V1)
@@ -1346,8 +1372,7 @@ zooxSNP = zooxSNPA + theme(plot.title = element_text(),
 
 # zooxSNP without clones
 
-ggsave("figures/zooxSNP_noclones.png", plot = zooxSNP, width = 20, height = 8, units = "cm", dpi = 300)
-ggsave("figures/zooxSNP_noclones.eps", plot = zooxSNP, width = 20, height = 8, units = "cm", dpi = 300)
-ggsave("figures/zooxSNP_noclones.tiff", plot = zooxSNP, width = 20, height = 8, units = "cm", dpi = 300)
-
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/zooxSNP_noclones.png", plot = zooxSNP, width = 20, height = 8, units = "cm", dpi = 300)
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/zooxSNP_noclones.eps", plot = zooxSNP, width = 20, height = 8, units = "cm", dpi = 300)
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/zooxSNP_noclones.tiff", plot = zooxSNP, width = 20, height = 8, units = "cm", dpi = 300)
 ```
