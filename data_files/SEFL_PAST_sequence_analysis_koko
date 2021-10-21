@@ -874,6 +874,9 @@ echo bayescenv seflpast.bayeScEnv -env depth.txt >> pastBayeScEnv.sh
 
 sbatch -e pastBayeScEnv.e%j -o pastBayeScEnv.o%j -p longq7 --mail-user eshilling2013@fau.edu --mail-type=ALL pastBayeScEnv.sh
 
+#Extract outlier SNPs from BayeScEnv output
+srun removeBayescanOutliers.pl bayescan=seflpast.bayeS_fst.txt vcf=pastNoClones.bcf FDR=0.05 mode=extract > seflpasttBScEnvVcfOutliers.vcf
+
 ##Looking at minor allele frequencies by population Split outlier .vcf by populations
 awk '$2 ~ /jupiter/ {print $1}' seflPastBsPops.txt > jup.pop
 awk '$2 ~ /westpalm/ {print $1}' seflPastBsPops.txt > wpb.pop
