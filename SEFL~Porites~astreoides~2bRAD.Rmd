@@ -387,6 +387,8 @@ hetTab = hetStats
 ##may want to format this table for manuscript if it's interesting
 ```
 
+<br>
+
 THIS ONE IS GOOD
 ```{r, Individual relatedness heatmap}
 pastFam = pastRelate2
@@ -544,17 +546,14 @@ ggsave("figures/heterozygosityPlot.pdf", plot = hetPlots, width = 22, height = 1
 
 #![](C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/heterozygosityPlot.png)
 
-TO BE FINISHED
-Outliers
-On 10/21/21 running bayeScEnv with depth as a factor so I do not have a qval_g that has been generated yet; later can also add other factors like chlorophyll, current, etc if want
+THIS ONE IS GOOD
+Later can also add other factors like chlorophyll, current, etc if want
 ```{r, outlier}
 bayescan = read.table("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/seflpast.baye_fst.txt",header=T) %>% mutate(loc = rownames(.), out.05 = ifelse(qval < 0.05, 1, 0), out.1 = ifelse(qval < 0.1, 1, 0))
 bayescan[bayescan[, 3]<=0.0001, 3] = 0.0001
 
-##try to run this next line it says object qval_g not found
-##Haven't run this in koko yet bc don't currently have environmental factors, figure generated currently is only the chunk above
-bayeScEnv = read.table("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/NOFILEYET", header=T) %>% filter(qval_g < 0.05) %>% mutate(loc = rownames(.), depthOut = 1) %>% select(loc, depthOut)
-bayescan = bayescan %>% left_join(bayeScEnv) 
+bayeScEnv = read.table("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/seflpast.bayeS_fst.txt", header=T) %>% filter(qval_g < 0.05) %>% mutate(loc = rownames(.), depthOut = 1) %>% select(loc, depthOut)
+bayescan = bayescan %>% left_join(bayeScEnv)
 bayescan$depthOut = bayescan$depthOut %>% replace_na(0)
 sum(bayescan$out.05)
 sum(bayescan$out.1)
@@ -591,11 +590,12 @@ bayescanPlot = bayescanPlotA +
 
 bayescanPlot
 
-ggsave("../figures/outliers.pdf", plot = bayescanPlot, width = 14, height = 8, units = "cm", dpi = 300)
-ggsave("../figures/outliers.png", plot = bayescanPlot, width = 14, height = 8, units = "cm", dpi = 300)
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/outliers.pdf", plot = bayescanPlot, width = 14, height = 8, units = "cm", dpi = 300)
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/outliers.png", plot = bayescanPlot, width = 14, height = 8, units = "cm", dpi = 300)
 
 ```
 
+STILL NEEDS FORMATTING
 Minor allele frequencies of the outliers by population
 ```{r, minor allele frequencies}
 seflpastAF = read.delim("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/seflpastAlleleFreq.txt")
@@ -639,6 +639,7 @@ ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/outlierMi
 ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/outlierMiAF.png", plot = mafPlot, width = 14, height = 8, units = "cm", dpi = 300)
 
 ```
+![](C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/outlierMiAF.png)
 
 Have not tried to run yet
 ```{r, minor allele frequencies/densities}
@@ -847,7 +848,7 @@ mafPlots = (mafPlot | mafLrPlot) / (mafInbredPlot | mafLrInbredPlot) +
 ggsave("../figures/outlierMiAF.pdf", plot = mafPlots, width = 28, height = 18, units = "cm", dpi = 300)
 ggsave("../figures/outlierMiAF.png", plot = mafPlots, width = 28, height = 18, units = "cm", dpi = 300)
 ```
-![](C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/outlierMiAF.png)
+
 <br>
 
 THIS ONE IS GOOD
@@ -1029,12 +1030,10 @@ pastIBSdepthMantel = pastIBSdepthMantelA + theme(
 
 pastIBSdepthMantel
 
-ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/depth_mantelPlot.tiff", plot = pasIBSdepthMantel, width = 12, height = 7, units = "cm", dpi = 300)
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/depth_mantelPlot.tiff", plot = pastIBSdepthMantel, width = 12, height = 7, units = "cm", dpi = 300)
 ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/depth_mantelPlot.pdf", plot = pastIBSdepthMantel, width = 12, height = 7, units = "cm", dpi = 300)
 ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/depth_mantelPlot.png", plot = pastIBSdepthMantel, width = 12, height = 7, units = "cm", dpi = 300)
 ```
-
-![](C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/depth_mantelPlot.png)
 
 <br>
 
@@ -1140,7 +1139,7 @@ ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/admixture
 
 ```
 
-NEED TO CHECK THIS WHERE IT SAYS SAMPLES ARE MISSING?
+THIS ONE IS GOOD
 ```{r, Symbiont genus assignment with clones included}
 #read in sample metadata with clones, remove technical replicates
 popDataClones = read.csv("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/poritesastreoidesMetaData.csv") [-c(27, 28, 46, 47, 79, 80),] %>% select("sample" = tube_id, "pop" = region)
@@ -1261,7 +1260,7 @@ ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/zooxSNP.e
 ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/zooxSNP.tiff", plot = zooxSNP, width = 20, height = 8, units = "cm", dpi = 300)
 ```
 
-THIS IS COMPLETE
+THIS ONE IS GOOD
 ```{r, Symbiont genus assignment without clones}
 #read in sample metadata without clones
 popData = read.csv("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/poritesastreoidesMetaData_clonesremoved.csv") %>% select("sample" = tube_id, "pop" = region_short)

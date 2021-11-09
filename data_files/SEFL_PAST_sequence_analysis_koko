@@ -863,7 +863,7 @@ sbatch -e pastBayescan.e%j -o pastBayescan.o%j -p mediumq7 --mail-user eshilling
 
 srun removeBayescanOutliers.pl bayescan=seflpast.baye_fst.txt vcf=pastNoClones.bcf FDR=0.05 mode=extract > seflpastVcfOutliers.vcf
 
-##Using BayeScEnv we can look for outliers realted to depth
+##Using BayeScEnv we can look for outliers related to depth
 
 echo "21.64 14.67 18.38 3.05 6.96" > depth.txt
 
