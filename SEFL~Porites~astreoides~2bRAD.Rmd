@@ -19,8 +19,7 @@ All analyses were performed in R version 4.1.1. This is the code that accompanie
 if (!require("pacman")) install.packages("pacman")
 
 pacman::p_load_gh("pmartinezarbizu/pairwiseAdonis/pairwiseAdonis", "ropensci/rnaturalearthhires")
-pacman::p_load("cowplot", "ggrepel", "ggspatial", "maps", "paletteer", "patchwork", "rgdal", "rnaturalearth", "sf", "tidyverse", "reshape2", "MCMC.OTU", "pairwiseAdonis", "RColorBrewer", "Redmonder", "flextable", "lubridate", "officer", "adegenet", "dendextend", "gdata", "ggdendro", "hierfstat", "Imap", "kableExtra", "poppr", "reshape2", "StAMPP", "vcfR", "vegan", "boa", "measurements", "magick", "rgeos")
-
+pacman::p_load("cowplot", "ggrepel", "ggspatial", "maps", "paletteer", "patchwork", "rgdal", "rnaturalearth", "sf", "tidyverse", "reshape2", "MCMC.OTU", "pairwiseAdonis", "RColorBrewer", "Redmonder", "flextable", "lubridate", "officer", "adegenet", "dendextend", "gdata", "ggdendro", "hierfstat", "Imap", "kableExtra", "poppr", "reshape2", "StAMPP", "vcfR", "vegan", "boa", "measurements", "magick", "rgeos", "magrittr", "ggplot2")
 ```
 
 THIS ONE IS GOOD
@@ -130,6 +129,77 @@ ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/pastMap.e
 
 ![](C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/pastMap.png)
 <br>
+
+```{r, Dendrogram to identify clones}
+cloneBams = read.csv("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/poritesastreoidesMetaData.csv")
+
+cloneMa = as.matrix(read.table("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/pastClones.ibsMat"))
+dimnames(cloneMa) = list(cloneBams[,1],cloneBams[,1])
+clonesHc = hclust(as.dist(cloneMa),"ave")
+clonePops = cloneBams$region
+cloneDend = cloneMa %>% as.dist() %>% hclust(.,"ave") %>% 
+  as.dendrogram()
+cloneDData = cloneDend %>% dendro_data()
+
+# Making the branches hang shorter so we can easily see clonal groups
+cloneDData$segments$yend2 = cloneDData$segments$yend
+for(i in 1:nrow(cloneDData$segments)) {
+  if (cloneDData$segments$yend2[i] == 0) {
+    cloneDData$segments$yend2[i] = (cloneDData$segments$y[i] - 0.01)}}
+
+cloneDendPoints = cloneDData$labels
+cloneDendPoints$pop = clonePops[order.dendrogram(cloneDend)]
+rownames(cloneDendPoints) = cloneDendPoints$label
+
+# Making points at the leaves to place symbols for populations
+point = as.vector(NA)
+for(i in 1:nrow(cloneDData$segments)) {
+  if (cloneDData$segments$yend[i] == 0) {
+    point[i] = cloneDData$segments$y[i] - 0.01
+  } else {
+    point[i] = NA}}
+
+cloneDendPoints$y = point[!is.na(point)]
+
+techReps = c("P028-1", "P028-2", "P028-3", "P046-1", "P046-2", "P046-3", "P077-1", "P077-2", "P077-3")
+
+cloneDendPoints$pop = factor(cloneDendPoints$pop)
+cloneDendPoints$pop = factor(cloneDendPoints$pop,levels(cloneDendPoints$pop)[c(5,3,6,2,4,1)])
+
+cloneDendA = ggplot() +
+  geom_segment(data = segment(cloneDData), aes(x = x, y = y, xend = xend, yend = yend2), size = 0.5) +
+  geom_point(data = cloneDendPoints, aes(x = x, y = y, fill = pop), size = 4, stroke = 0.25, shape = 24) +
+  scale_fill_brewer(palette = "Dark2", name = "Population") +
+  geom_hline(yintercept = 0.165, color = "red", lty = 5, size = 0.75) + # creating a dashed line to indicate a clonal distance threshold
+  geom_text(data = subset(cloneDendPoints, subset = label %in% techReps), aes(x = x, y = (y - .015), label = label), angle = 90) + # spacing technical replicates further from leaf
+  geom_text(data = subset(cloneDendPoints, subset = !label %in% techReps), aes(x = x, y = (y - .010), label = label), angle = 90) +
+  labs(y = "Genetic distance (1 - IBS)") +
+  theme_classic()
+
+cloneDend = cloneDendA + theme(
+  axis.title.x = element_blank(),
+  axis.text.x = element_blank(),
+  axis.line.x = element_blank(),
+  axis.ticks.x = element_blank(),
+  axis.title.y = element_text(size = 12, color = "black", angle = 90),
+  axis.text.y = element_text(size = 10, color = "black"),
+  axis.line.y = element_line(),
+  axis.ticks.y = element_line(),
+  panel.grid = element_blank(),
+  panel.border = element_blank(),
+  panel.background = element_blank(),
+  plot.background = element_blank(),
+  legend.key = element_blank(),
+  legend.title = element_text(size = 12),
+  legend.text = element_text(size = 10),
+  legend.position = "bottom")
+
+cloneDend
+
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/cloneDend.png", plot = cloneDend, height = 8, width = 35, units = "in", dpi = 300)
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/cloneDend.eps", plot = cloneDend, height = 8, width = 35, units = "in", dpi = 300)
+
+```
 
 THIS ONE IS GOOD
 ```{r, Analysis of Molecular Variance}
@@ -640,15 +710,13 @@ ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/outlierMi
 
 ```
 ![](C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/outlierMiAF.png)
-
-Have not tried to run yet
+This shows the exact same thing as the chunk before it??
 ```{r, minor allele frequencies/densities}
-mafDensPlotA = ggplot(data = fkSintAF, aes(x = minFreq, group = pop, linetype = depthZone, color = region)) + 
+mafDensPlotA = ggplot(data = seflpastAF, aes(x = minFreq, group = pop, color = region)) + 
   geom_density(alpha = 0.5, size = 0.25) +
   xlab("Outlier locus minor allele frequency") +
   ylab("Density") +
   scale_color_manual(values = flPal, name = "Region") +
-  scale_linetype(name = "Depth zone") +
   theme_bw()
 mafDensPlot = mafDensPlotA +
         theme(axis.title.x = element_text(color = "black", size = 12),
@@ -664,14 +732,18 @@ mafDensPlot = mafDensPlotA +
         plot.background = element_rect(fill = "white"),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank())
-  
+
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/mafDensPlot.pdf", plot = mafPlot, width = 14, height = 8, units = "cm", dpi = 300)
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/mafDensPlot.png", plot = mafPlot, width = 14, height = 8, units = "cm", dpi = 300)
+
 # mafDensPlot
 
 ```
 
+##not relevant bc didn't sample across depths?
 Have not tried to run yet
 ```{r, linear regression of minor allele frequencies by depth}
-mafLm = summary(lm(data = fkSintAF, minFreq ~ avgDepthM))
+mafLm = summary(lm(data = seflpastAF, minFreq ~ avgDepthM))
 r2 = round(mafLm$r.squared, 3)
 mafLrPlotA = ggplot(data = fkSintAF, aes(x = avgDepthM, y = minFreq)) +
   geom_violin(aes(group = pop, fill = region, linetype = depthZone, color = region), size = 0.25, width = 2, alpha = 0.5, scale = "width") +
@@ -704,13 +776,15 @@ mafLrPlot = mafLrPlotA +
 Inbred outliers
 Have not run this yet,(may not need this chunk?)
 ```{r, subsetting out shallow pop for inbred}
-shalInbred = sintBreed
-shalInbred$a = c(1:220)
-bams = read.delim("../data/snps/bamsNoClones", header = FALSE) %>% mutate(a = c(1:220))
-pops = read.csv("../data/stephanocoeniaMetaData.csv")[-c(66, 68, 164, 166, 209, 211),] %>% select("Region" = region, "Depth" = depthZone) %>% mutate(a = c(1:220), pop = paste(Region, Depth, sep = " ")) %>% mutate(across(where(is.character), str_remove_all, pattern = fixed("'")))  %>% 
-  mutate(across(where(is.character), str_remove_all, pattern = fixed(" ")))# Reads in population data
-shalBams = bams %>% left_join(pops) %>% left_join(shalInbred) %>% select(-a) %>% filter(Depth == "Shallow")
+shalInbred = read.delim("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/seflpastInbredAlleleFreq.txt")
+bams = read.delim("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/bamsNoClones", header = FALSE) %>% mutate(a = c(1:36))
+pops = read.csv("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/poritesastreoidesMetaData_clonesremoved.csv") %>% select("Region" = region) %>% mutate(a = c(1:36), pop = paste(Region)) %>% mutate(across(where(is.character), str_remove_all, pattern = fixed("'")))  %>% 
+  mutate(across(where(is.character), str_remove_all, pattern = fixed(" ")))
+# Reads in population data
+shalBams = bams %>% left_join(pops) %>% left_join(shalInbred)
+%>% select(-a)
 shalBams$pop = factor(shalBams$pop)
+
 head(shalBams)
 shalInbredBams =  shalBams %>% filter(inbreed >= 0.25) %>% select(V1, pop) %>% group_split(pop) %>% setNames(unique(shalBams$pop))
 shalOutbredBams = shalBams %>% filter(inbreed < 0.25) %>% select(V1, pop) %>% group_split(pop) %>% setNames(unique(shalBams$pop))
