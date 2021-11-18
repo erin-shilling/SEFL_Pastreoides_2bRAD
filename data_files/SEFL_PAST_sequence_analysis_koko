@@ -102,12 +102,22 @@ sbatch downloadReads.slurm
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 How many reads before filtering?
+#make sure running on unzipped files
 
 cd concatReads
 echo '#!/bin/bash' >rawReads
 echo ~/bin/readCounts.sh -e .fastq -o pastRaw >>rawReads
 
 sbatch -o rawReads.o%j -e rawReads.e%j rawReads --mail-type=ALL --mail-user=eshilling2013@fau.edu
+
+P1-1    44962536
+P1-2    28285758
+P1-3    32009397
+P1-4    30991941
+P1-5    23400204
+P1-6    27948957
+P1-7    20692973
+P1-8    23054073
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 T R I M M I N G   &   F I L T E R I N G
