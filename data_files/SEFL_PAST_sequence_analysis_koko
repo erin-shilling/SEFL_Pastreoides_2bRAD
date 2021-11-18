@@ -178,7 +178,7 @@ mv *.trim ../filteredReads
 
 zipper.py -f tr0 -a -9 --launcher -e eshilling2013@fau.edu
 sbatch zip.slurm
-
+AGG
 cat pastFiltReadCounts
 #output
 P001    468751
@@ -276,6 +276,8 @@ P089    4212996
 P090    2848035
 P1-5_AGGG       296119
 P1-5_TCCG       174101
+
+#lost samples 16, 17, and 41
 
 
 D E N O V O   R E F E R E N C E
