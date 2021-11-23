@@ -19,7 +19,7 @@ All analyses were performed in R version 4.1.1. This is the code that accompanie
 if (!require("pacman")) install.packages("pacman")
 
 pacman::p_load_gh("pmartinezarbizu/pairwiseAdonis/pairwiseAdonis", "ropensci/rnaturalearthhires")
-pacman::p_load("cowplot", "ggrepel", "ggspatial", "maps", "paletteer", "patchwork", "rgdal", "rnaturalearth", "sf", "tidyverse", "reshape2", "MCMC.OTU", "pairwiseAdonis", "RColorBrewer", "Redmonder", "flextable", "lubridate", "officer", "adegenet", "dendextend", "gdata", "ggdendro", "hierfstat", "Imap", "kableExtra", "poppr", "StAMPP", "vcfR", "vegan", "boa", "measurements", "magick", "rgeos", "magrittr", "ggplot2")
+pacman::p_load("cowplot", "ggrepel", "ggspatial", "maps", "paletteer", "patchwork", "rgdal", "rnaturalearth", "sf", "tidyverse", "reshape2", "MCMC.OTU", "pairwiseAdonis", "RColorBrewer", "Redmonder", "flextable", "lubridate", "officer", "adegenet", "dendextend", "gdata", "ggdendro", "hierfstat", "Imap", "kableExtra", "poppr", "StAMPP", "vcfR", "vegan", "boa", "measurements", "magick", "rgeos", "magrittr", "ggplot2", "rstatix")
 ```
 
 Map and shapefile data
@@ -412,9 +412,9 @@ ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/fstHeatMa
 <br>
 
 Heterozygosity & Inbreeding
-Is this running correctly & if so what is it calculating??
-Is it just calculating stuff for subsequent chunks?
+Calculate values for later plot analysis (if interesting/significant)
 ```{r, popStats}
+#rstatix package for Tukey post hoc
 # Read in population data
 popData = read.csv("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/poritesastreoidesMetaData_clonesremoved.csv") %>% select("sample" = tube_id, "Region" = region)
 
@@ -449,18 +449,33 @@ hetAllLm = lm(data = het, All~Region)
 hetSnpLm = lm(data = het, SNPs~Region)
 inbreedLm = lm(data = het, inbreed~Region)
 relateLm = lm(data = pastRelate, relate~Region)
+
+#summarizing outputs from lm
 hetAllANOVA = summary(aov(hetAllLm))
 hetAllANOVA
+hetAllpwc <- het %>% tukey_hsd(All~Region)
+hetAllpwc
+
 hetSnpANOVA = summary(aov(hetSnpLm))
 hetSnpANOVA
+hetSnppwc <- het %>% tukey_hsd(SNPs~Region)
+hetSnppwc
+
 inbreedANOVA = summary(aov(inbreedLm))
 inbreedANOVA
+inbreedpwc <- het %>% tukey_hsd(inbreed~Region)
+inbreedpwc
+
 relateANOVA = summary(aov(relateLm))
 relateANOVA
+#need to run differently, pastRelate file has more rows?
+relatepwc <- pastRelate %>% tukey_hsd(relate ~ Region)
+relatepwc
+
 hetTab = hetStats
 
-##may want to format this table for manuscript if it's interesting
 ```
+All ANOVAs significant, pairwise comparisons primarily show Jupiter pop has significantly different values from others
 
 <br>
 
