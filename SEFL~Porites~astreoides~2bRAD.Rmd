@@ -468,8 +468,7 @@ inbreedpwc
 
 relateANOVA = summary(aov(relateLm))
 relateANOVA
-#need to run differently, pastRelate file has more rows?
-relatepwc <- pastRelate %>% tukey_hsd(relate ~ Region)
+relatepwc<- aov(relate ~ Region, data = pastRelate) %>% tukey_hsd()
 relatepwc
 
 hetTab = hetStats
