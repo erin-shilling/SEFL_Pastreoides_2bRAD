@@ -412,10 +412,10 @@ ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/fstHeatMa
 <br>
 
 Heterozygosity & Inbreeding
-Calculate values for later plot analysis (if interesting/significant)
+Calculating values for later plot analysis
 ```{r, popStats}
 #rstatix package for Tukey post hoc
-# Read in population data
+#Read in population data
 popData = read.csv("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/poritesastreoidesMetaData_clonesremoved.csv") %>% select("sample" = tube_id, "Region" = region)
 
 popData$a = c(0:35)
@@ -477,79 +477,6 @@ hetTab = hetStats
 All ANOVAs significant, pairwise comparisons primarily show Jupiter pop has significantly different values from others
 
 <br>
-
-```{r, Individual relatedness heatmap}
-pastFam = pastRelate2
-pastFam$Region.a = factor(pastFam$Region.a)
-pastFam$Region.b = factor(pastFam$Region.b)
-#make sure regions are ordered North-->South
-levels(pastFam$Region.a)
-#if not, reorder
-#pastFam$Region.a = factor(pastFam$Region.a, levels = levels(pastFam$Region.a)[c()])
-#pastFam$Region.b = factor(pastFam$Region.b, levels = levels(pastFam$Region.b)[c()])
-pastMatDat = pastFam %>% as.data.frame () %>% select(sample.a, sample.b, relate)
-nameVals <- sort(unique(unlist(pastMatDat[1:2])))
-
-# construct 0 matrix of correct dimensions with row and column names
-pastMat <- matrix(0, length(nameVals), length(nameVals), dimnames = list(nameVals, nameVals))
-
-# fill in the matrix with matrix indexing on row and column names
-pastMat[as.matrix(pastMatDat[c("sample.a", "sample.b")])] <- pastMatDat[["relate"]]
-lowerTriangle(pastMat, byrow = TRUE) <- upperTriangle(pastMat)
-pastFam = pastFam %>% arrange(Region.a)
-pastFam$sample.a = factor(pastFam$sample.a)
-pastFam$sample.a = factor(pastFam$sample.a, levels = unique(pastFam$sample.a))
-#replacing the last sample name which was just NA
-pastFam$sample.a = factor(pastFam$sample.a, levels = c(levels(pastFam$sample.a),"P087"))
-pastFam$sample.b = factor(pastFam$sample.b)
-pastFam$sample.b = factor(pastFam$sample.b, levels = levels(pastFam$sample.a))
-sampleOrder = levels(pastFam$sample.a)
-
-pastMat <- pastMat[,sampleOrder] %>%
-  .[sampleOrder,]
-diag(pastMat)<-NA
-pastMat <- as.data.frame(pastMat)
-pastMat$sample.a = factor(colnames(pastMat))
-popData = read.csv("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/poritesastreoidesMetaData_clonesremoved.csv") %>% select("sample.a" = tube_id, "region" = region)
-pastMat = pastMat %>% left_join(popData)
-pastMat$sample.a = factor(pastMat$sample.a, levels = unique(sampleOrder))
-pastFam = melt(pastMat, id.vars = c("sample.a", "region"), value.name = "relate", variable.name = "sample.b", na.rm = FALSE)
-pastFam$region = factor(pastFam$region)
-pastFam$region = factor(pastFam$region, levels = levels(pastFam$region)[c(4, 2, 5, 1, 3)])
-
-relateHeatmapA = ggplot(data = pastFam, aes(sample.a, sample.b, fill = relate)) +
-  geom_tile(color = "white")+
-  geom_segment(data = pastFam, aes(x = sample.a, xend = sample.a, y = .5, yend = -1, color = region), size = 4.5) +
-  geom_segment(data = pastFam, aes(x = .5, xend = -1, y = sample.a, yend = sample.a, color = region), size = 4.5) +
-  scale_color_manual(values = flPal, guide = NULL, name = "Region") + 
-  geom_vline(xintercept = c(0.5,3.5, 13.5, 20.5, 30.5), size = 0.1, color = "black") +
-  geom_hline(yintercept = c(0.5,6.5, 16.5, 23.5, 33.5), size = 0.1, color = "black") +
-  scale_fill_gradientn(colors = paletteer_d("RColorBrewer::RdPu"), space = "Lab", name = "Relatedness", na.value = "black", guide = guide_colorbar(order = 1)) +
-  guides(color = guide_legend(override.aes = list(size = 7), order = 2), fill = guide_colorbar(order = 1)) +
-  scale_y_discrete(limits = rev(levels(pastFam$sample.b))) +
-  theme_minimal()
-
-relateHeatmap = relateHeatmapA + theme(
-  axis.text.x = element_blank(),
-  axis.text.y = element_blank(),
-  axis.title.x = element_blank(),
-  axis.title.y = element_blank(),
-  panel.grid.major = element_blank(),
-  panel.border = element_blank(),
-  panel.background = element_blank(),
-  axis.ticks = element_blank(),
-  legend.title = element_text(size = 14),
-  legend.text = element_text(size = 14),
-  plot.title = element_text(size = 16)
-)
-
-relateHeatmap
-
-ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/relateHeatmap.png", plot = relateHeatmap, width = 20, height = 14, units = "cm", dpi = 300)
-
-```
-
-#![](C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/relateHeatmap.png)
 
 ```{r, plots for heterozygosity and inbreeding}
 #packages: patchwork
@@ -634,7 +561,7 @@ ggsave("figures/heterozygosityPlot.pdf", plot = hetPlots, width = 22, height = 1
 
 #![](C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/heterozygosityPlot.png)
 
-Later can also add other factors like chlorophyll, current, etc if want
+Identifying outlier SNPs, indicative of some type of selection taking place
 ```{r, outlier}
 bayescan = read.table("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/seflpast.baye_fst.txt",header=T) %>% mutate(loc = rownames(.), out.05 = ifelse(qval < 0.05, 1, 0), out.1 = ifelse(qval < 0.1, 1, 0))
 bayescan[bayescan[, 3]<=0.0001, 3] = 0.0001
@@ -681,264 +608,7 @@ ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/outliers.
 ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/outliers.png", plot = bayescanPlot, width = 14, height = 8, units = "cm", dpi = 300)
 
 ```
-
-STILL NEEDS FORMATTING
-Minor allele frequencies of the outliers by population
-```{r, minor allele frequencies}
-seflpastAF = read.delim("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/seflpastAlleleFreq.txt")
-
-seflpastAF$chromLoc = paste(seflpastAF$chrom,seflpastAF$pos)
-
-seflpastAF$pop = factor(seflpastAF$pop)
-
-seflpastAF$pop = factor(seflpastAF$pop, levels = levels(seflpastAF$pop)[c(4, 2, 5, 1, 3)], labels = c("St. Lucie", "Jupiter", "West Palm", "Boynton", "LBTS"))
-
-#beginning plot generation
-flPal = paletteer_d("rcartocolor::Sunset")[c(7, 6, 4, 3, 1)]
-
-mafPlotA = ggplot(data = seflpastAF, aes(x = chromLoc, y = pop, fill = minFreq)) +
-  geom_tile() +
-  geom_segment(data = seflpastAF, aes(x = -0.4, xend = -3.5, y = pop, yend = pop, color = pop), size = 10.5) +
-  scale_color_manual(values = flPal, guide = NULL) +
-  scale_fill_gradientn(colours = paletteer_d("RColorBrewer::RdPu"), limit = c(0, 1), name = "Minor allele \nfrequency") +
-  xlab("Outlier locus") +
-  ylab("Population") +
-  coord_cartesian(xlim = c(0, 11), clip = "off") +
-  theme_bw()
-
-mafPlot = mafPlotA +
-        theme(axis.title.x = element_text(color = "black", size = 12),
-        axis.text.x = element_blank(),
-        axis.ticks.x = element_blank(),
-        axis.title.y = element_text(color = "black", size = 12),
-        axis.text.y = element_text(color = "gray90", size = 10),
-        axis.ticks.y = element_blank(),
-        legend.position = "right",
-        legend.key.size = unit(0.3, 'cm'),
-        panel.border = element_rect(color = "black", size = 0.25),
-        panel.background = element_rect(fill = "white"),
-        plot.background = element_rect(fill = "white"),
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank())
-mafPlot
-
-ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/outlierMiAF.pdf", plot = mafPlot, width = 14, height = 8, units = "cm", dpi = 300)
-ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/outlierMiAF.png", plot = mafPlot, width = 14, height = 8, units = "cm", dpi = 300)
-
-```
-![](C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/outlierMiAF.png)
-This shows the exact same thing as the chunk before it??
-```{r, minor allele frequencies/densities}
-mafDensPlotA = ggplot(data = seflpastAF, aes(x = minFreq, group = pop, color = region)) + 
-  geom_density(alpha = 0.5, size = 0.25) +
-  xlab("Outlier locus minor allele frequency") +
-  ylab("Density") +
-  scale_color_manual(values = flPal, name = "Region") +
-  theme_bw()
-mafDensPlot = mafDensPlotA +
-        theme(axis.title.x = element_text(color = "black", size = 12),
-        axis.text.x = element_text(color = "black", size = 10),
-        axis.ticks.x = element_line(color = "black"),
-        axis.title.y = element_text(color = "black", size = 12),
-        axis.text.y = element_text(color = "black", size = 10),
-        axis.ticks.y = element_line(color = "black"),
-        legend.position = "right",
-        legend.key.size = unit(0.3, 'cm'),
-        panel.border = element_rect(color = "black"),
-        panel.background = element_rect(fill = "white"),
-        plot.background = element_rect(fill = "white"),
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank())
-
-ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/mafDensPlot.pdf", plot = mafPlot, width = 14, height = 8, units = "cm", dpi = 300)
-ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/mafDensPlot.png", plot = mafPlot, width = 14, height = 8, units = "cm", dpi = 300)
-
-# mafDensPlot
-
-```
-
-##not relevant bc didn't sample across depths?
-Have not tried to run yet
-```{r, linear regression of minor allele frequencies by depth}
-mafLm = summary(lm(data = seflpastAF, minFreq ~ avgDepthM))
-r2 = round(mafLm$r.squared, 3)
-mafLrPlotA = ggplot(data = fkSintAF, aes(x = avgDepthM, y = minFreq)) +
-  geom_violin(aes(group = pop, fill = region, linetype = depthZone, color = region), size = 0.25, width = 2, alpha = 0.5, scale = "width") +
-  geom_smooth(method = "lm", color = pink, size = 0.25) +
-  annotate(geom = "text", x = 39, y = 0.11,label = bquote(~italic(R^2)~" = "~.(r2)*", "~italic(p)~" < 0.001"), size = 2.5) +
-  xlab("Population depth (m)") +
-  ylab("Outlier locus \nminor allele frequency") +
-  scale_fill_manual(values = flPal, name = "Region") +
-  scale_color_manual(values = flPal, name = "Region") +
-  scale_linetype(name = "Depth zone") +
-  theme_bw()
-mafLrPlot = mafLrPlotA +
-        theme(axis.title.x = element_text(color = "black", size = 12),
-        axis.text.x = element_text(color = "black", size = 10),
-        axis.ticks.x = element_line(color = "black"),
-        axis.title.y = element_text(color = "black", size = 12),
-        axis.text.y = element_text(color = "black", size = 10),
-        axis.ticks.y = element_line(color = "black"),
-        legend.position = "right",
-        legend.key.size = unit(0.3, 'cm'),
-        panel.border = element_rect(color = "black"),
-        panel.background = element_rect(fill = "white"),
-        plot.background = element_rect(fill = "white"),
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank())
-# mafLrPlot
-
-```
-
-Inbred outliers
-Have not run this yet,(may not need this chunk?)
-```{r, subsetting out shallow pop for inbred}
-shalInbred = read.delim("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/seflpastInbredAlleleFreq.txt")
-bams = read.delim("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/bamsNoClones", header = FALSE) %>% mutate(a = c(1:36))
-pops = read.csv("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/poritesastreoidesMetaData_clonesremoved.csv") %>% select("Region" = region) %>% mutate(a = c(1:36), pop = paste(Region)) %>% mutate(across(where(is.character), str_remove_all, pattern = fixed("'")))  %>% 
-  mutate(across(where(is.character), str_remove_all, pattern = fixed(" ")))
-# Reads in population data
-shalBams = bams %>% left_join(pops) %>% left_join(shalInbred)
-%>% select(-a)
-shalBams$pop = factor(shalBams$pop)
-
-head(shalBams)
-shalInbredBams =  shalBams %>% filter(inbreed >= 0.25) %>% select(V1, pop) %>% group_split(pop) %>% setNames(unique(shalBams$pop))
-shalOutbredBams = shalBams %>% filter(inbreed < 0.25) %>% select(V1, pop) %>% group_split(pop) %>% setNames(unique(shalBams$pop))
-write.table(shalOutbredBams$UpperKeysShallow, "../data/snps/shalUKOutbred.pop", row.names = FALSE, col.names = FALSE, quote = FALSE)
-write.table(shalOutbredBams$LowerKeysShallow, "../data/snps/shalLKOutbred.pop", row.names = FALSE, col.names = FALSE, quote = FALSE)
-write.table(shalOutbredBams$TortugasBankShallow, "../data/snps/shalTBOutbred.pop", row.names = FALSE, col.names = FALSE, quote = FALSE)
-write.table(shalOutbredBams$RileysHumpShallow, "../data/snps/shalRHOutbred.pop", row.names = FALSE, col.names = FALSE, quote = FALSE)
-write.table(shalInbredBams$UpperKeysShallow, "../data/snps/shalUKInbred.pop", row.names = FALSE, col.names = FALSE, quote = FALSE)
-write.table(shalInbredBams$LowerKeysShallow, "../data/snps/shalLKInbred.pop", row.names = FALSE, col.names = FALSE, quote = FALSE)
-write.table(shalInbredBams$TortugasBankShallow, "../data/snps/shalTBInbred.pop", row.names = FALSE, col.names = FALSE, quote = FALSE)
-write.table(shalInbredBams$RileysHumpShallow, "../data/snps/shalRHInbred.pop", row.names = FALSE, col.names = FALSE, quote = FALSE)
-```
-Use these files to split outlier ```.vcf``` into inbred//outbred groups in each shallow population 
-
-Have not run this yet
-```{r, inbred minor allele frequencies}
-shalInbred = shalBams
-shalInbred$inbred = NA
-for(i in 1:nrow(shalInbred)) {
-  if(shalInbred$inbreed[i] >= 0.25) {
-   shalInbred$inbred[i] = "Inbred"
-  } else {
-    shalInbred$inbred[i] = "Outbred"
-  }
-}
-shalInbred = shalInbred %>% mutate(pop = paste(Region, inbred)) 
-shalInbred = shalInbred %>% group_by(pop) %>% summarize (avgInbreed = mean(inbreed)) 
-shalInbred$pop = c("Lower Keys Inbred", "Lower Keys Outbred", "Riley's Hump Inbred", "Riley's Hump Outbred", "Tortugas Bank Inbred", "Tortugas Bank Outbred", "Upper Keys Inbred", "Upper Keys Outbred")
-fkSintInbredAF = read.delim("../data/snps/fkSintInbredAlleleFreq.txt")
-fkSintInbredAF$chromLoc = paste(fkSintInbredAF$chrom,fkSintInbredAF$pos)
-fkSintInbredAF$pop = factor(fkSintInbredAF$pop)
-fkSintInbredAF$pop = factor(fkSintInbredAF$pop, levels = levels(fkSintInbredAF$pop)[c(3, 4, 5, 6, 1, 2, 7, 8)], labels = c("Riley's Hump", "Riley's Hump", "Tortugas Bank", "Tortugas Bank", "Lower Keys", "Lower Keys", "Upper Keys", "Upper Keys"))
-fkSintInbredAF = fkSintInbredAF %>% mutate(region = pop) %>% select(-pop)
-fkSintInbredAF = fkSintInbredAF %>% mutate(pop = paste(region, inbred)) 
-fkSintInbredAF = fkSintInbredAF %>% left_join(shalInbred)
-fkSintInbredAF$pop = factor(fkSintInbredAF$pop)
-fkSintInbredAF$pop = factor(fkSintInbredAF$pop, levels = levels(fkSintInbredAF$pop)[c(4, 3, 6, 5, 2, 1, 8, 7)], labels = c("Riley's Hump\nOutbred", "Riley's Hump\nInbred", "Tortugas Bank\nOutbred", "Tortugas Bank\nInbred", "Lower Keys\nOutbred", "Lower Keys\nInbred", "Upper Keys\nOutbred", "Upper Keys\nInbred"))
-fkSintInbredAF$region = factor(fkSintInbredAF$region)
-fkSintInbredAF$region = factor(fkSintInbredAF$region, levels = levels(fkSintInbredAF$region)[c(4,3,2,1)])
-fkSintInbredAF$inbred = factor(fkSintInbredAF$inbred)
-mafInbredPlotA = ggplot(data = fkSintInbredAF, aes(x = chromLoc, y = pop, fill = minFreq)) +  
-  geom_tile() +
-  geom_segment(data = fkSintInbredAF, aes(x = -5, xend = -200, y = pop, yend = pop, color = region), size = 10.5) +
-  scale_fill_gradientn(colours = paletteer_d("RColorBrewer::RdPu"), limit = c(0, 1), name = "Minor allele \nfrequency")+
-  scale_color_manual(values = flPal, guide = NULL) +
-  xlab("Outlier locus") +
-  ylab("Shallow population") +
-  coord_cartesian(xlim = c(-1, 592), clip = "off", expand = TRUE) +
-  theme_bw()
-mafInbredPlot = mafInbredPlotA +
-        theme(axis.title.x = element_text(color = "black", size = 12),
-        axis.text.x = element_blank(),
-        axis.ticks.x = element_blank(),
-        axis.title.y = element_text(color = "black", size = 12),
-        axis.text.y = element_text(color = "gray90", size = 10),
-        axis.ticks.y = element_blank(),
-        legend.position = "right",
-        legend.key.size = unit(0.3, 'cm'),
-        panel.border = element_rect(color = "black", size = .25),
-        panel.background = element_rect(fill = "white"),
-        plot.background = element_rect(fill = "white"),
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank())
-
-# mafInbredPlot
-# ggsave("../figures/outlierMiAFInbred.pdf", plot = mafInbredPlot, width = 14, height = 8, units = "cm", dpi = 300)
-# ggsave("../figures/outlierMiAFInbred.png", plot = mafInbredPlot, width = 14, height = 8, units = "cm", dpi = 300)
-
-```
-
-Have not run this yet
-```{r, inbred minor allele frequencies/densities}
-mafDensInbredPlotA = ggplot(data = fkSintInbredAF, aes(x = minFreq, group = pop, linetype = inbred, color = region)) + 
-  geom_density(alpha = 0.5, size = 0.25) +
-  xlab("Outlier locus minor allele frequency") +
-  ylab("Density") +
-  scale_color_manual(values = flPal, name = "Region") +
-  scale_linetype(name = "Inbred") +
-  theme_bw()
-mafDensInbredPlot = mafDensInbredPlotA +
-        theme(axis.title.x = element_text(color = "black", size = 12),
-        axis.text.x = element_text(color = "black", size = 10),
-        axis.ticks.x = element_line(color = "black"),
-        axis.title.y = element_text(color = "black", size = 12),
-        axis.text.y = element_text(color = "black", size = 10),
-        axis.ticks.y = element_line(color = "black"),
-        legend.position = "right",
-        legend.key.size = unit(0.3, 'cm'),
-        panel.border = element_rect(color = "black"),
-        panel.background = element_rect(fill = "white"),
-        plot.background = element_rect(fill = "white"),
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank())
-  
-# mafDensInbredPlot
-
-```
-
-Have not run this yet
-```{r, inbred minor allele freq linear regression plots}
-mafInbredLm = summary(lm(data = fkSintInbredAF, minFreq ~ avgInbreed))
-inbredR2 = round(mafInbredLm$r.squared, 3)
-mafLrInbredPlotA = ggplot(data = fkSintInbredAF, aes(x = avgInbreed, y = minFreq)) +
-  geom_violin(aes(group = pop, fill = region, linetype = inbred, color = region), size = 0.25, alpha = 0.5, width = 0.025, scale = "width") +
-  geom_smooth(method = "lm", color = pink, size = 0.25) +
-  annotate(geom = "text", x = .25, y = 0.15,label = bquote(~italic(R^2)~" = "~.(inbredR2)*", "~italic(p)~" < 0.001"), size = 2.5) +
-  xlab("Mean inbreeding coefficient") +
-  ylab("Outlier locus \nminor allele frequency") +
-  scale_fill_manual(values = flPal, name = "Region") +
-  scale_color_manual(values = flPal, name = "Region") +
-  scale_linetype(name = "Inbreeding") +
-  theme_bw()
-mafLrInbredPlot = mafLrInbredPlotA +
-        theme(axis.title.x = element_text(color = "black", size = 12),
-        axis.text.x = element_text(color = "black", size = 10),
-        axis.ticks.x = element_line(color = "black"),
-        axis.title.y = element_text(color = "black", size = 12),
-        axis.text.y = element_text(color = "black", size = 10),
-        axis.ticks.y = element_line(color = "black"),
-        legend.position = "right",
-        legend.key.size = unit(0.3, 'cm'),
-        panel.border = element_rect(color = "black"),
-        panel.background = element_rect(fill = "white"),
-        plot.background = element_rect(fill = "white"),
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank())
-# mafPlotsAll = mafPlot | mafLrPlot &
-#   theme(legend.position = "right")
-# 
-# mafPlotsInbred = mafInbredPlot | mafLrInbredPlot &
-#   theme(legend.position = "right")
-mafPlots = (mafPlot | mafLrPlot) / (mafInbredPlot | mafLrInbredPlot) +
-  plot_annotation(tag_levels = 'A') &
-  theme(plot.tag = element_text(size = 16))
-ggsave("../figures/outlierMiAF.pdf", plot = mafPlots, width = 28, height = 18, units = "cm", dpi = 300)
-ggsave("../figures/outlierMiAF.png", plot = mafPlots, width = 28, height = 18, units = "cm", dpi = 300)
-```
+Only ten outlier SNPs
 
 <br>
 
@@ -993,6 +663,7 @@ GeoDistanceInMetresMatrix = function(df.geopoints) {
   return(mat.distances)}
 ```
 
+And now that we've calculated the geographic distance between them, can run the Mantel test
 Mantel isolation by distance test between individuals
 Using IBS and geographic distance matrices
 ```{r, mantel snps geo}
@@ -1051,28 +722,6 @@ ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/distance_
 
 #![](C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/distance_mantelPlot.png)
 
-Mantel isolation by distance test between populations
-Using Nei's genetic distance and geographic distance matrices
-```{r, mantel pops}
-pastVcf = read.vcfR("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/pastNoClones.bcf", verbose = FALSE)
-pastGenlight = vcfR2genlight(pastVcf, n.cores = 1)
-popdata = read.csv("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/poritesastreoidesMetaData_clonesremoved.csv") %>% select(sample = tube_id, region)
-strata(pastGenlight) = data.frame(popdata)
-setPop(pastGenlight)= ~region
-pastNeiDist = as.dist(stamppNeisD(pastGenlight, pop = TRUE), diag = F)
-popCoords = read.csv("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/poritesastreoidesMetaData_clonesremoved.csv") %>% group_by(region) %>% summarize(lat = mean(site_lat), lon = mean(site_long)) %>% as.data.frame()
-popCoords$region = factor(popCoords$region)
-popCoords$region = factor(popCoords$region, levels = levels(popCoords$region)[c(4, 2, 5, 1, 3)])
-popCoords = popCoords %>% arrange(levels(popCoords$region))
-# row.names(popCoords) = popCoords$population
-pastPopsGeo = as.dist(GeoDistanceInMetresMatrix(popCoords)/1000, diag = F)
-set.seed(694)
-pastPopIBD = mantel.randtest(pastPopsGeo, pastNeiDist, nrepet = 9999)
-pastPopIBD
-```
-
-Not significant, not making figure for it
-
 <br>
 
 Mantel test across depths
@@ -1126,7 +775,6 @@ ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/depth_man
 
 <br>
 
-MAY WANT TO REMOVE FIGURE FOR K=7
 ADMIXTURE plot
 Population structure plot from NGSadmix/CLUMPAK results.
 Based on most probable values for K
@@ -1348,7 +996,6 @@ ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/zooxSNP.e
 ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/zooxSNP.tiff", plot = zooxSNP, width = 20, height = 8, units = "cm", dpi = 300)
 ```
 
-THIS ONE IS GOOD
 ```{r, Symbiont genus assignment without clones}
 #read in sample metadata without clones
 popData = read.csv("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/poritesastreoidesMetaData_clonesremoved.csv") %>% select("sample" = tube_id, "pop" = region_short)
