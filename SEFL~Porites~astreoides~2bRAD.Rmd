@@ -107,7 +107,7 @@ siteMap = ggplot() +
         axis.title = element_blank(),
         legend.background = element_blank(),
         legend.title = element_text(size = 10),
-        legend.text = element_text(size = 8),
+        legend.text = element_text(size = 10), #was 8 before
         legend.key = element_blank(),
         legend.position = "bottom",
         legend.direction = "horizontal")
@@ -271,8 +271,8 @@ Cred["popDepth", "Drivers"] <- "Depth"
 Cred["lat", "Drivers"] <- "Latitude"
 
 #remove from here if keep vectors
-pastMa = as.matrix(read.table("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/pastNoClones.ibsMat"))
-pastMds = cmdscale(pastMa, eig = TRUE, x.ret = TRUE)
+#pastMa = as.matrix(read.table("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/pastNoClones.ibsMat"))
+#pastMds = cmdscale(pastMa, eig = TRUE, x.ret = TRUE)
 
 # Determine percent variation captured on each axis
 # Calculate the eigenvalues so later we can figure out % variation shown on each Principal Coordinate
@@ -298,8 +298,9 @@ pastPCoA$pop = factor(pastPCoA$pop, levels(pastPCoA$pop)[c(4, 2, 5, 1, 3)])
 flPal = paletteer_d("rcartocolor::Sunset")[c(7, 6, 4, 3, 1)]
 
 pastPcoaPlotA = ggplot(pastPCoA, aes(x = PCo1, y = PCo2, color = pop, fill = pop)) +
-    geom_segment(data = Cred, aes(x = 0, xend = Dim1, y = 0, yend = Dim2), arrow = arrow(length = unit(0.4, "cm")), color = "black", size=1, inherit.aes = FALSE) + # adds vectors
-  geom_text(data = Cred, aes(x = ((Dim1)-0.15), y = Dim2, label = Drivers), size = 2, inherit.aes = FALSE)+ # adds labels to vectors
+    geom_segment(data = Cred, aes(x = 0, xend = Dim1*0.348, y = 0,
+    yend = Dim2*0.28), arrow = arrow(length = unit(0.4, "cm")), color = "black", size=1, inherit.aes = FALSE) + # adds vectors
+  geom_text(data = Cred, aes(x = Dim1*0.348, y = ((Dim2*0.28)-0.02), label = Drivers), size = 2, inherit.aes = FALSE)+ # adds labels to vectors
   geom_hline(yintercept = 0, color = "gray90", size = 0.5) +
   geom_vline(xintercept = 0, color = "gray90", size = 0.5) +
   #ellipses
