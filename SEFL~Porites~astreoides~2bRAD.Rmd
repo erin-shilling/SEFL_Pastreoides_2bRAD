@@ -238,7 +238,39 @@ amovaP
 Only significant differences between populations, explains 2.73% of variation
 
 ```{r, PCoA with IBS}
-# packages: tidyverse, paletteer
+# packages: tidyverse, paletteer, vegan if use vectors
+#calculating depth & latitude vectors
+pastMa = as.matrix(read.table("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/pastNoClones.ibsMat"))
+pastMds = cmdscale(pastMa, eig = TRUE, x.ret = TRUE)
+meta = read.csv("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/poritesastreoidesMetaData_clonesremoved.csv")
+
+env=dplyr::select(meta, collection_depth_m, site_lat)
+#env=cbind(env,envData)
+
+envDrivers=envfit(pastMds, env, permutations = 999)
+envDriversScores <- as.data.frame(scores(envDrivers, display = "vectors")) 
+#extracts relevant scores from envifit
+A <- as.list(envDrivers$vectors)
+pvals<-as.data.frame(A$pvals)
+arrows<-as.data.frame(A$arrows*sqrt(A$r))
+C<-cbind(arrows, pvals)
+
+#                         Dim1        Dim2 A$pvals
+#collection_depth_m -0.5893338 -0.02474275   0.004
+#site_lat           -0.5456895  0.20714215   0.004
+
+#$r
+#collection_depth_m           site_lat 
+#         0.3479266          0.3406849
+
+#Cred<-subset(C,pvals<0.01) #Filters species with highly significant loadings
+
+Cred <- cbind(C, Drivers = rownames(C))
+Cred$Drivers <- as.character(Cred$Drivers)
+Cred["popDepth", "Drivers"] <- "Depth"
+Cred["lat", "Drivers"] <- "Latitude"
+
+#remove from here if keep vectors
 pastMa = as.matrix(read.table("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/pastNoClones.ibsMat"))
 pastMds = cmdscale(pastMa, eig = TRUE, x.ret = TRUE)
 
@@ -266,6 +298,8 @@ pastPCoA$pop = factor(pastPCoA$pop, levels(pastPCoA$pop)[c(4, 2, 5, 1, 3)])
 flPal = paletteer_d("rcartocolor::Sunset")[c(7, 6, 4, 3, 1)]
 
 pastPcoaPlotA = ggplot(pastPCoA, aes(x = PCo1, y = PCo2, color = pop, fill = pop)) +
+    geom_segment(data = Cred, aes(x = 0, xend = Dim1, y = 0, yend = Dim2), arrow = arrow(length = unit(0.4, "cm")), color = "black", size=1, inherit.aes = FALSE) + # adds vectors
+  geom_text(data = Cred, aes(x = ((Dim1)-0.15), y = Dim2, label = Drivers), size = 2, inherit.aes = FALSE)+ # adds labels to vectors
   geom_hline(yintercept = 0, color = "gray90", size = 0.5) +
   geom_vline(xintercept = 0, color = "gray90", size = 0.5) +
   #ellipses
