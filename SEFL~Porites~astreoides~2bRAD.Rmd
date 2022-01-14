@@ -1032,12 +1032,15 @@ zooxSNP = zooxSNPA + theme(plot.title = element_text(),
 
 # zooxSNP figure with clones
 
+write_excel_csv(zooxProp, file= 'Zooxs proportions with clones.csv')
+
 ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/zooxSNP.png", plot = zooxSNP, width = 20, height = 8, units = "cm", dpi = 300)
 ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/zooxSNP.eps", plot = zooxSNP, width = 20, height = 8, units = "cm", dpi = 300)
 ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/zooxSNP.tiff", plot = zooxSNP, width = 20, height = 8, units = "cm", dpi = 300)
 ```
 
 ```{r, Symbiont genus assignment without clones}
+#packages: tidyverse, reshape2, RColorBrewer, paletteer
 #read in sample metadata without clones
 popData = read.csv("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/poritesastreoidesMetaData_clonesremoved.csv") %>% select("sample" = tube_id, "pop" = region_short)
 #treat populations as a factor & order them North-->South
@@ -1146,6 +1149,8 @@ zooxSNP = zooxSNPA + theme(plot.title = element_text(),
   legend.position = "bottom")
 
 # zooxSNP without clones
+
+write_excel_csv(zooxProp, file= 'Zooxs proportions no clones.csv')
 
 ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/zooxSNP_noclones.png", plot = zooxSNP, width = 20, height = 8, units = "cm", dpi = 300)
 ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/zooxSNP_noclones.eps", plot = zooxSNP, width = 20, height = 8, units = "cm", dpi = 300)
