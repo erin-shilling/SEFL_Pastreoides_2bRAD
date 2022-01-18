@@ -124,7 +124,6 @@ T R I M M I N G   &   F I L T E R I N G
 Trim and demultiplex reads
 cd ../concatReads
 
-##having issues at this step, may try running on a medium node instead of short?
 2bRAD_trim_launch_dedup.pl fastq > trims.sh
 launcher_creator.py -j trims.sh -n trims -q shortq7 -t 06:00:00 -e eshilling2013@fau.edu
 sbatch --mem=200GB trims.slurm
@@ -279,7 +278,6 @@ P1-5_TCCG       174101
 
 #lost samples 16, 17, and 41
 
-
 D E N O V O   R E F E R E N C E
 Construct denovo reference for aligning reads
 
@@ -405,7 +403,6 @@ rm *.uni
 
 #We need a Kraken database to search against. If you don’t already have one, you need to build one now. otherwise you can skip to running Kraken
 #We can download a compiled standard database:
-##using Ryan's koko, he already has this
 
 mkdir ~/bin/krakenDB
 cd ~/bin/krakenDB
@@ -413,7 +410,7 @@ cd ~/bin/krakenDB
 srun wget https://genome-idx.s3.amazonaws.com/kraken/k2_pluspf_20210127.tar.gz
 echo tar -xvf k2_pluspf_20210127.tar.gz >tar
 
-launcher_creator.py -j tar -n tar -q mediumq7 -t 24:00:00 -e reckert2017@fau.edu
+launcher_creator.py -j tar -n tar -q mediumq7 -t 24:00:00 -e eshilling2013@fau.edu
 
 sbatch tar.slurm
 
