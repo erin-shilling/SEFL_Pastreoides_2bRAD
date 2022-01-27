@@ -32,6 +32,7 @@ baMean = bayesAss %>% summarise(across(everything(), list(mean))) %>% t() %>% as
 
 baSumm = bayesAss %>% summarise(across(everything(), list(median))) %>% t() %>% as_tibble() %>% rename(., median=V1) %>% mutate(pops = baMean$pops, mean = round(baMean$mean, 3)) %>% relocate(median, .after = mean)
 
+#takes median and makes it only 3 decimal places
 baSumm$median = round(baSumm$median, 3)
 
 library(TeachingDemos)
@@ -58,9 +59,9 @@ baSumm$ESS = ESS
 #i and j are the sink & source populations
 #i is the sink, j is the source
 #write out how you want it to appear on your stepwise plot
-popi = rep(c("jupiter", "westpalm", "boynton", "stlucie", "pompano"), each = 5)
+popi = rep(c("Jupiter", "West Palm Beach", "Boynton Beach", "St. Lucie Reef", "Pompano/LBTS"), each = 5)
 
-popj = rep(c("jupiter", "westpalm", "boynton", "stlucie", "pompano"), times = 5)
+popj = rep(c("Jupiter", "West Palm Beach", "Boynton Beach", "St. Lucie Reef", "Pompano/LBTS"), times = 5)
 
 baSumm = baSumm %>% mutate(pop.i = popi, pop.j = popj) %>% relocate(c(pop.i, pop.j), .after = pops) %>% dplyr::select(-pops)
 # %>% filter(pop1!=pop2) %>% select(-pops)
@@ -70,22 +71,6 @@ baSumm$pop.i = factor(baSumm$pop.i, levels = levels(baSumm$pop.i)[c(4, 2, 5, 1, 
 
 baSumm$pop.j = factor(baSumm$pop.j)
 baSumm$pop.j = factor(baSumm$pop.j, levels = levels(baSumm$pop.j)[c(4, 2, 5, 1, 3)])
-
-baSumm$region.i = word(baSumm$pop.i, 1, sep = "\n")
-baSumm$region.i = factor(baSumm$region.i)
-baSumm$region.i = factor(baSumm$region.i, levels = levels(baSumm$region.i)[c(4, 1, 3, 2)])
-
-baSumm$region.j = word(baSumm$pop.j, 1, sep = "\n")
-baSumm$region.j = factor(baSumm$region.j)
-baSumm$region.j = factor(baSumm$region.j, levels = levels(baSumm$region.j)[c(4, 1, 3, 2)])
-
-baSumm$depth.i = word(baSumm$pop.i, 2, sep = "\n")
-baSumm$depth.i = factor(baSumm$depth.i)
-baSumm$depth.i = factor(baSumm$depth.i, levels = levels(baSumm$depth.i)[c(2, 1)])
-
-baSumm$depth.j = word(baSumm$pop.j, 2, sep = "\n")
-baSumm$depth.j = factor(baSumm$depth.j)
-baSumm$depth.j = factor(baSumm$depth.j, levels = levels(baSumm$depth.j)[c(2, 1)])
 
 ```
 
@@ -98,11 +83,11 @@ baSumm$hpdHigh = sprintf('%.3f', baSumm$hpdHigh)
 
 flPal = paletteer_d("rcartocolor::Sunset")[c(7, 6, 4, 3, 1)]
 
-migrateA = ggplot(data = baSumm, aes(pop.i, pop.j, fill = as.numeric(as.character(mean))))+
-  geom_tile(color = "white")+
+migrateA = ggplot(data = baSumm, aes(pop.i, pop.j, fill = as.numeric(as.character(mean)))) +
+  geom_tile(color = "white") +
   geom_segment(data = baSumm, aes(x = 0.4755, xend = -0.625, y = pop.j, yend = pop.j, color = pop.j), size = 14) +
   geom_segment(data = baSumm, aes(x = pop.i, xend = pop.i, y = 0.45, yend = -0.425, color = pop.i), size = 32.25) +
-  scale_color_manual(values = flPal[c(1:4, 1:4)], guide = NULL) +
+  scale_color_manual(values = flPal[c(1:5, 1:5)], guide = NULL) +
   scale_fill_gradientn(colours = paletteer_c("viridis::viridis", n = 10)[3:10], limit = c(0,0.17), space = "Lab", name = expression(paste(italic("m"))), na.value = "gray85",  guide = "colourbar", values = c(0, 0.05, 0.1, 0.15, 0.2,0.5,0.75,1)) +
   geom_text(data = baSumm, aes(x = pop.i, y = pop.j, label = paste(mean, "\n", sep = "")), color = ifelse(baSumm$mean > 0.6, "red", "gray5"), fontface = "bold") +
   geom_text(data = baSumm, aes(x = pop.i, y = pop.j, label = paste("\n(",hpdLow,"–",hpdHigh, ")", sep = "")), color = ifelse(baSumm$mean > 0.6, "red", "gray5"), size = 3.25) +
@@ -146,20 +131,17 @@ library(lubridate)
 library(measurements)
 pastSamples$region = factor(pastSamples$region)
 pastSamples$region = factor(pastSamples$region, levels = levels(pastSamples$region)[c(4, 2, 5, 1, 3)])
-#pastSamples$collection_date = mdy(pastSamples$collection_date) %>% format("%d %b %Y")
 pastSamples$depthM = conv_unit(pastSamples$collection_depth_ft, from = "ft", to = "m") %>% round(1)
 
 seflSites = pastSamples %>% group_by(region)%>% summarize(latDD = first(site_lat), longDD = first(site_long), depthRangeM = paste(min(depthM), "-", max(depthM), sep = ""), n = n()) %>% droplevels() %>% as.data.frame()
 
 seflPastPopsMigrate = seflSites %>% group_by(region) %>% summarise(latDD = first(latDD), longDD = first(longDD)) %>% filter(region %in% c("St. Lucie Reef", "Jupiter", "West Palm Beach", "Boynton Beach", "Pompano/LBTS")) %>% droplevels()
 
-#seflPastPopsMigrate = seflPastPopsMigrate[-5,]
-
-migratePal = c("St. Lucie Reef" = flPal[1], "Jupiter" = flPal[2], "West Palm Beach" = flPal[3], "Boynton Beach" = flPal[4], "Pompano/LBTS = flPal[5]")
+migratePal = c("St. Lucie Reef" = flPal[1], "Jupiter" = flPal[2], "West Palm Beach" = flPal[3], "Boynton Beach" = flPal[4], "Pompano/LBTS" = flPal[5])
 
 #lines = c("Shallow" = 5, "Mesophotic" = 1)
 
-baMapData = baSumm %>% left_join(seflPastPopsMigrate, by = c("region.i" = "region")) %>% left_join(seflPastPopsMigrate, by = c("region.j" = "region"), suffix = c(".i", ".j")) %>% filter(mean >= 0.02)
+baMapData = baSumm %>% left_join(seflPastPopsMigrate, by = c("pop.i" = "region")) %>% left_join(seflPastPopsMigrate, by = c("pop.j" = "region"), suffix = c(".i", ".j")) %>% filter(mean >= 0.02)
 
 for(x in 1:nrow(baMapData)) {
   if (baMapData$pop.i[x] == baMapData$pop.j[x]) {
@@ -174,12 +156,6 @@ for(x in 1:nrow(baMapData)) {
 
 library(sf)
 florida = read_sf("data_files/shp/flCountiesLo.shp") %>% st_transform(crs = 4326)
-
-#migrateMap = ggplot() +
-#  geom_sf(data = florida, fill = "white", size = 0.25) +
-  
-#I need this one
-#geom_curve(data = baMapData, aes(x = longDD.j, y = latDD.j, xend = longDD.i, yend = latDD.i, color = region.j, size = mean), arrow = arrow(type = "closed", length = unit(0.0225, "npc")), alpha = 0.7,  curvature = -0.2, na.rm = TRUE) +
   
 ##then can edit them/make them prettier using this code, won't need as many as Ryan possibly?
 #  geom_curve(data = baMapData[c(2),], aes(x = longDD.j, y = latDD.j, xend = longDD.i, yend = latDD.i-0.03, color = region.j, linetype = depth.j, size = mean), alpha = 0.7, arrow = arrow(type = "open", length = unit(0.0225, "npc")), curvature = -3) +
@@ -221,15 +197,15 @@ migrateMap = ggplot() +
   geom_sf(data = florida, fill = "white", size = 0.25) +
   
 #I need this one
-geom_curve(data = baMapData, aes(x = longDD.j, y = latDD.j, xend = longDD.i, yend = latDD.i, color = region.j, size = mean), arrow = arrow(type = "closed", length = unit(0.0225, "npc")), alpha = 0.7,  curvature = -0.2, na.rm = TRUE) +
+geom_curve(data = baMapData, aes(x = longDD.j, y = latDD.j, xend = longDD.i, yend = latDD.i, color = pop.j, size = mean), arrow = arrow(type = "closed", length = unit(0.0225, "npc")), alpha = 0.7,  curvature = -0.2, na.rm = TRUE) +
 geom_point(data = seflPastPopsMigrate, aes(x = longDD, y = latDD, fill = region), size = 3.5) +
   scale_fill_manual(values = flPal, name = "Region") +
   scale_color_manual(values = migratePal, guide = NULL) +
   scale_size(range = c(0.5, 2), breaks = c(0.02,0.06,0.1,0.14,0.18,0.22), name = expression(paste(italic("m")))) +
   # scale_size_binned(range = c(0.25, 1.5), breaks = seq(0.02,0.2, by = 0.04), name = expression(paste(italic("m")))) +
 #  scale_linetype_manual(values = lines, name = "Source depth") +
-  coord_sf(xlim = c(-80.6, -79.2), ylim = c(26, 27.2)) +
-  scale_x_continuous(breaks = c(seq(-80.6, -79.2, by = 0.2))) +
+  coord_sf(xlim = c(-80.6, -79.6), ylim = c(26, 27.2)) +
+  scale_x_continuous(breaks = c(seq(-80.6, -79.6, by = 0.2))) +
   scale_y_continuous(breaks = c(seq(26, 27.2, by = 0.2))) +
   annotation_scale(location = "br") +
   annotation_north_arrow(location = "br", which_north = "true", style = north_arrow_minimal(), pad_x = unit(-0.25, "cm") , pad_y = unit(0.75, "cm")) +
