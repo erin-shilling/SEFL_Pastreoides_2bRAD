@@ -149,17 +149,7 @@ sbatch -e BayesAss$i.e%j -o BayesAss$i.o%j -p longq7 --mem=100GB --exclusive --m
 cd ..;
 done
 
-##stopped here, began the above run on 1/18/22 @3:45 pm
-
-for i in {01..10}; do
-echo '#!/bin/bash' > BayesAss$i.sh
-echo BA3SNP -v -u -s $RANDOM -i 6500000 -b 3000000 -n 100 -m 0.2 -a 0.6 -f 0.025 -t -o seflPastBARun${i}Out.txt ../seflPastBayesAss.txt >> BayesAss$i.sh;
-mkdir run$i;
-mv BayesAss$i.sh run$i;
-cd run$i;
-sbatch -e BayesAss$i.e%j -o BayesAss$i.o%j -p longq7 --mem=100GB --exclusive --mail-user eshilling2013@fau.edu --mail-type=ALL BayesAss$i.sh
-cd ..;
-done
+##ran in ~20 hours
 
 # after all runs complete copy files to main BayesAss directory
 cd ~/2bRAD/past/sefl/bayesAss
@@ -168,4 +158,24 @@ cp run*/*Out.txt .
 
 for i in {01..10}; do
 cp run$i/BA3trace.txt BA3trace$i.txt;
+done
+
+##looks like we can run with 10,000,000 reps, 2,000,000 burn in from Trace examination
+##so going to re-check that my deltas still work when running it with these new parameters
+
+echo '#!/bin/bash' > BATest
+echo BA3SNP -v -i 10000000 -b 2000000 -n 1000 -m 0.32 -a 0.75 -f 0.002 seflPastBayesAss.txt >> BATest
+
+sbatch -e BATest.e%j -o BATest.o%j -p shortq7 --mail-user eshilling2013@fau.edu --mail-type=ALL BATest
+#LogL: -526874.47 % done: [0.00] % accepted: (0.36, 0.00, 0.38, 0.32, 0.76)
+
+##now running for actual data
+for i in {01..10}; do
+echo '#!/bin/bash' > BayesAss$i.sh
+echo BA3SNP -v -u -s $RANDOM -i 10000000 -b 2000000 -n 100 -m 0.32 -a 0.75 -f 0.002 -t -o seflPastBARun${i}Out.txt ../seflPastBayesAss.txt >> BayesAss$i.sh;
+mkdir run$i;
+mv BayesAss$i.sh run$i;
+cd run$i;
+sbatch -e BayesAss$i.e%j -o BayesAss$i.o%j -p longq7 --mem=100GB --exclusive --mail-user eshilling2013@fau.edu --mail-type=ALL BayesAss$i.sh
+cd ..;
 done
