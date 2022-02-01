@@ -59,18 +59,19 @@ baSumm$ESS = ESS
 #i and j are the sink & source populations
 #i is the sink, j is the source
 #write out how you want it to appear on your stepwise plot
-popi = rep(c("Jupiter", "West Palm Beach", "Boynton Beach", "St. Lucie Reef", "Pompano/LBTS"), each = 5)
+popi = rep(c("Jupiter", "West Palm Beach", "Boynton Beach", "St. Lucie Reef", "Ft. Lauderdale"), each = 5)
 
-popj = rep(c("Jupiter", "West Palm Beach", "Boynton Beach", "St. Lucie Reef", "Pompano/LBTS"), times = 5)
+popj = rep(c("Jupiter", "West Palm Beach", "Boynton Beach", "St. Lucie Reef", "Ft. Lauderdale"), times = 5)
 
 baSumm = baSumm %>% mutate(pop.i = popi, pop.j = popj) %>% relocate(c(pop.i, pop.j), .after = pops) %>% dplyr::select(-pops)
 # %>% filter(pop1!=pop2) %>% select(-pops)
 
 baSumm$pop.i = factor(baSumm$pop.i)
-baSumm$pop.i = factor(baSumm$pop.i, levels = levels(baSumm$pop.i)[c(4, 2, 5, 1, 3)])
+#levels(baSumm$pop.i)
+baSumm$pop.i = factor(baSumm$pop.i, levels = levels(baSumm$pop.i)[c(4, 3, 5, 1, 2)])
 
 baSumm$pop.j = factor(baSumm$pop.j)
-baSumm$pop.j = factor(baSumm$pop.j, levels = levels(baSumm$pop.j)[c(4, 2, 5, 1, 3)])
+baSumm$pop.j = factor(baSumm$pop.j, levels = levels(baSumm$pop.j)[c(4, 3, 5, 1, 2)])
 
 ```
 
@@ -93,7 +94,7 @@ migrateA = ggplot(data = baSumm, aes(pop.i, pop.j, fill = as.numeric(as.characte
   geom_text(data = baSumm, aes(x = pop.i, y = pop.j, label = paste("\n(",hpdLow,"–",hpdHigh, ")", sep = "")), color = ifelse(baSumm$mean > 0.6, "red", "gray5"), size = 3.25) +
   labs(x = "Sink", y = "Source") +
   guides(fill = guide_colorbar(barwidth = 1, barheight = 12, title.position = "top", title.hjust = 0.5, frame.colour = "black", frame.linewidth = 1, ticks.colour = "black")) +
-  scale_y_discrete(limits = rev(levels(baSumm$pop.i))[c(1:8)], position = "left") +
+  scale_y_discrete(limits = rev(levels(baSumm$pop.i))[c(1:5)], position = "left") +
   # scale_x_discrete() +
   coord_cartesian(xlim = c(1, 5), ylim = c(1, 5), clip = "off") +
   theme_minimal()
@@ -126,18 +127,20 @@ baSumm$hpdLow = as.numeric(baSumm$hpdLow)
 baSumm$hpdHigh = as.numeric(baSumm$hpdHigh)
 
 pastSamples = read.csv("data_files/poritesastreoidesMetaData_clonesremoved.csv", header = TRUE) %>% select(sample = tube_id, !sample_id)
+pastSamples$region[pastSamples$region=="Pompano/LBTS"]<-"Ft. Lauderdale"
 
 library(lubridate)
 library(measurements)
 pastSamples$region = factor(pastSamples$region)
-pastSamples$region = factor(pastSamples$region, levels = levels(pastSamples$region)[c(4, 2, 5, 1, 3)])
+levels(pastSamples$region)
+pastSamples$region = factor(pastSamples$region, levels = levels(pastSamples$region)[c(4, 3, 5, 1, 2)])
 pastSamples$depthM = conv_unit(pastSamples$collection_depth_ft, from = "ft", to = "m") %>% round(1)
 
 seflSites = pastSamples %>% group_by(region)%>% summarize(latDD = first(site_lat), longDD = first(site_long), depthRangeM = paste(min(depthM), "-", max(depthM), sep = ""), n = n()) %>% droplevels() %>% as.data.frame()
 
-seflPastPopsMigrate = seflSites %>% group_by(region) %>% summarise(latDD = first(latDD), longDD = first(longDD)) %>% filter(region %in% c("St. Lucie Reef", "Jupiter", "West Palm Beach", "Boynton Beach", "Pompano/LBTS")) %>% droplevels()
+seflPastPopsMigrate = seflSites %>% group_by(region) %>% summarise(latDD = first(latDD), longDD = first(longDD)) %>% filter(region %in% c("St. Lucie Reef", "Jupiter", "West Palm Beach", "Boynton Beach", "Ft. Lauderdale")) %>% droplevels()
 
-migratePal = c("St. Lucie Reef" = flPal[1], "Jupiter" = flPal[2], "West Palm Beach" = flPal[3], "Boynton Beach" = flPal[4], "Pompano/LBTS" = flPal[5])
+migratePal = c("St. Lucie Reef" = flPal[1], "Jupiter" = flPal[2], "West Palm Beach" = flPal[3], "Boynton Beach" = flPal[4], "Ft. Lauderdale" = flPal[5])
 
 #lines = c("Shallow" = 5, "Mesophotic" = 1)
 
