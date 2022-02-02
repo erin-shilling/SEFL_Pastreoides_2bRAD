@@ -86,23 +86,23 @@ flPal = paletteer_d("rcartocolor::Sunset")[c(7, 6, 4, 3, 1)]
 
 migrateA = ggplot(data = baSumm, aes(pop.i, pop.j, fill = as.numeric(as.character(mean)))) +
   geom_tile(color = "white") +
-  geom_segment(data = baSumm, aes(x = 0.4755, xend = -0.625, y = pop.j, yend = pop.j, color = pop.j), size = 14) +
-  geom_segment(data = baSumm, aes(x = pop.i, xend = pop.i, y = 0.45, yend = -0.425, color = pop.i), size = 32.25) +
+  geom_segment(data = baSumm, aes(x = 0.4755, xend = -0.65, y = pop.j, yend = pop.j, color = pop.j), size = 16) + #changing y bar of pop names
+  geom_segment(data = baSumm, aes(x = pop.i, xend = pop.i, y = 0.45, yend = -0.1, color = pop.i), size = 35) + #changing x bar of pop names
   scale_color_manual(values = flPal[c(1:5, 1:5)], guide = NULL) +
-  scale_fill_gradientn(colours = paletteer_c("viridis::viridis", n = 10)[3:10], limit = c(0,0.17), space = "Lab", name = expression(paste(italic("m"))), na.value = "gray85",  guide = "colourbar", values = c(0, 0.05, 0.1, 0.15, 0.2,0.5,0.75,1)) +
-  geom_text(data = baSumm, aes(x = pop.i, y = pop.j, label = paste(mean, "\n", sep = "")), color = ifelse(baSumm$mean > 0.6, "red", "gray5"), fontface = "bold") +
+  scale_fill_gradientn(colours = paletteer_c("viridis::viridis", n = 10)[3:10], limit = c(0,0.17), space = "Lab", name = expression(paste(italic("m"))), na.value = "gray85",  guide = "colourbar", values = c(0, 0.05, 0.1, 0.15, 0.2,0.5,0.75,1)) + #color scale of heatmap
+  geom_text(data = baSumm, aes(x = pop.i, y = pop.j, label = paste(mean, "\n", sep = "")), color = ifelse(baSumm$mean > 0.6, "red", "gray5"), fontface = "bold") + #format for center values (i.e. PMP vs PMP)
   geom_text(data = baSumm, aes(x = pop.i, y = pop.j, label = paste("\n(",hpdLow,"–",hpdHigh, ")", sep = "")), color = ifelse(baSumm$mean > 0.6, "red", "gray5"), size = 3.25) +
   labs(x = "Sink", y = "Source") +
-  guides(fill = guide_colorbar(barwidth = 1, barheight = 12, title.position = "top", title.hjust = 0.5, frame.colour = "black", frame.linewidth = 1, ticks.colour = "black")) +
+  guides(fill = guide_colorbar(barwidth = 1, barheight = 10, title.position = "top", title.hjust = 0.5, frame.colour = "black", frame.linewidth = 1, ticks.colour = "black")) + #m coefficient scale key
   scale_y_discrete(limits = rev(levels(baSumm$pop.i))[c(1:5)], position = "left") +
   # scale_x_discrete() +
   coord_cartesian(xlim = c(1, 5), ylim = c(1, 5), clip = "off") +
   theme_minimal()
 
 migrate = migrateA + theme(
-  axis.text.x = element_text(vjust = 1, size = 10, hjust = 0.5, color = "gray90"),
-  axis.text.y = element_text(size = 10, color = "gray90"),
-  axis.title.x = element_text(size = 14),
+  axis.text.x = element_text(vjust = 1, size = 9, hjust = 0.5, color = "black"),
+  axis.text.y = element_text(size = 9, color = "black"),
+  axis.title.x = element_text(size = 14, vjust = -1.5),
   axis.title.y = element_text(size = 14),
   panel.grid.major = element_blank(),
   axis.ticks = element_blank(),
@@ -114,8 +114,8 @@ migrate = migrateA + theme(
 
 migrate
 
-ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/migrate.png", plot = migrate, width = 26, height = 11, units = "cm", dpi = 300)
-ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/migrate.svg", plot = migrate, width = 26, height = 11, units = "cm", dpi = 300)
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/migrate.png", plot = migrate, width = 20, height = 8, units = "cm", dpi = 300)
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/migrate.svg", plot = migrate, width = 20, height = 8, units = "cm", dpi = 300)
 
 ```
 
@@ -136,15 +136,15 @@ levels(pastSamples$region)
 pastSamples$region = factor(pastSamples$region, levels = levels(pastSamples$region)[c(4, 3, 5, 1, 2)])
 pastSamples$depthM = conv_unit(pastSamples$collection_depth_ft, from = "ft", to = "m") %>% round(1)
 
-seflSites = pastSamples %>% group_by(region)%>% summarize(latDD = first(site_lat), longDD = first(site_long), depthRangeM = paste(min(depthM), "-", max(depthM), sep = ""), n = n()) %>% droplevels() %>% as.data.frame()
+seflSites = pastSamples %>% group_by(region)%>% summarize(latDD = first(site_lat), longDD = first(site_long), 
+depthRangeM = paste(min(depthM), "-", max(depthM), sep = ""), 
+n = n()) %>% droplevels() %>% as.data.frame()
 
 seflPastPopsMigrate = seflSites %>% group_by(region) %>% summarise(latDD = first(latDD), longDD = first(longDD)) %>% filter(region %in% c("St. Lucie Reef", "Jupiter", "West Palm Beach", "Boynton Beach", "Ft. Lauderdale")) %>% droplevels()
 
 migratePal = c("St. Lucie Reef" = flPal[1], "Jupiter" = flPal[2], "West Palm Beach" = flPal[3], "Boynton Beach" = flPal[4], "Ft. Lauderdale" = flPal[5])
 
-#lines = c("Shallow" = 5, "Mesophotic" = 1)
-
-baMapData = baSumm %>% left_join(seflPastPopsMigrate, by = c("pop.i" = "region")) %>% left_join(seflPastPopsMigrate, by = c("pop.j" = "region"), suffix = c(".i", ".j")) %>% filter(mean >= 0.02)
+baMapData = baSumm %>% left_join(seflPastPopsMigrate, by = c("pop.i" = "region")) %>% left_join(seflPastPopsMigrate, by = c("pop.j" = "region"), suffix = c(".i", ".j")) %>% filter(mean >= 0.05)
 
 for(x in 1:nrow(baMapData)) {
   if (baMapData$pop.i[x] == baMapData$pop.j[x]) {
@@ -159,75 +159,40 @@ for(x in 1:nrow(baMapData)) {
 
 library(sf)
 florida = read_sf("data_files/shp/flCountiesLo.shp") %>% st_transform(crs = 4326)
-  
-##then can edit them/make them prettier using this code, won't need as many as Ryan possibly?
-#  geom_curve(data = baMapData[c(2),], aes(x = longDD.j, y = latDD.j, xend = longDD.i, yend = latDD.i-0.03, color = region.j, linetype = depth.j, size = mean), alpha = 0.7, arrow = arrow(type = "open", length = unit(0.0225, "npc")), curvature = -3) +
-#  geom_curve(data = baMapData[c(3, 6),], aes(x = longDD.j, y = latDD.j, xend = longDD.i+0.02, yend = latDD.i-0.02, color = region.j, linetype = depth.j, size = mean), arrow = arrow(type = "open", length = unit(0.0225, "npc")), alpha = 0.7,  curvature = -0.2, na.rm = TRUE) +
-#  geom_curve(data = baMapData[c(11),], aes(x = longDD.j, y = latDD.j, xend = longDD.i+0.02, yend = latDD.i-0.02, color = region.j, linetype = depth.j, size = mean), arrow = arrow(type = "open", length = unit(0.0225, "npc")), alpha = 0.7,  curvature = 0.2, na.rm = TRUE) +
-#  geom_curve(data = baMapData[c(25),], aes(x = longDD.j, y = latDD.j, xend = longDD.i-0.05, yend = latDD.i, color = region.j, linetype = depth.j, size = mean), arrow = arrow(type = "open", length = unit(0.0225, "npc")), alpha = 0.7,  curvature = -0.2, na.rm = TRUE) +
-#  geom_curve(data = baMapData[c(12),], aes(x = longDD.j, y = latDD.j, xend = longDD.i+0.02, yend = latDD.i-0.04, color = region.j, linetype = depth.j, size = mean), arrow = arrow(type = "open", length = unit(0.0225, "npc")), alpha = 0.7,  curvature = -0.35, na.rm = TRUE) +
-#  geom_curve(data = baMapData[c(14),], aes(x = longDD.j, y = latDD.j, xend = longDD.i+0.02, yend = latDD.i+0.02, color = region.j, linetype = depth.j, size = mean), arrow = arrow(type = "open", length = unit(0.0225, "npc")), alpha = 0.7,  curvature = -0.2, na.rm = TRUE) +
-#  geom_curve(data = baMapData[c(4),], aes(x = longDD.j, y = latDD.j, xend = longDD.i, yend = latDD.i+0.03, color = region.j, linetype = depth.j, size = mean), arrow = arrow(type = "open", length = unit(0.0225, "npc")), alpha = 0.7,  curvature = -3, na.rm = TRUE) +
-#  geom_curve(data = baMapData[c(21),], aes(x = longDD.j, y = latDD.j, xend = longDD.i, yend = latDD.i-0.02, color = region.j, linetype = depth.j, size = mean), arrow = arrow(type = "open", length = unit(0.0225, "npc")), alpha = 0.7,  curvature = -9, na.rm = TRUE) +
-#  geom_curve(data = baMapData[c(27),], aes(x = longDD.j, y = latDD.j, xend = longDD.i+0.03, yend = latDD.i, color = region.j, linetype = depth.j, size = mean), arrow = arrow(type = "open", length = unit(0.0225, "npc")), alpha = 0.7,  curvature = 2, na.rm = TRUE) +
-#  geom_curve(data = baMapData[c(24, 29),], aes(x = longDD.j, y = latDD.j, xend = longDD.i-0.03, yend = latDD.i, color = region.j, linetype = depth.j, size = mean), arrow = arrow(type = "open", length = unit(0.0225, "npc")), alpha = 0.7,  curvature = 0.2, na.rm = TRUE) +
-#  geom_curve(data = baMapData[c(8, 13),], aes(x = longDD.j, y = latDD.j, xend = longDD.i, yend = latDD.i+0.03, color = region.j, linetype = depth.j, size = mean), arrow = arrow(type = "open", length = unit(0.0225, "npc")), alpha = 0.7,  curvature = 0.2, na.rm = TRUE) +
-#  geom_curve(data = baMapData[c(10, 16),], aes(x = longDD.j, y = latDD.j, xend = longDD.i +0.03, yend = latDD.i, color = region.j, linetype = depth.j, size = mean), arrow = arrow(type = "open", length = unit(0.0225, "npc")), alpha = 0.7,  curvature = -0.25, na.rm = TRUE) +
-#  geom_curve(data = baMapData[c(23, 28),], aes(x = longDD.j, y = latDD.j, xend = longDD.i-0.04, yend = latDD.i+0.01, color = region.j, linetype = depth.j, size = mean), arrow = arrow(type = "open", length = unit(0.0225, "npc")), alpha = 0.7,  curvature = -0.2, na.rm = TRUE) +
-#  geom_curve(data = baMapData[c(19, 20),], aes(x = longDD.j, y = latDD.j, xend = longDD.i-0.04, yend = latDD.i+0.02, color = region.j, linetype = depth.j, size = mean), arrow = arrow(type = "open", length = unit(0.0225, "npc")), alpha = 0.7,  curvature = -0.2, na.rm = TRUE) +
-#  geom_curve(data = baMapData[c(7),], aes(x = longDD.j, y = latDD.j, xend = longDD.i+0.03, yend = latDD.i, color = region.j, linetype = depth.j, size = mean), arrow = arrow(type = "open", length = unit(0.0225, "npc")), alpha = 0.7,  curvature = 0.25, na.rm = TRUE) +
-#  geom_curve(data = baMapData[c(17),], aes(x = longDD.j, y = latDD.j, xend = longDD.i+0.03, yend = latDD.i, color = region.j, linetype = depth.j, size = mean), arrow = arrow(type = "open", length = unit(0.0225, "npc")), alpha = 0.7,  curvature = -.35, na.rm = TRUE) +
- 
-#Ryan's from another version, will only be helpful as reference maybe
-  # geom_curve(data = baMapData[c(3, 6),], aes(x = longDD.j, y = latDD.j, xend = longDD.i+0.02, yend = latDD.i-0.01, color = region.j, linetype = depth.j, size = mean), arrow = arrow(type = "open", length = unit(0.0225, "npc")), alpha = 0.7,  curvature = -0.2, na.rm = TRUE) +
-  # geom_curve(data = baMapData[c(11),], aes(x = longDD.j, y = latDD.j, xend = longDD.i+0.02, yend = latDD.i-0.01, color = region.j, linetype = depth.j, size = mean), arrow = arrow(type = "open", length = unit(0.0225, "npc")), alpha = 0.7,  curvature = 0.2, na.rm = TRUE) +
-  # geom_curve(data = baMapData[c(24),], aes(x = longDD.j, y = latDD.j, xend = longDD.i-0.04, yend = latDD.i, color = region.j, linetype = depth.j, size = mean), arrow = arrow(type = "open", length = unit(0.0225, "npc")), alpha = 0.7,  curvature = -0.2, na.rm = TRUE) +
-  # geom_curve(data = baMapData[c(12),], aes(x = longDD.j, y = latDD.j, xend = longDD.i+0.01, yend = latDD.i-0.03, color = region.j, linetype = depth.j, size = mean), arrow = arrow(type = "open", length = unit(0.0225, "npc")), alpha = 0.7,  curvature = -0.35, na.rm = TRUE) +
-  # geom_curve(data = baMapData[c(14),], aes(x = longDD.j, y = latDD.j, xend = longDD.i+0.01, yend = latDD.i+0.01, color = region.j, linetype = depth.j, size = mean), arrow = arrow(type = "open", length = unit(0.0225, "npc")), alpha = 0.7,  curvature = -0.2, na.rm = TRUE) +
-  # geom_curve(data = baMapData[c(2),], aes(x = longDD.j, y = latDD.j, xend = longDD.i, yend = latDD.i-0.02, color = region.j, linetype = depth.j, size = mean), arrow = arrow(type = "open", length = unit(0.0225, "npc")), alpha = 0.7,  curvature = -3, na.rm = TRUE) +
-  # geom_curve(data = baMapData[c(4),], aes(x = longDD.j, y = latDD.j, xend = longDD.i, yend = latDD.i+0.02, color = region.j, linetype = depth.j, size = mean), arrow = arrow(type = "open", length = unit(0.0225, "npc")), alpha = 0.7,  curvature = -3, na.rm = TRUE) +
-  # geom_curve(data = baMapData[c(20),], aes(x = longDD.j, y = latDD.j, xend = longDD.i, yend = latDD.i-0.015, color = region.j, linetype = depth.j, size = mean), arrow = arrow(type = "open", length = unit(0.0225, "npc")), alpha = 0.7,  curvature = -9, na.rm = TRUE) +
-  #  geom_curve(data = baMapData[c(26),], aes(x = longDD.j, y = latDD.j, xend = longDD.i+0.02, yend = latDD.i, color = region.j, linetype = depth.j, size = mean), arrow = arrow(type = "open", length = unit(0.0225, "npc")), alpha = 0.7,  curvature = 2, na.rm = TRUE) +
-  # geom_curve(data = baMapData[c(23, 28),], aes(x = longDD.j, y = latDD.j, xend = longDD.i-0.02, yend = latDD.i, color = region.j, linetype = depth.j, size = mean), arrow = arrow(type = "open", length = unit(0.0225, "npc")), alpha = 0.7,  curvature = 0.2, na.rm = TRUE) +
-# geom_curve(data = baMapData[c(8, 13),], aes(x = longDD.j, y = latDD.j, xend = longDD.i, yend = latDD.i+0.02, color = region.j, linetype = depth.j, size = mean), arrow = arrow(type = "open", length = unit(0.0225, "npc")), alpha = 0.7,  curvature = 0.2, na.rm = TRUE) +
-# geom_curve(data = baMapData[c(10, 16),], aes(x = longDD.j, y = latDD.j, xend = longDD.i +0.02, yend = latDD.i, color = region.j, linetype = depth.j, size = mean), arrow = arrow(type = "open", length = unit(0.0225, "npc")), alpha = 0.7,  curvature = -0.25, na.rm = TRUE) +
-# geom_curve(data = baMapData[c(22, 27),], aes(x = longDD.j, y = latDD.j, xend = longDD.i-0.03, yend = latDD.i+0.01, color = region.j, linetype = depth.j, size = mean), arrow = arrow(type = "open", length = unit(0.0225, "npc")), alpha = 0.7,  curvature = -0.2, na.rm = TRUE) +
-# geom_curve(data = baMapData[c(18, 19),], aes(x = longDD.j, y = latDD.j, xend = longDD.i-0.03, yend = latDD.i+0.01, color = region.j, linetype = depth.j, size = mean), arrow = arrow(type = "open", length = unit(0.0225, "npc")), alpha = 0.7,  curvature = -0.2, na.rm = TRUE) +
-# geom_curve(data = baMapData[c(7),], aes(x = longDD.j, y = latDD.j, xend = longDD.i+0.02, yend = latDD.i, color = region.j, linetype = depth.j, size = mean), arrow = arrow(type = "open", length = unit(0.0225, "npc")), alpha = 0.7,  curvature = 0.25, na.rm = TRUE) +
 
 library(ggspatial)
 migrateMap = ggplot() +
   geom_sf(data = florida, fill = "white", size = 0.25) +
-  
-#I need this one
-geom_curve(data = baMapData, aes(x = longDD.j, y = latDD.j, xend = longDD.i, yend = latDD.i, color = pop.j, size = mean), arrow = arrow(type = "closed", length = unit(0.0225, "npc")), alpha = 0.7,  curvature = -0.2, na.rm = TRUE) +
-geom_point(data = seflPastPopsMigrate, aes(x = longDD, y = latDD, fill = region), size = 3.5) +
+  geom_curve(data = baMapData, aes(x = longDD.j, y = latDD.j, xend = longDD.i, yend = latDD.i, color = pop.j, size = mean), arrow = arrow(type = "closed", length = unit(0.0225, "npc")), alpha = 0.7,  curvature = -0.3, na.rm = TRUE) +
+  geom_point(data = seflPastPopsMigrate, aes(x = longDD, y = latDD, fill = region), size = 3.5) +
   scale_fill_manual(values = flPal, name = "Region") +
   scale_color_manual(values = migratePal, guide = NULL) +
-  scale_size(range = c(0.5, 2), breaks = c(0.02,0.06,0.1,0.14,0.18,0.22), name = expression(paste(italic("m")))) +
-  # scale_size_binned(range = c(0.25, 1.5), breaks = seq(0.02,0.2, by = 0.04), name = expression(paste(italic("m")))) +
-#  scale_linetype_manual(values = lines, name = "Source depth") +
+  scale_shape_manual(values = c(24, 25), name = "Region") +
+  scale_size(range = c(0.5, 2), breaks = c(0.05,0.1,0.15), name = expression(paste(italic("m")))) +
   coord_sf(xlim = c(-80.6, -79.6), ylim = c(26, 27.2)) +
   scale_x_continuous(breaks = c(seq(-80.6, -79.6, by = 0.2))) +
   scale_y_continuous(breaks = c(seq(26, 27.2, by = 0.2))) +
   annotation_scale(location = "br") +
   annotation_north_arrow(location = "br", which_north = "true", style = north_arrow_minimal(), pad_x = unit(-0.25, "cm") , pad_y = unit(0.75, "cm")) +
-  guides(fill = guide_legend(override.aes = list(shape = 22, color = NA, size = 4),ncol = 2, order = 1), shape = guide_legend(override.aes = list(size = 3), order = 2), size = guide_legend(override.aes = list(linetype = 1, shape = NA, alpha = 1, arrow = arrow(length = unit(0, "pt"))), order = 3, ncol = 3)) +
-  
+  guides(fill = guide_legend(override.aes = list(shape = 22, color = NA, size = 4), order = 1)) +
+#size = guide_legend(override.aes = list(linetype = 1, shape = NA, alpha = 1), order = 2, ncol = 3)) +
   theme_bw() +
   theme(panel.background = element_rect(fill = "aliceblue"),
         panel.border = element_rect(color = "black", size = 0.75, fill = NA),
         axis.title = element_blank(),
         axis.ticks = element_line(color = "black"),
         axis.text = element_text(color = "black"),
-        legend.position = "bottom",
-        legend.direction = "vertical",
-        legend.box = "horizontal",
-        legend.key = element_blank(),
+        legend.position = "right",
+        #legend.direction = "horizontal",
+        #legend.box = "vertical",
+        #legend.key = element_blank(),
         legend.background = element_blank()
   )
 
 migrateMap
+
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/migrateMap12.png", plot = migrateMap, width = 25.5, height = 15, units = "cm", 
+       dpi = 300)
 
 ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/migrateMap.png", plot = migrateMap, width = 25.5, height = 15, units = "cm", 
        dpi = 300)
