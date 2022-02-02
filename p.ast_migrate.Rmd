@@ -191,9 +191,6 @@ migrateMap = ggplot() +
 
 migrateMap
 
-ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/migrateMap12.png", plot = migrateMap, width = 25.5, height = 15, units = "cm", 
-       dpi = 300)
-
 ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/migrateMap.png", plot = migrateMap, width = 25.5, height = 15, units = "cm", 
        dpi = 300)
 ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/migrateMap.svg", plot = migrateMap, width = 25.5, height = 15, units = "cm", 
