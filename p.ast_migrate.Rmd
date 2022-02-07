@@ -198,7 +198,7 @@ ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/migrateMa
 ```
 
 Putting the plots together into a single figure panel
-
+Haven't used this yet
 ```{r, migrationFigure}
 migrate1 = image_read("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/migrate.png")
 migrate2 = plot_spacer() - migrateMap + plot_layout(ncol = 1)&
