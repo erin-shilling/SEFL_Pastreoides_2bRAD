@@ -80,7 +80,16 @@ Final map of sites
 Create a map of study sites with insets and legend
 ```{r, study map}
 #packages: magick, cowplot
-flPal = paletteer_d("rcartocolor::Sunset")[c(7, 6, 4, 3, 1)]
+#choose your colors
+#paletteer_d("LaCroixColoR::PeachPear", type = c("discrete"))
+#flPal = paletteer_d("LaCroixColoR::PeachPear")[c(1,2,3,4,5)]
+#flPal = paletteer_d("LaCroixColoR::paired")[c(11,12,8,4,3)]
+#flPal= paletteer_d("LaCroixColoR::paired")[c(2,12,8,4,11)]
+#flPal= paletteer_d("LaCroixColoR::paired")[c(2,5,8,4,11)]
+#flPal = paletteer_d("RSkittleBrewer::tropical")[c(3,1,5,4,2)]
+#flPal = paletteer_d("RSkittleBrewer::smarties")[c(1,3,4,5,6)]
+
+flPal = paletteer_d("LaCroixColoR::PeachPear")[c(1,2,3,4,5)]
 
 latLab = paste(format(abs(seq(26, 27.2, by = 0.2)), nsmall = 1), "ºN", sep = "")
 longLab = paste(format(abs(seq(-80.6, -79.2, by = 0.2)), nsmall = 1), "ºW", sep = "")
@@ -89,7 +98,7 @@ siteMap = ggplot() +
   geom_sf(data = florida, fill = "white", color = "gray40", size = 0.25) +
   geom_sf(data = countries, fill = "white", color = "gray40", size = 0.25) +
   geom_sf(data = frt, fill = "gray80", size = 0) +
-  geom_point(data = popLabs, aes(x = longDD, y = latDD, fill = region), shape = 21, size = 2) +
+  geom_point(data = popLabs, aes(x = longDD, y = latDD, fill = region), shape = 21, size = 4) +
   geom_sf_text(data = countyNames, aes(label = ID), nudge_x = c(0.1, 0, 0.1),
                nudge_y = c(0, -.025, -0.1)) +
   scale_fill_manual(values = flPal, name = "Population:") +
@@ -107,7 +116,7 @@ siteMap = ggplot() +
         axis.title = element_blank(),
         legend.background = element_blank(),
         legend.title = element_text(size = 10),
-        legend.text = element_text(size = 10), #was 8 before
+        legend.text = element_text(size = 10),
         legend.key = element_blank(),
         legend.position = "bottom",
         legend.direction = "horizontal")
@@ -297,7 +306,9 @@ pastPCoA$pop = factor(pastPCoA$pop)
 levels(pastPCoA$pop)
 pastPCoA$pop = factor(pastPCoA$pop, levels(pastPCoA$pop)[c(4, 3, 5, 1, 2)])
 
-flPal = paletteer_d("rcartocolor::Sunset")[c(7, 6, 4, 3, 1)]
+flPal = paletteer_d("LaCroixColoR::PeachPear")[c(1,2,3,4,5)]
+#flPal = paletteer_d("LaCroixColoR::paired")[c(11,12,8,4,3)]
+#flPal = paletteer_d("rcartocolor::Sunset")[c(7, 6, 4, 3, 1)]
 
 pastPcoaPlotA = ggplot(pastPCoA, aes(x = PCo1, y = PCo2, color = pop, fill = pop)) +
     geom_segment(data = Cred, aes(x = 0, xend = Dim1*0.348, y = 0,
@@ -525,7 +536,8 @@ All ANOVAs significant, pairwise comparisons primarily show Jupiter pop has sign
 #packages: paletteer, reshape2, patchwork
 hetMelt = melt(het, id.vars = c("sample", "Region"), variable.name = "type", value.name = "heterozygosity")
 
-flPal = paletteer_d("rcartocolor::Sunset")[c(7, 6, 4, 3, 1)]
+flPal = paletteer_d("LaCroixColoR::PeachPear")[c(1,2,3,4,5)]
+#flPal = paletteer_d("rcartocolor::Sunset")[c(7, 6, 4, 3, 1)]
 
 hetTheme = theme(axis.title.x = element_text(color = "black", size = 12),
         axis.text.x = element_blank(),
