@@ -1,0 +1,103 @@
+﻿sample,Region,ord,Ancestry,Fraction,,Clones represented (incl that individual)
+P049,St. Lucie,1,cluster3.1,1,,8
+P057,St. Lucie,2,cluster3.1,0.9326,,20
+P073,St. Lucie,3,cluster3.1,0.7287,,6
+P011,Jupiter,1,cluster3.1,1,,1
+P010,Jupiter,2,cluster3.1,0.7545,,1
+P008,Jupiter,3,cluster3.1,0.6687,,3
+P004,Jupiter,4,cluster3.1,0.6495,,1
+P014,Jupiter,5,cluster3.1,0.1824,,1
+P002,Jupiter,6,cluster3.1,0,,1
+P003,Jupiter,7,cluster3.1,0,,1
+P006,Jupiter,8,cluster3.1,0,,1
+P009,Jupiter,9,cluster3.1,0,,5
+P015,Jupiter,10,cluster3.1,0,,1
+P019,West Palm Beach,1,cluster3.1,1,,1
+P020,West Palm Beach,2,cluster3.1,1,,1
+P028-2,West Palm Beach,3,cluster3.1,1,,2
+P022,West Palm Beach,4,cluster3.1,0.832,,1
+P024,West Palm Beach,5,cluster3.1,0.7438,,1
+P027,West Palm Beach,6,cluster3.1,0.5179,,1
+P029,West Palm Beach,7,cluster3.1,0.5045,,1
+P043,Boynton Beach,1,cluster3.1,1,,5
+P045,Boynton Beach,2,cluster3.1,1,,1
+P038,Boynton Beach,3,cluster3.1,0.7693,,1
+P033,Boynton Beach,4,cluster3.1,0.768,,1
+P031,Boynton Beach,5,cluster3.1,0.6692,,1
+P034,Boynton Beach,6,cluster3.1,0.6595,,1
+P040,Boynton Beach,7,cluster3.1,0.6277,,1
+P035,Boynton Beach,8,cluster3.1,0.1301,,1
+P032,Boynton Beach,9,cluster3.1,0,,1
+P044,Boynton Beach,10,cluster3.1,0,,1
+P078,Ft. Lauderdale,1,cluster3.1,1,,1
+P083,Ft. Lauderdale,2,cluster3.1,0.9398,,1
+P077-3,Ft. Lauderdale,3,cluster3.1,0,,3
+P084,Ft. Lauderdale,4,cluster3.1,0,,8
+P085,Ft. Lauderdale,5,cluster3.1,0,,1
+P087,Ft. Lauderdale,6,cluster3.1,0,,1
+P011,Jupiter,1,cluster3.2,0,,87
+P010,Jupiter,2,cluster3.2,0.156,,
+P008,Jupiter,3,cluster3.2,0.176,,
+P004,Jupiter,4,cluster3.2,0.1706,,
+P014,Jupiter,5,cluster3.2,0.8176,,
+P002,Jupiter,6,cluster3.2,1,,
+P003,Jupiter,7,cluster3.2,1,,
+P006,Jupiter,8,cluster3.2,1,,
+P009,Jupiter,9,cluster3.2,1,,
+P015,Jupiter,10,cluster3.2,1,,
+P019,West Palm Beach,1,cluster3.2,0,,
+P020,West Palm Beach,2,cluster3.2,0,,
+P028-2,West Palm Beach,3,cluster3.2,0,,
+P022,West Palm Beach,4,cluster3.2,0.001,,
+P024,West Palm Beach,5,cluster3.2,0.1929,,
+P027,West Palm Beach,6,cluster3.2,0.4204,,
+P029,West Palm Beach,7,cluster3.2,0.3644,,
+P043,Boynton Beach,1,cluster3.2,0,,
+P045,Boynton Beach,2,cluster3.2,0,,
+P038,Boynton Beach,3,cluster3.2,0.2098,,
+P033,Boynton Beach,4,cluster3.2,0.1613,,
+P031,Boynton Beach,5,cluster3.2,0.2388,,
+P034,Boynton Beach,6,cluster3.2,0.1751,,
+P040,Boynton Beach,7,cluster3.2,0.364,,
+P035,Boynton Beach,8,cluster3.2,0.8699,,
+P032,Boynton Beach,9,cluster3.2,1,,
+P044,Boynton Beach,10,cluster3.2,0,,
+P078,Ft. Lauderdale,1,cluster3.2,0,,
+P083,Ft. Lauderdale,2,cluster3.2,0,,
+P077-3,Ft. Lauderdale,3,cluster3.2,0,,
+P084,Ft. Lauderdale,4,cluster3.2,0,,
+P085,Ft. Lauderdale,5,cluster3.2,0,,
+P087,Ft. Lauderdale,6,cluster3.2,0,,
+P011,Jupiter,1,cluster3.3,0,,
+P010,Jupiter,2,cluster3.3,0.0895,,
+P008,Jupiter,3,cluster3.3,0.1552,,
+P004,Jupiter,4,cluster3.3,0.18,,
+P014,Jupiter,5,cluster3.3,0,,
+P002,Jupiter,6,cluster3.3,0,,
+P003,Jupiter,7,cluster3.3,0,,
+P006,Jupiter,8,cluster3.3,0,,
+P009,Jupiter,9,cluster3.3,0,,
+P015,Jupiter,10,cluster3.3,0,,
+P019,West Palm Beach,1,cluster3.3,0,,
+P020,West Palm Beach,2,cluster3.3,0,,
+P028-2,West Palm Beach,3,cluster3.3,0,,
+P022,West Palm Beach,4,cluster3.3,0.167,,
+P024,West Palm Beach,5,cluster3.3,0.0633,,
+P027,West Palm Beach,6,cluster3.3,0.0617,,
+P029,West Palm Beach,7,cluster3.3,0.1311,,
+P043,Boynton Beach,1,cluster3.3,0,,
+P045,Boynton Beach,2,cluster3.3,0,,
+P038,Boynton Beach,3,cluster3.3,0.0209,,
+P033,Boynton Beach,4,cluster3.3,0.0707,,
+P031,Boynton Beach,5,cluster3.3,0.092,,
+P034,Boynton Beach,6,cluster3.3,0.1654,,
+P040,Boynton Beach,7,cluster3.3,0.0083,,
+P035,Boynton Beach,8,cluster3.3,0,,
+P032,Boynton Beach,9,cluster3.3,0,,
+P044,Boynton Beach,10,cluster3.3,1,,
+P078,Ft. Lauderdale,1,cluster3.3,0,,
+P083,Ft. Lauderdale,2,cluster3.3,0.0602,,
+P077-3,Ft. Lauderdale,3,cluster3.3,1,,
+P084,Ft. Lauderdale,4,cluster3.3,1,,
+P085,Ft. Lauderdale,5,cluster3.3,1,,
+P087,Ft. Lauderdale,6,cluster3.3,1,,

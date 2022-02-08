@@ -141,7 +141,7 @@ ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/pastMap.e
 <br>
 
 ```{r, Dendrogram to identify clones}
-#packages: tidyverse, ggdendro
+#packages: tidyverse, ggdendro, paletteer
 cloneBams = read.csv("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/poritesastreoidesMetaData.csv")
 cloneMa = as.matrix(read.table("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/pastClones.ibsMat"))
 dimnames(cloneMa) = list(cloneBams[,1],cloneBams[,1])
@@ -173,16 +173,18 @@ cloneDendPoints$y = point[!is.na(point)]
 
 techReps = c("P028-1", "P028-2", "P028-3", "P046-1", "P046-2", "P046-3", "P077-1", "P077-2", "P077-3")
 
+flPal = paletteer_d("LaCroixColoR::PeachPear")[c(1,2,3,4,5)]
+
 cloneDendPoints$pop = factor(cloneDendPoints$pop)
 cloneDendPoints$pop = factor(cloneDendPoints$pop,levels(cloneDendPoints$pop)[c(4,3,5,1,2)])
 
 cloneDendA = ggplot() +
   geom_segment(data = segment(cloneDData), aes(x = x, y = y, xend = xend, yend = yend2), size = 0.5) +
   geom_point(data = cloneDendPoints, aes(x = x, y = y, fill = pop), size = 4, stroke = 0.25, shape = 24) +
-  scale_fill_brewer(palette = "Dark2", name = "Population") +
+  scale_fill_manual(values = flPal, name = "Population") +
   geom_hline(yintercept = 0.165, color = "red", lty = 5, size = 0.75) + # creating a dashed line to indicate a clonal distance threshold
-  geom_text(data = subset(cloneDendPoints, subset = label %in% techReps), aes(x = (x + 0.09), y = (y - .003), label = "*"), angle = 90) + # spacing technical replicates further from leaf
-#  geom_text(data = subset(cloneDendPoints, subset = !label %in% techReps), aes(x = x, y = (y - .010), label = label), angle = 90) +
+  geom_text(data = subset(cloneDendPoints, subset = label %in% techReps), aes(x = (x + 0.25), y = (y - .004), label = "*"), angle = 90, size = 10) + # spacing technical replicates further from leaf
+#  geom_text(data = subset(cloneDendPoints, subset = !label %in% techReps), aes(x = x, y = (y - .010), label = "label"), angle = 90) +
   labs(y = "Genetic distance (1 - IBS)") +
   theme_classic()
 
@@ -206,8 +208,8 @@ cloneDend = cloneDendA + theme(
 
 cloneDend
 
-ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/cloneDend_nolabels.png", plot = cloneDend, height = 7, width = 16, units = "in", dpi = 300)
-ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/cloneDend_nolabels.eps", plot = cloneDend, height = 7, width = 16, units = "in", dpi = 300)
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/cloneDend_nolabels.png", plot = cloneDend, height = 5, width = 16, units = "in", dpi = 300)
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/cloneDend_nolabels.eps", plot = cloneDend, height = 5, width = 16, units = "in", dpi = 300)
 
 ```
 
@@ -837,17 +839,23 @@ Population structure plot from NGSadmix/CLUMPAK results.
 Based on most probable values for K
 ```{r, ADMIXTURE}
 # packages: paletteer, tidyverse, reshape2
-kColPal3 = paletteer_c("viridis::viridis", n = 3)
-kColPal7 = paletteer_c("viridis::viridis", n = 7)
+kColPal3 = paletteer_d("LaCroixColoR::PassionFruit")[c(2,3,6)] #A
+kColPal3 = paletteer_d("LaCroixColoR::Mango")[c(3,5,6)] #B
+kColPal3 = paletteer_d("LaCroixColoR::Berry")[c(1,3,6)] #C
+kColPal3 = paletteer_d("LaCroixColoR::Apricot")[c(2,3,6)] #E
+kColPal3 = paletteer_d("LaCroixColoR::KiwiSandia")[c(3,5,7)] #G
+kColPal3 = paletteer_d("LaCroixColoR::MurePepino")[c(3,4,6)] #H
+#kColPal7 = paletteer_c("viridis::viridis", n = 7)
 
-flPal = paletteer_d("rcartocolor::Sunset")[c(7, 6, 4, 3, 1)]
+#flPal = paletteer_d("rcartocolor::Sunset")[c(7, 6, 4, 3, 1)]
+flPal = paletteer_d("LaCroixColoR::PeachPear")[c(1,2,3,4,5)]
 
 admixpops = read.csv("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/poritesastreoidesMetaData_clonesremoved.csv") %>% select("sample" = tube_id, "Region" = region)
 
 clumpp3 = read.table("data_files/pastClumppK3", header = FALSE)
-clumpp7 = read.table("data_files/pastClumppK7", header = FALSE)
+#clumpp7 = read.table("data_files/pastClumppK7", header = FALSE)
 clumpp3$V1 = admixpops$sample
-clumpp7$V1 = admixpops$sample
+#clumpp7$V1 = admixpops$sample
 
 seflPastAdmix = admixpops %>% left_join(clumpp3[,c(1,6:8)], by = c("sample" = "V1")) %>% 
   left_join(clumpp7[,c(1, 6:12)], by = c("sample" = "V1")) %>% rename("cluster3.1" = "V6.x", "cluster3.2" = "V7.x", "cluster3.3" = "V8.x","cluster7.1" = "V6.y", "cluster7.2" = "V7.y", "cluster7.3" = "V8.y", "cluster7.4" = "V9", "cluster7.5" = "V10", "cluster7.6" = "V11", "cluster7.7" = "V12")
@@ -871,9 +879,9 @@ seflPastAdmixMelt = melt(seflPastAdmix, id.vars=c("sample", "Region", "ord"), va
 seflPastAdmixMelt$Ancestry = factor(seflPastAdmixMelt$Ancestry)
 seflPastAdmixMelt$Ancestry = factor(seflPastAdmixMelt$Ancestry, levels = rev(levels(seflPastAdmixMelt$Ancestry)))
 
-popAnno = data.frame(x1 = c(0.3, 0.3, 0.3, 0.3, 0.3), x2 = c(3.7, 10.7, 7.7, 10.7, 6.7),
-                     y1 = -0.12, y2 = -0.12, sample = NA, Ancestry = NA, ord  = NA, Fraction = NA,
-                     Region= c("St. Lucie", "Jupiter", "West Palm Beach", "Boynton Beach", "Ft. Lauderdale"))
+write_excel_csv(seflPastAdmixMelt, file= 'Samples in each K.csv')
+
+popAnno = data.frame(x1 = c(0.3, 0.3, 0.3, 0.3, 0.3), x2 = c(3.7, 10.7, 7.7, 10.7, 6.7), y1 = -0.12, y2 = -0.12, sample = NA, Ancestry = NA, ord  = NA, Fraction = NA,Region= c("St. Lucie", "Jupiter", "West Palm Beach", "Boynton Beach", "Ft. Lauderdale"))
 
 popAnno$Region = factor(popAnno$Region)
 popAnno$Region = factor(popAnno$Region, levels = levels(popAnno$Region)[c(4, 3, 5, 1, 2)])
@@ -912,28 +920,28 @@ admixPlotK3A = ggplot(data = subset(seflPastAdmixMelt, subset = seflPastAdmixMel
 
 admixPlotK3 = admixPlotK3A + admixTheme
 
-admixPlotK7A = ggplot(data = subset(seflPastAdmixMelt, subset = !(seflPastAdmixMelt$Ancestry %in% c("cluster3.1", "cluster3.2", "cluster3.3"))), aes(x = ord, y = Fraction, fill = Ancestry, order = sample)) +
-    geom_segment(data = popAnno, aes(x = x1, xend = x2, y = y1, yend = y2, color = Region), size = 7) +
-  geom_bar(stat = "identity", position = "fill", width = 1, colour = "grey25", size = 0.2) +
-  facet_grid(.~ Region, scales = "free", switch = "both", space = "free") +
-  scale_x_discrete(expand = c(0, 0)) +
-  scale_y_continuous(expand = c(0.001, 0.001)) +
-  scale_fill_manual(values = kColPal7) +
-  scale_color_manual(values = flPal) +
-  ggtitle(expression(paste(italic("K")," = 7", sep =""))) +
-  coord_cartesian(ylim = c(-.01, 1.01), clip = "off")
+#admixPlotK7A = ggplot(data = subset(seflPastAdmixMelt, subset = !(seflPastAdmixMelt$Ancestry %in% c("cluster3.1", "cluster3.2", "cluster3.3"))), aes(x = ord, y = Fraction, fill = Ancestry, order = sample)) +    
+#geom_segment(data = popAnno, aes(x = x1, xend = x2, y = y1, yend = y2, color = Region), size = 7) +
+#  geom_bar(stat = "identity", position = "fill", width = 1, colour = "grey25", size = 0.2) +
+#  facet_grid(.~ Region, scales = "free", switch = "both", space = "free") +
+#  scale_x_discrete(expand = c(0, 0)) +
+#  scale_y_continuous(expand = c(0.001, 0.001)) +
+#  scale_fill_manual(values = kColPal7) +
+#  scale_color_manual(values = flPal) +
+#  ggtitle(expression(paste(italic("K")," = 7", sep =""))) +
+#  coord_cartesian(ylim = c(-.01, 1.01), clip = "off")
  
-admixPlotK7 = admixPlotK7A + admixTheme
+#admixPlotK7 = admixPlotK7A + admixTheme
 # admixPlotK4 = admixPlotK4A + admixTheme + 
 #   theme(strip.text.y.left = element_blank())
 
-admixPlot = (admixPlotK3 / admixPlotK7)
+#admixPlot = (admixPlotK3 / admixPlotK7)
 
-admixPlot
+admixPlotK3
 
-ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/admixturePlot.png", plot = admixPlot, width = 15, height = 10, units = "cm", dpi = 300)
-ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/admixturePlot.eps", plot = admixPlot, width = 15, height = 10, units = "cm", dpi = 300)
-ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/admixturePlot.eps", plot = admixPlot, width = 15, height = 10, units = "cm", dpi = 300)
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/admixturePlotK3H.png", plot = admixPlotK3, width = 15, height = 5, units = "cm", dpi = 300)
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/admixturePlotK3.eps", plot = admixPlotK3, width = 15, height = 5, units = "cm", dpi = 300)
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/admixturePlotK3.eps", plot = admixPlotK3, width = 15, height = 5, units = "cm", dpi = 300)
 
 ```
 
