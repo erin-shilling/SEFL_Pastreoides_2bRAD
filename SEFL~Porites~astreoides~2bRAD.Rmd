@@ -724,6 +724,7 @@ GeoDistanceInMetresMatrix = function(df.geopoints) {
 And now that we've calculated the geographic distance between them, can run the Mantel test
 Mantel isolation by distance test between individuals
 Using IBS and geographic distance matrices
+*Running but not including figure in manuscript
 ```{r, mantel snps geo}
 #packages: ade4, reshape2, paletteer
 pastIBS = read.table("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/pastNoClones.ibsMat")%>% as.matrix() %>% as.dist(diag = FALSE)
@@ -784,6 +785,7 @@ ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/distance_
 
 Mantel test across depths
 Using IBS and depth distance matrices
+*Running but not including figure in manuscript
 ```{r, ibs depth}
 # packages: tidyverse, ade4, reshape2, paletteer
 pastIBS = read.table("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/pastNoClones.ibsMat")%>% as.matrix() %>% as.dist(diag = FALSE)
@@ -945,6 +947,230 @@ ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/admixture
 
 ```
 
+BayesAss Analyses
+First load BAtrace files into Tracer, make sure burn-in is correct, it defaults to 10% of runs
+Select all trace files, then select an individual trace, then view the "Trace" tab, and should see that oscillations for the most part are similar/overlap
+This is just a visual check step, you are also testing this statistically below
+
+Checking deviance among model runs
+```{r, BA3 traces}
+library(tidyverse)
+
+fileList = substr(list.files("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/bayesAss/", "BA3trace.*.txt$"),1,10)
+
+bayesian_deviance <- function(trace, burnin = 0, sampling.interval = 0){
+  if(burnin == 0) stop('No burnin specified')
+  if(sampling.interval == 0) stop('No sampling interval specified')
+  range <- (trace$State > burnin & trace$State %% sampling.interval == 0)
+  D <- -2*mean(trace$LogProb[range])
+  return(D)
+}
+
+for(i in 1:length(fileList)){
+  assign(fileList[i], read.delim(paste("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/bayesAss/", fileList[i], ".txt", sep = ""))) %>% dplyr::select(-last_col())
+  print(paste(fileList[i], bayesian_deviance(get(fileList[i]), burnin = 2000000, sampling.interval = 100)))
+}
+
+```
+
+All traces have similar deviance.
+Using the trace with the lowest deviance- #07
+```{r, BA3}
+bayesAss = read.delim("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/bayesAss/BA3trace07.txt") %>% filter(State > 2000000) %>% dplyr::select(-State, -LogProb, -X)
+
+baMean = bayesAss %>% summarise(across(everything(), list(mean))) %>% t() %>% as_tibble() %>% rename(., mean=V1) %>% mutate(pops = colnames(bayesAss))
+
+baSumm = bayesAss %>% summarise(across(everything(), list(median))) %>% t() %>% as_tibble() %>% rename(., median=V1) %>% mutate(pops = baMean$pops, mean = round(baMean$mean, 3)) %>% relocate(median, .after = mean)
+
+#takes median and makes it only 3 decimal places
+baSumm$median = round(baSumm$median, 3)
+
+library(TeachingDemos)
+baHpd =as.data.frame(t(sapply(bayesAss, emp.hpd)))
+colnames(baHpd) = c("hpdLow", "hpdHigh")
+baHpd$pops = rownames(baHpd)
+
+library(LaplacesDemon)
+ESS = as.data.frame(sapply(bayesAss, ESS))
+
+baSumm = baSumm %>% left_join(baHpd)
+baSumm$hpdLow = round(baSumm$hpdLow, 3)
+baSumm$hpdHigh = round(baSumm$hpdHigh, 3)
+baSumm$ESS = ESS
+
+#figure out how your pops are numbered by looking at one of your BAOut files
+## Population Index -> Population Label:
+#0->jupiter
+#1->westpalm
+#2->boynton
+#3->stlucie
+#4->pompano
+
+#i and j are the sink & source populations
+#i is the sink, j is the source
+#write out how you want it to appear on your stepwise plot
+popi = rep(c("Jupiter", "West Palm Beach", "Boynton Beach", "St. Lucie Reef", "Ft. Lauderdale"), each = 5)
+
+popj = rep(c("Jupiter", "West Palm Beach", "Boynton Beach", "St. Lucie Reef", "Ft. Lauderdale"), times = 5)
+
+baSumm = baSumm %>% mutate(pop.i = popi, pop.j = popj) %>% relocate(c(pop.i, pop.j), .after = pops) %>% dplyr::select(-pops)
+# %>% filter(pop1!=pop2) %>% select(-pops)
+
+baSumm$pop.i = factor(baSumm$pop.i)
+#levels(baSumm$pop.i)
+baSumm$pop.i = factor(baSumm$pop.i, levels = levels(baSumm$pop.i)[c(4, 3, 5, 1, 2)])
+
+baSumm$pop.j = factor(baSumm$pop.j)
+baSumm$pop.j = factor(baSumm$pop.j, levels = levels(baSumm$pop.j)[c(4, 3, 5, 1, 2)])
+
+```
+
+Heat map of migration coefficients
+```{r, migrationPlots}
+library(ggplot2)
+library(paletteer)
+baSumm$mean = sprintf('%.3f', baSumm$mean)
+baSumm$hpdLow = sprintf('%.3f', baSumm$hpdLow)
+baSumm$hpdHigh = sprintf('%.3f', baSumm$hpdHigh)
+
+flPal = paletteer_d("rcartocolor::Sunset")[c(7, 6, 4, 3, 1)]
+
+migrateA = ggplot(data = baSumm, aes(pop.i, pop.j, fill = as.numeric(as.character(mean)))) +
+  geom_tile(color = "white") +
+  geom_segment(data = baSumm, aes(x = 0.4755, xend = -0.65, y = pop.j, yend = pop.j, color = pop.j), size = 16) + #changing y bar of pop names
+  geom_segment(data = baSumm, aes(x = pop.i, xend = pop.i, y = 0.45, yend = -0.1, color = pop.i), size = 35) + #changing x bar of pop names
+  scale_color_manual(values = flPal[c(1:5, 1:5)], guide = NULL) +
+  scale_fill_gradientn(colours = paletteer_c("viridis::viridis", n = 10)[3:10], limit = c(0,0.17), space = "Lab", name = expression(paste(italic("m"))), na.value = "gray85",  guide = "colourbar", values = c(0, 0.05, 0.1, 0.15, 0.2,0.5,0.75,1)) + #color scale of heatmap
+  geom_text(data = baSumm, aes(x = pop.i, y = pop.j, label = paste(mean, "\n", sep = "")), color = ifelse(baSumm$mean > 0.6, "red", "gray5"), fontface = "bold") + #format for center values (i.e. PMP vs PMP)
+  geom_text(data = baSumm, aes(x = pop.i, y = pop.j, label = paste("\n(",hpdLow,"–",hpdHigh, ")", sep = "")), color = ifelse(baSumm$mean > 0.6, "red", "gray5"), size = 3.25) +
+  labs(x = "Sink", y = "Source") +
+  guides(fill = guide_colorbar(barwidth = 1, barheight = 10, title.position = "top", title.hjust = 0.5, frame.colour = "black", frame.linewidth = 1, ticks.colour = "black")) + #m coefficient scale key
+  scale_y_discrete(limits = rev(levels(baSumm$pop.i))[c(1:5)], position = "left") +
+  # scale_x_discrete() +
+  coord_cartesian(xlim = c(1, 5), ylim = c(1, 5), clip = "off") +
+  theme_minimal()
+
+migrate = migrateA + theme(
+  axis.text.x = element_text(vjust = 1, size = 9, hjust = 0.5, color = "black"),
+  axis.text.y = element_text(size = 9, color = "black"),
+  axis.title.x = element_text(size = 14, vjust = -1.5),
+  axis.title.y = element_text(size = 14),
+  panel.grid.major = element_blank(),
+  axis.ticks = element_blank(),
+  legend.position = "right",
+  legend.direction = "vertical",
+  legend.title = element_text(size = 14, face = "bold"),
+  legend.text = element_text(size = 10)
+)
+
+migrate
+
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/migrate.png", plot = migrate, width = 20, height = 8, units = "cm", dpi = 300)
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/migrate.svg", plot = migrate, width = 20, height = 8, units = "cm", dpi = 300)
+
+```
+![](C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/migrate.png)
+
+Map of m coefficients as flow between sites
+```{r, migration map}
+baSumm$mean = as.numeric(baSumm$mean)
+baSumm$hpdLow = as.numeric(baSumm$hpdLow)
+baSumm$hpdHigh = as.numeric(baSumm$hpdHigh)
+
+pastSamples = read.csv("data_files/poritesastreoidesMetaData_clonesremoved.csv", header = TRUE) %>% select(sample = tube_id, !sample_id)
+pastSamples$region[pastSamples$region=="Pompano/LBTS"]<-"Ft. Lauderdale"
+
+library(lubridate)
+library(measurements)
+pastSamples$region = factor(pastSamples$region)
+levels(pastSamples$region)
+pastSamples$region = factor(pastSamples$region, levels = levels(pastSamples$region)[c(4, 3, 5, 1, 2)])
+pastSamples$depthM = conv_unit(pastSamples$collection_depth_ft, from = "ft", to = "m") %>% round(1)
+
+seflSites = pastSamples %>% group_by(region)%>% summarize(latDD = first(site_lat), longDD = first(site_long), 
+depthRangeM = paste(min(depthM), "-", max(depthM), sep = ""), 
+n = n()) %>% droplevels() %>% as.data.frame()
+
+seflPastPopsMigrate = seflSites %>% group_by(region) %>% summarise(latDD = first(latDD), longDD = first(longDD)) %>% filter(region %in% c("St. Lucie Reef", "Jupiter", "West Palm Beach", "Boynton Beach", "Ft. Lauderdale")) %>% droplevels()
+
+migratePal = c("St. Lucie Reef" = flPal[1], "Jupiter" = flPal[2], "West Palm Beach" = flPal[3], "Boynton Beach" = flPal[4], "Ft. Lauderdale" = flPal[5])
+
+baMapData = baSumm %>% left_join(seflPastPopsMigrate, by = c("pop.i" = "region")) %>% left_join(seflPastPopsMigrate, by = c("pop.j" = "region"), suffix = c(".i", ".j")) %>% filter(mean >= 0.05)
+
+for(x in 1:nrow(baMapData)) {
+  if (baMapData$pop.i[x] == baMapData$pop.j[x]) {
+    baMapData$latDD.i[x] = NA;
+    baMapData$latDD.j[x] = NA;
+    baMapData$longDD.i[x] = NA;
+    baMapData$longDD.j[x] = NA;
+    baMapData$mean[x] = NA;
+    baMapData$median[x] = NA
+  }
+}
+
+library(sf)
+florida = read_sf("data_files/shp/flCountiesLo.shp") %>% st_transform(crs = 4326)
+
+library(ggspatial)
+migrateMap = ggplot() +
+  geom_sf(data = florida, fill = "white", size = 0.25) +
+  geom_curve(data = baMapData, aes(x = longDD.j, y = latDD.j, xend = longDD.i, yend = latDD.i, color = pop.j, size = mean), arrow = arrow(type = "closed", length = unit(0.0225, "npc")), alpha = 0.7,  curvature = -0.3, na.rm = TRUE) +
+  geom_point(data = seflPastPopsMigrate, aes(x = longDD, y = latDD, fill = region), size = 3.5, shape = 21) +
+  scale_fill_manual(values = flPal, name = "Region") +
+  scale_color_manual(values = migratePal, guide = NULL) +
+  scale_size(range = c(0.5, 2), breaks = c(0.05,0.1,0.15), name = expression(paste(italic("m")))) +
+  coord_sf(xlim = c(-80.6, -79.6), ylim = c(26, 27.2)) +
+  scale_x_continuous(breaks = c(seq(-80.6, -79.6, by = 0.2))) +
+  scale_y_continuous(breaks = c(seq(26, 27.2, by = 0.2))) +
+  annotation_scale(location = "br") +
+  annotation_north_arrow(location = "br", which_north = "true", style = north_arrow_minimal(), pad_x = unit(-0.25, "cm") , pad_y = unit(0.75, "cm")) +
+  guides(fill = guide_legend(override.aes = list(shape = 22, color = NA, size = 4), order = 1)) +
+#size = guide_legend(override.aes = list(linetype = 1, shape = NA, alpha = 1), order = 2, ncol = 3)) +
+  theme_bw() +
+  theme(panel.background = element_rect(fill = "aliceblue"),
+        panel.border = element_rect(color = "black", size = 0.75, fill = NA),
+        axis.title = element_blank(),
+        axis.ticks = element_line(color = "black"),
+        axis.text = element_text(color = "black"),
+        legend.position = "right",
+        #legend.direction = "horizontal",
+        #legend.box = "vertical",
+        #legend.key = element_blank(),
+        legend.background = element_blank()
+  )
+
+migrateMap
+
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/migrateMap.png", plot = migrateMap, width = 25.5, height = 15, units = "cm", 
+       dpi = 300)
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/migrateMap.svg", plot = migrateMap, width = 25.5, height = 15, units = "cm", 
+       dpi = 300)
+
+```
+
+Putting the plots together into a single figure panel
+Haven't used this yet
+```{r, migrationFigure}
+migrate1 = image_read("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/migrate.png")
+migrate2 = plot_spacer() - migrateMap + plot_layout(ncol = 1)&
+  theme(plot.background = element_blank())
+
+migrationPlots = ggdraw() +
+  draw_plot(migrate2) +
+  draw_image(migrate1, y = 0.02) +
+  draw_label("A", x = 0.008, y = .68, size = 18) +
+  draw_label("B", x = 0.008, y = .37, size = 18)
+
+# migrationPlots
+
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/figure5.png", plot = migrationPlots, width = 27, height = 36, units = "cm", 
+       dpi = 300)
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/figure5.svg", plot = migrationPlots, width = 27, height = 36, units = "cm", 
+       dpi = 300)
+
+```
+
+Supplemental figures
 ```{r, Symbiont genus assignment with clones included}
 # packages: tidyverse, reshape2, RColorBrewer, paletteer
 # read in sample metadata with clones, remove technical replicates
