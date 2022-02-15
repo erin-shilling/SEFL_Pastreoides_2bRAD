@@ -25,6 +25,7 @@ pacman::p_load("cowplot", "ggrepel", "ggspatial", "maps", "paletteer", "patchwor
 Map and shapefile data
 Here we are setting up shape files and base maps as well as sample meta data.
 ```{r, map data}
+library(tidyverse)
 #packages: tidyverse, lubridate, measurements, sf, rnaturalearth
 
 pastSamples = read.csv("data_files/poritesastreoidesMetaData_clonesremoved.csv", header = TRUE) %>% select(sample = tube_id, !sample_id)
