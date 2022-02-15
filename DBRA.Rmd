@@ -12,12 +12,12 @@ knitr::opts_chunk$set(warning = FALSE, message = FALSE, fig.align = 'left')
 ```
 
 ```{r, env data}
-#packages: sdmpredictors, Hmisc
+#packages: sdmpredictors, Hmisc, reshape2
 
 library(sdmpredictors)
 datasets = list_datasets(terrestrial = FALSE, marine = TRUE)
 
-# Extract present-day data sets
+#Extract present-day data sets
 present = list_layers(datasets) %>% dplyr::select(dataset_code, layer_code, name, units, description, contains("cellsize"), version) %>% filter(version == 2.2) %>% filter(layer_code %in% c("BO22_calcite", "BO22_cloudmean", "BO22_damean", "BO22_parmean", "BO22_ph", "BO22_carbonphytomean_ss", "BO22_carbonphytomean_bdmean", "BO22_chlomean_ss", "BO22_chlomean_bdmean", "BO22_curvelmean_ss", "BO22_curvelmean_bdmean", "BO22_dissoxmean_ss", "BO22_dissoxmean_bdmean", "BO22_ironmean_ss", "BO22_ironmean_bdmean", "BO22_lightbotmean_bdmean", "BO22_nitratemean_ss", "BO22_nitratemean_bdmean", "BO22_phosphatemean_ss", "BO22_phosphatemean_bdmean", "BO22_ppmean_ss", "BO22_ppmean_bdmean", "BO22_salinityrange_bdmean", "BO22_salinitymean_bdmean", "BO22_salinitymean_ss", "BO22_silicatemean_ss", "BO22_silicatemean_bdmean", "BO22_tempmax_bdmean", "BO22_tempmax_ss", "BO22_tempmean_bdmean", "BO22_tempmean_ss", "BO22_tempmin_bdmean", "BO22_tempmin_ss", "BO22_temprange_bdmean", "BO22_temprange_ss"))
 
 envVar = load_layers(present$layer_code)
@@ -28,26 +28,28 @@ popData=read.csv("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_fi
 envData = data.frame(popData, raster::extract(envVar, popData[,5:4]))
 write_excel_csv(envData, file= 'Sites_w_Env_Data.csv')
 
-#removing all variables that had significant colinearity >0.7, or that had vif >10
+#visualizing to then remove variables that had significant colinearity >0.7, or that had vif >10
 library(Hmisc)
+library(reshape2)
 corData = rcorr(as.matrix(envData[,c(7:ncol(envData))]), type = "pearson")
 corDataFlat = melt(corData$r, value.name = "r")
 pDataFlat = melt(corData$P, value.name = "p")
 corDataBind = corDataFlat %>% left_join(pDataFlat, by = c("Var1","Var2"))
+ 
+EnvPlotCor = ggplot(corDataBind) +
+   geom_tile(aes(x = Var1, y = Var2, fill = r)) +
+   scale_fill_gradient2(low = "#3B9AB2FF", high = "#F21A00FF") +
+   geom_text(data = filter(corDataBind, r >= 0.7, p < 0.05),aes(x = Var1,    y = Var2, label = round(r, 2))) +
+   geom_text(data = filter(corDataBind, r <= -0.7, p < 0.05),aes(x = Var1,    y = Var2, label = round(r, 2))) +
+   theme_bw() +
+   theme(axis.text.x = element_text(angle = 90))
+
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/EnvPlotCor.png", plot = EnvPlotCor, width = 50, height = 50, units = "cm", dpi = 300)
 
 #filtering things out, can't do this until I look at covariances
 #envData=envData%>%dplyr::select(-BO22_dissoxmean_ss, -BO22_carbonphytomean_ss, -BO22_nitratemean_ss, -BO22_chlomean_ss, -BO22_silicatemean_ss, -BO22_ppmean_ss, -BO22_ironmean_ss, -BO22_parmean)
  # corData = cor(envData[,c(4:ncol(envData))])
  # corMelt = melt(corData)
- 
- ggplot(corDataBind) +
-   geom_tile(aes(x = Var1, y = Var2, fill = r)) +
-   scale_fill_gradient2(low = "#3B9AB2FF", high = "#F21A00FF") +
-   geom_text(data = filter(corDataBind, r >= 0.7, p < 0.05),aes(x = Var1, y = Var2, label = round(r, 2))) +
-   geom_text(data = filter(corDataBind, r <= -0.7, p < 0.05),aes(x = Var1, y = Var2, label = round(r, 2))) +
-   theme_bw() +
-   theme(axis.text.x = element_text(angle = 90))
- 
 
   #envSummary=envData %>% group_by(region, depthZone, lat, lon) %>% summarise(temperature=min(temperature), chlorophyll=min(chlorophyll), currents = min(currents), 
   #nitrate = min(nitrate), phosphate=min(phosphate), prod=min(prod), salinity=min(salinity), silicate=min(silicate), iron=min(iron))
@@ -55,7 +57,7 @@ corDataBind = corDataFlat %>% left_join(pDataFlat, by = c("Var1","Var2"))
   # Export data as a csv file
   #write.csv(df, file="environmental_data.csv", row.names = FALSE)
   
-  # ###########Create Moran Eigenvector's Maps (MEMs) to be the spatial variables
+  #Create Moran Eigenvector's Maps (MEMs) to be the spatial variables
   # coordsxy = dplyr::select(meta, lat, lon)
   # plot(coordsxy, asp=1)
   # distSpatial=gcd.hf(coordsxy)  
@@ -65,82 +67,80 @@ corDataBind = corDataFlat %>% left_join(pDataFlat, by = c("Var1","Var2"))
   # ade4::s.value(coordsxy, dbmem[,1])  
 
  #beginning to build model  
-  snpMa = as.matrix(read.table("regionalMcavNoClones.ibsMat"))
-  Pcoa=pcoa(snpMa)
-  Pcoa$values$Cum_corr_eig
-  ibs=Pcoa$vectors
+snpMa = as.matrix(read.table("regionalMcavNoClones.ibsMat"))
+Pcoa=pcoa(snpMa)
+Pcoa$values$Cum_corr_eig
+ibs=Pcoa$vectors
 
-  rda=rda(ibs, envData[,c(3, 7:ncol(envData))])  
-  vif(rda)
+rda=rda(ibs, envData[,c(3, 7:ncol(envData))])  
+vif(rda)
  
-  RsquareAdj(rda)
-  anova(rda, perm=999)  
-  rda0<-rda(ibs ~ 1, envData[,c(3, 7:ncol(envData))])  
-  rdaG<- rda(ibs ~ ., envData[,c(3, 7:ncol(envData))])
-  Sel <- ordiR2step(rda0, scope = formula(rdaG), direction="both") 
-  Sel$anova
+RsquareAdj(rda)
+anova(rda, perm=999)  
+rda0<-rda(ibs ~ 1, envData[,c(3, 7:ncol(envData))])  
+rdaG<- rda(ibs ~ ., envData[,c(3, 7:ncol(envData))])
+Sel <- ordiR2step(rda0, scope = formula(rdaG), direction="both") 
+Sel$anova
+
+#This variable was not selected for in the best model so now will be removed
+envData=envData%>%dplyr::select(-BO22_lightbotmean_bdmean)
+
+#Now build a model with only the selected variables, which were all of them in env3
   
-  envData=envData%>%dplyr::select(-BO22_lightbotmean_bdmean)
-  #This variable was not selected for in the best model so now will be removed
-  #Now build a model with only the selected variables, which were all of them in env3
-  
-  rdaS<- rda(ibs , envData[,c(3, 7:ncol(envData))])
-  RsquareAdj(rdaS)
-  smry=summary(rdaS, scaling=1)
-  smry$sites
-  smry$biplot
-  summary(eigenvals(rdaS, model = "constrained"))
+rdaS<- rda(ibs , envData[,c(3, 7:ncol(envData))])
+RsquareAdj(rdaS)
+smry=summary(rdaS, scaling=1)
+smry$sites
+smry$biplot
+summary(eigenvals(rdaS, model = "constrained"))
 
 model = envData %>% dplyr::select("depth" = depthM, "calcite" = BO22_calcite, "cloud_cover" = BO22_cloudmean, "light_attenuation"=BO22_damean, "pH" =BO22_ph, "current_velocity"= BO22_curvelmean_ss, "phosphate" = BO22_phosphatemean_ss, "salinity"= BO22_salinitymean_ss, "temperature"=BO22_tempmean_ss)
   
-  regionalDbrda = dbrda(snpMa ~ depth + calcite + cloud_cover + light_attenuation + pH + current_velocity + phosphate + salinity + temperature, model)
+regionalDbrda = dbrda(snpMa ~ depth + calcite + cloud_cover + light_attenuation + pH + current_velocity + phosphate + salinity + temperature, model)
   
-  regionalRdaVar = round(regionalDbrda$CCA$eig/sum(regionalDbrda$CCA$eig)*100, 1)
-  head(regionalRdaVar)
+regionalRdaVar = round(regionalDbrda$CCA$eig/sum(regionalDbrda$CCA$eig)*100, 1)
+head(regionalRdaVar)
 
-  regionalRdaPoints = as.data.frame(scores(regionalDbrda)$sites)
-  regionalRdaPoints$sample = rdaI2P$sample
-  head(regionalRdaPoints)
+regionalRdaPoints = as.data.frame(scores(regionalDbrda)$sites)
+regionalRdaPoints$sample = rdaI2P$sample
+head(regionalRdaPoints)
   
-  regionalDbrdaData1 = rdaI2P %>% left_join(regionalRdaPoints) 
+regionalDbrdaData1 = rdaI2P %>% left_join(regionalRdaPoints) 
   
-  #%>% cbind(K = dapc1$grp)
-  head(regionalDbrdaData1)
-  tail(regionalDbrdaData1)
+#%>% cbind(K = dapc1$grp)
+head(regionalDbrdaData1)
+tail(regionalDbrdaData1)
   
-  envLoad = as.data.frame(regionalDbrda$CCA$biplot)
-  envLoad$var = c("Depth", "calcite", "cloud cover", "light attenuation", "pH", "current velocity", "phosphate", "salinity", "temperature")
+envLoad = as.data.frame(regionalDbrda$CCA$biplot)
+envLoad$var = c("Depth", "calcite", "cloud cover", "light attenuation", "pH", "current velocity", "phosphate", "salinity", "temperature")
   
-  regionalDbrdaData = merge(regionalDbrdaData1, aggregate(cbind(mean.x = dbRDA1, mean.y = dbRDA2)~regionDepth, regionalDbrdaData1, mean), by="regionDepth") 
+regionalDbrdaData = merge(regionalDbrdaData1, aggregate(cbind(mean.x = dbRDA1, mean.y = dbRDA2)~regionDepth, regionalDbrdaData1, mean), by="regionDepth") 
   
-  #%>% merge(., aggregate(cbind(mean.x.K = dbRDA1, mean.y.K = dbRDA2)~K, regionalDbrdaData1, mean), by="K")
+#%>% merge(., aggregate(cbind(mean.x.K = dbRDA1, mean.y.K = dbRDA2)~K, regionalDbrdaData1, mean), by="K")
 
-  ##beginning to create PCoA here?  
-  regionalDbrdaData$depthZone = factor(regionalDbrdaData$depthZone)
-  regionalDbrdaData$depthZone = factor(regionalDbrdaData$depthZone, levels(regionalDbrdaData$depthZone)[c(2,1)])
-  regionalDbrdaData$region = factor(regionalDbrdaData$region)
-  #regionalDbrdaData$pop = factor(regionalDbrdaData$pop, levels(regionalDbrdaData$pop)[c(4, 1, 3, 2)])
+##beginning to create PCoA here?  
+regionalDbrdaData$depthZone = factor(regionalDbrdaData$depthZone)
+regionalDbrdaData$depthZone = factor(regionalDbrdaData$depthZone, levels(regionalDbrdaData$depthZone)[c(2,1)])
+regionalDbrdaData$region = factor(regionalDbrdaData$region)
+#regionalDbrdaData$pop = factor(regionalDbrdaData$pop, levels(regionalDbrdaData$pop)[c(4, 1, 3, 2)])
   
-  head(regionalDbrdaData)
+head(regionalDbrdaData)
   
-  regionalDbrdaPlotA = ggplot() +
+regionalDbrdaPlotA = ggplot() +
     geom_hline(yintercept = 0, color = "gray90", size = 0.5) +
     geom_vline(xintercept = 0, color = "gray90", size = 0.5) +
-    geom_point(data = regionalDbrdaData, aes(x = dbRDA1, y = dbRDA2, fill = region, shape = depthZone), 
-               size = 3, stroke = NA, alpha = 0.7, show.legend = FALSE) +
+    geom_point(data = regionalDbrdaData, aes(x = dbRDA1, y = dbRDA2, fill     = region, shape = depthZone), size = 3, stroke = NA, alpha = 0.7,         show.legend = FALSE) +
     scale_shape_manual(values = c(24,25), name = "Depth Zone") +
-    # geom_segment(data = regionalDbrdaData, aes(x = mean.x, y = mean.y, xend = dbRDA1, yend = dbRDA2, color = pop), size = 0.5, alpha = 0.5) +
-    geom_segment(data = envLoad, aes(x = 0, y = 0, xend = dbRDA1, yend = dbRDA2), 
-                 color = "black", arrow = arrow(length = unit(0.25, "cm"), type = "open"), size = 0.65) +
-    geom_text(data = envLoad, aes(x = dbRDA1, y = dbRDA2+0.1, label = var), color = "black", size = 3) +
-    geom_point(data = regionalDbrdaData, aes(x = mean.x, y = mean.y, fill = region, shape = depthZone),
-               size = 5, color = "black") + #population centroids indicated by triangles
+    # geom_segment(data = regionalDbrdaData, aes(x = mean.x, y = mean.y,      xend = dbRDA1, yend = dbRDA2, color = pop), size = 0.5, alpha = 0.5) +
+    geom_segment(data = envLoad, aes(x = 0, y = 0, xend = dbRDA1, yend =      dbRDA2), color = "black", arrow = arrow(length = unit(0.25, "cm"),        type = "open"), size = 0.65) +
+    geom_text(data = envLoad, aes(x = dbRDA1, y = dbRDA2+0.1, label =         var), color = "black", size = 3) +
+    geom_point(data = regionalDbrdaData, aes(x = mean.x, y = mean.y, fill     = region, shape = depthZone), size = 5, color = "black") + #population centroids indicated by triangles
     scale_fill_manual(values = colPal, name = "Region") +
     scale_color_manual(values = colPal, name = "Region") +
-    guides(shape = guide_legend(override.aes = list(size = 3.5, stroke = 0.5, alpha = 0.7), order = 2), fill = guide_legend(override.aes = list(shape = 22, size = 5, color = NA, alpha = NA), order = 1))+
+    guides(shape = guide_legend(override.aes = list(size = 3.5, stroke =      0.5, alpha = 0.7), order = 2), fill = guide_legend(override.aes =         list(shape = 22, size = 5, color = NA, alpha = NA), order = 1))+
     theme_bw()
   
-  regionalDbrdaPlot1 = regionalDbrdaPlotA +
+regionalDbrdaPlot1 = regionalDbrdaPlotA +
     theme(axis.title.x = element_text(color = "black", size = 10),
           axis.text.x = element_blank(),
           axis.ticks.x = element_blank(),
