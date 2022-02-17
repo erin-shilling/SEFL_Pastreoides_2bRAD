@@ -12,7 +12,7 @@ knitr::opts_chunk$set(warning = FALSE, message = FALSE, fig.align = 'left')
 ```
 
 ```{r, env data}
-#packages: sdmpredictors, Hmisc, reshape2
+#packages: sdmpredictors, Hmisc, reshape2, codep, adespatial
 
 library(sdmpredictors)
 datasets = list_datasets(terrestrial = FALSE, marine = TRUE)
@@ -29,13 +29,37 @@ envData = data.frame(popData, raster::extract(envVar, popData[,5:4]))
 write_excel_csv(envData, file= 'Sites_w_Env_Data.csv')
 
 #visualizing to then remove variables that had significant colinearity >0.7, or that had vif >10
+#what is vif greater than 10??
 library(Hmisc)
 library(reshape2)
-corData = rcorr(as.matrix(envData[,c(7:ncol(envData))]), type = "pearson")
+library(tidyverse)
+
+corData = rcorr(as.matrix(envData2[,c(6:ncol(envData2))]), type = "pearson")
 corDataFlat = melt(corData$r, value.name = "r")
 pDataFlat = melt(corData$P, value.name = "p")
 corDataBind = corDataFlat %>% left_join(pDataFlat, by = c("Var1","Var2"))
- 
+
+#removed a lot of variables, want to see remaining ones that correlate more easily
+envData2 = read.csv("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/Sites_w_Env_Data_2.csv")
+corData = rcorr(as.matrix(envData2[,c(6:ncol(envData))]), type = "pearson")
+corDataFlat = melt(corData$r, value.name = "r")
+pDataFlat = melt(corData$P, value.name = "p")
+corDataBind = corDataFlat %>% left_join(pDataFlat, by = c("Var1","Var2"))
+
+#removed a lot of variables, want to see remaining ones that correlate more easily
+envData3 = read.csv("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/Sites_w_Env_Data_3.csv")
+corData = rcorr(as.matrix(envData3[,c(6:ncol(envData3))]), type = "pearson")
+corDataFlat = melt(corData$r, value.name = "r")
+pDataFlat = melt(corData$P, value.name = "p")
+corDataBind = corDataFlat %>% left_join(pDataFlat, by = c("Var1","Var2"))
+
+#removed a lot of variables, want to see remaining ones that correlate more easily
+envData4 = read.csv("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/Sites_w_Env_Data_4.csv")
+corData = rcorr(as.matrix(envData4[,c(6:ncol(envData4))]), type = "pearson")
+corDataFlat = melt(corData$r, value.name = "r")
+pDataFlat = melt(corData$P, value.name = "p")
+corDataBind = corDataFlat %>% left_join(pDataFlat, by = c("Var1","Var2"))
+
 EnvPlotCor = ggplot(corDataBind) +
    geom_tile(aes(x = Var1, y = Var2, fill = r)) +
    scale_fill_gradient2(low = "#3B9AB2FF", high = "#F21A00FF") +
@@ -46,25 +70,22 @@ EnvPlotCor = ggplot(corDataBind) +
 
 ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/EnvPlotCor.png", plot = EnvPlotCor, width = 50, height = 50, units = "cm", dpi = 300)
 
-#filtering things out, can't do this until I look at covariances
-#envData=envData%>%dplyr::select(-BO22_dissoxmean_ss, -BO22_carbonphytomean_ss, -BO22_nitratemean_ss, -BO22_chlomean_ss, -BO22_silicatemean_ss, -BO22_ppmean_ss, -BO22_ironmean_ss, -BO22_parmean)
- # corData = cor(envData[,c(4:ncol(envData))])
- # corMelt = melt(corData)
-
-  #envSummary=envData %>% group_by(region, depthZone, lat, lon) %>% summarise(temperature=min(temperature), chlorophyll=min(chlorophyll), currents = min(currents), 
-  #nitrate = min(nitrate), phosphate=min(phosphate), prod=min(prod), salinity=min(salinity), silicate=min(silicate), iron=min(iron))
+#removed variables that correlated more than 0.7 in excel, renamed
+envData = read.csv("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/Sites_w_Env_Data_5.csv")
+envSummary=envData %>% group_by(region, lat, lon) %>% summarise(calcite=min(calcite), parmean=min(parmean), ph = min(ph), currents = min(curvelmean_ss),  do=min(dissoxmean_bdmean), botlight=(lightbotmean_bdmean))
   
-  # Export data as a csv file
-  #write.csv(df, file="environmental_data.csv", row.names = FALSE)
-  
-  #Create Moran Eigenvector's Maps (MEMs) to be the spatial variables
-  # coordsxy = dplyr::select(meta, lat, lon)
-  # plot(coordsxy, asp=1)
-  # distSpatial=gcd.hf(coordsxy)  
-  # dbmem = dbmem(distSpatial)  
-  # summary(dbmem)
-  # adegraphics::s.label(coordsxy, nb = attr(dbmem, "listw"))
-  # ade4::s.value(coordsxy, dbmem[,1])  
+#Create Moran Eigenvector's Maps (MEMs) to be the spatial variables
+##Not sure if this is running correctly...
+##am I even supposed to be running this?? commented out in Lexie's
+coordsxy = dplyr::select(popData, lat, lon)
+plot(coordsxy, asp=1)
+library(codep)
+distSpatial=gcd.hf(coordsxy)
+library(adespatial)
+dbmem = dbmem(distSpatial)
+summary(dbmem)
+adegraphics::s.label(coordsxy, nb = attr(dbmem, "listw"))
+# ade4::s.value(coordsxy, dbmem[,1])  
 
  #beginning to build model  
 snpMa = as.matrix(read.table("regionalMcavNoClones.ibsMat"))
