@@ -25,37 +25,15 @@ envVar = load_layers(present$layer_code)
 #Import coordinates of sites
 popData=read.csv("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/poritesastreoidesMetaData_clonesremoved.csv") %>% select("sample" = tube_id, "region" = region, "depth" = collection_depth_m, "lat" = site_lat, "lon" = site_long)
 
+#telling it to treat lat & long columns as lat & long, want long first then lat
 envData = data.frame(popData, raster::extract(envVar, popData[,5:4]))
-write_excel_csv(envData, file= 'Sites_w_Env_Data.csv')
 
-#visualizing to then remove variables that had significant colinearity >0.7, or that had vif >10
-#what is vif greater than 10??
+#visualizing to then remove variables that had significant colinearity >0.7
 library(Hmisc)
 library(reshape2)
 library(tidyverse)
 
-corData = rcorr(as.matrix(envData2[,c(6:ncol(envData2))]), type = "pearson")
-corDataFlat = melt(corData$r, value.name = "r")
-pDataFlat = melt(corData$P, value.name = "p")
-corDataBind = corDataFlat %>% left_join(pDataFlat, by = c("Var1","Var2"))
-
-#removed a lot of variables, want to see remaining ones that correlate more easily
-envData2 = read.csv("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/Sites_w_Env_Data_2.csv")
-corData = rcorr(as.matrix(envData2[,c(6:ncol(envData))]), type = "pearson")
-corDataFlat = melt(corData$r, value.name = "r")
-pDataFlat = melt(corData$P, value.name = "p")
-corDataBind = corDataFlat %>% left_join(pDataFlat, by = c("Var1","Var2"))
-
-#removed a lot of variables, want to see remaining ones that correlate more easily
-envData3 = read.csv("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/Sites_w_Env_Data_3.csv")
-corData = rcorr(as.matrix(envData3[,c(6:ncol(envData3))]), type = "pearson")
-corDataFlat = melt(corData$r, value.name = "r")
-pDataFlat = melt(corData$P, value.name = "p")
-corDataBind = corDataFlat %>% left_join(pDataFlat, by = c("Var1","Var2"))
-
-#removed a lot of variables, want to see remaining ones that correlate more easily
-envData4 = read.csv("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/Sites_w_Env_Data_4.csv")
-corData = rcorr(as.matrix(envData4[,c(6:ncol(envData4))]), type = "pearson")
+corData = rcorr(as.matrix(envData[,c(3:ncol(envData))]), type = "pearson")
 corDataFlat = melt(corData$r, value.name = "r")
 pDataFlat = melt(corData$P, value.name = "p")
 corDataBind = corDataFlat %>% left_join(pDataFlat, by = c("Var1","Var2"))
@@ -68,53 +46,47 @@ EnvPlotCor = ggplot(corDataBind) +
    theme_bw() +
    theme(axis.text.x = element_text(angle = 90))
 
-ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/EnvPlotCor.png", plot = EnvPlotCor, width = 50, height = 50, units = "cm", dpi = 300)
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/EnvPlotCor_all.png", plot = EnvPlotCor, width = 50, height = 50, units = "cm", dpi = 300)
 
-#removed variables that correlated more than 0.7 in excel, renamed
-envData = read.csv("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/Sites_w_Env_Data_5.csv")
-envSummary=envData %>% group_by(region, lat, lon) %>% summarise(calcite=min(calcite), parmean=min(parmean), ph = min(ph), currents = min(curvelmean_ss),  do=min(dissoxmean_bdmean), botlight=(lightbotmean_bdmean))
-  
-#Create Moran Eigenvector's Maps (MEMs) to be the spatial variables
-##Not sure if this is running correctly...
-##am I even supposed to be running this?? commented out in Lexie's
-coordsxy = dplyr::select(popData, lat, lon)
-plot(coordsxy, asp=1)
-library(codep)
-distSpatial=gcd.hf(coordsxy)
-library(adespatial)
-dbmem = dbmem(distSpatial)
-summary(dbmem)
-adegraphics::s.label(coordsxy, nb = attr(dbmem, "listw"))
-# ade4::s.value(coordsxy, dbmem[,1])  
+#removing all variables that had significant colinearity >0.7
+envData=envData%>%dplyr::select(-BO22_cloudmean, -BO22_damean, -BO22_carbonphytomean_bdmean, -BO22_carbonphytomean_ss, -BO22_chlomean_bdmean, -BO22_chlomean_ss, -BO22_curvelmean_bdmean, -BO22_curvelmean_ss, -BO22_dissoxmean_ss, -BO22_ironmean_bdmean, -BO22_ironmean_ss, -BO22_nitratemean_bdmean, -BO22_nitratemean_ss,	-BO22_phosphatemean_bdmean,	-BO22_phosphatemean_ss,	-BO22_ppmean_bdmean,	-BO22_ppmean_ss,	-BO22_salinitymean_bdmean,	-BO22_salinitymean_ss,	-BO22_salinityrange_bdmean,	-BO22_silicatemean_bdmean,	-BO22_silicatemean_ss,	-BO22_tempmax_bdmean,	-BO22_tempmax_ss,	-BO22_tempmean_bdmean,	-BO22_tempmean_ss,	-BO22_tempmin_bdmean,	-BO22_tempmin_ss,	-BO22_temprange_bdmean,	-BO22_temprange_ss)
 
- #beginning to build model  
-snpMa = as.matrix(read.table("regionalMcavNoClones.ibsMat"))
+#no remaining colinearities
+
+#beginning to build model to examine for vif
+snpMa = as.matrix(read.table("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/pastNoClones.ibsMat"))
+library(ape)
 Pcoa=pcoa(snpMa)
 Pcoa$values$Cum_corr_eig
 ibs=Pcoa$vectors
 
-rda=rda(ibs, envData[,c(3, 7:ncol(envData))])  
+library(vegan)
+rda=rda(ibs, envData[,c(3, 6:ncol(envData))])
+library(car)
 vif(rda)
- 
+
+#
 RsquareAdj(rda)
 anova(rda, perm=999)  
-rda0<-rda(ibs ~ 1, envData[,c(3, 7:ncol(envData))])  
-rdaG<- rda(ibs ~ ., envData[,c(3, 7:ncol(envData))])
+rda0<-rda(ibs ~ 1, envData[,c(3, 6:ncol(envData))])  
+rdaG<- rda(ibs ~ ., envData[,c(3, 6:ncol(envData))])
 Sel <- ordiR2step(rda0, scope = formula(rdaG), direction="both") 
+#this will tell if any of the variables should be removed or not
 Sel$anova
 
 #This variable was not selected for in the best model so now will be removed
 envData=envData%>%dplyr::select(-BO22_lightbotmean_bdmean)
 
 #Now build a model with only the selected variables, which were all of them in env3
-  
-rdaS<- rda(ibs , envData[,c(3, 7:ncol(envData))])
+
+rdaS<- rda(ibs , envData[,c(3, 6:ncol(envData))])
 RsquareAdj(rdaS)
 smry=summary(rdaS, scaling=1)
 smry$sites
 smry$biplot
 summary(eigenvals(rdaS, model = "constrained"))
 
+#update
 model = envData %>% dplyr::select("depth" = depthM, "calcite" = BO22_calcite, "cloud_cover" = BO22_cloudmean, "light_attenuation"=BO22_damean, "pH" =BO22_ph, "current_velocity"= BO22_curvelmean_ss, "phosphate" = BO22_phosphatemean_ss, "salinity"= BO22_salinitymean_ss, "temperature"=BO22_tempmean_ss)
   
 regionalDbrda = dbrda(snpMa ~ depth + calcite + cloud_cover + light_attenuation + pH + current_velocity + phosphate + salinity + temperature, model)
