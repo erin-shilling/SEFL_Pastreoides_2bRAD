@@ -1,0 +1,197 @@
+---
+title: "dbra"
+author: "Erin Shilling"
+date: "2/14/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# setup rmarkdown environment first
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, fig.align = 'left')
+options(timeout=600)
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+```
+
+```{r, Analysis of Molecular Variance}
+#packages: tidyverse, vcfR, adegenet, poppr
+#reading in bcf file
+pastVcf = read.vcfR("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/pastNoClones.bcf", verbose = TRUE)
+#convert to genlight files for poppr
+pastGenlightPopulation = vcfR2genlight(pastVcf, n.cores = 1)
+
+#taking metadata file, without technical replicates & clones, reads in population data for each sample
+popData = read.csv("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/poritesastreoidesMetaData_clonesremoved.csv") %>% select("sample" = tube_id, "pop" = region)
+
+#setting up amova
+strata(pastGenlightPopulation) = data.frame(popData)
+setPop(pastGenlightPopulation) = ~pop
+#Runs AMOVA looking at samples by region
+amova <- poppr.amova(pastGenlightPopulation, ~pop)
+amova
+
+set.seed(694)
+amovasignif <- randtest(amova, nrepet = 99)
+amovasignif$names
+
+amovasignif$obs
+
+amovasignif$pvalue
+
+amovaPerc = paste(round(amova$componentsofcovariance$`%`[1], 2), "%",sep="")
+amovaP = amovasignif$pvalue[3]
+
+amovaPerc
+amovaP
+```
+
+```{r, env data}
+#packages: sdmpredictors, Hmisc, reshape2, codep, adespatial
+options(sdmpredictors_datadir="data_files/bioOracle", timeout = max(300, getOption("timeout")))
+
+library(sdmpredictors)
+library(tidyverse)
+library(vegan)
+datasets = list_datasets(terrestrial = FALSE, marine = TRUE)
+
+#Extract present-day data sets (takes a while once you move onto next step "load layers" FYI)
+present = list_layers(datasets) %>% dplyr::select(dataset_code, layer_code, name, units, description, contains("cellsize"), version) %>% filter(version == 2.2) %>% filter(layer_code %in% c("BO22_calcite", "BO22_cloudmean", "BO22_damean", "BO22_parmean", "BO22_ph", "BO22_carbonphytomean_ss", "BO22_carbonphytomean_bdmean", "BO22_chlomean_ss", "BO22_chlomean_bdmean", "BO22_curvelmean_ss", "BO22_curvelmean_bdmean", "BO22_dissoxmean_ss", "BO22_dissoxmean_bdmean", "BO22_ironmean_ss", "BO22_ironmean_bdmean", "BO22_lightbotmean_bdmean", "BO22_nitratemean_ss", "BO22_nitratemean_bdmean", "BO22_phosphatemean_ss", "BO22_phosphatemean_bdmean", "BO22_ppmean_ss", "BO22_ppmean_bdmean", "BO22_salinityrange_bdmean", "BO22_salinitymean_bdmean", "BO22_salinitymean_ss", "BO22_silicatemean_ss", "BO22_silicatemean_bdmean", "BO22_tempmax_bdmean", "BO22_tempmax_ss", "BO22_tempmean_bdmean", "BO22_tempmean_ss", "BO22_tempmin_bdmean", "BO22_tempmin_ss", "BO22_temprange_bdmean", "BO22_temprange_ss"))
+
+#after running correlation analyses and just loading in necessary data sets (takes a long time to load all datasets listed above)
+present = list_layers(datasets) %>% dplyr::select(dataset_code, layer_code, name, units, description, contains("cellsize"), version) %>% filter(version == 2.2) %>% filter(layer_code %in% c("BO22_parmean", "BO22_ph", "BO22_dissoxmean_bdmean", "BO22_lightbotmean_bdmean", "BO22_tempmean_ss", "BO22_salinitymean_bdmean", "BO22_nitratemean_bdmean"))
+
+envVar = load_layers(present$layer_code)
+
+#Import coordinates of sites
+popData=read.csv("data_files/poritesastreoidesMetaData_clonesremoved.csv") %>% select("sample" = tube_id, "region" = region, "depth" = collection_depth_m, "lat" = site_lat, "lon" = site_long)
+
+envData = data.frame(popData, raster::extract(envVar, popData[,5:4]))
+# write_excel_csv(envData, file= 'Sites_w_Env_Data.csv')
+
+#visualizing to then remove variables that had significant colinearity >0.7, or that had vif >10
+library(Hmisc)
+library(reshape2)
+
+corData = rcorr(as.matrix(envData[,c(6:ncol(envData))]), type = "pearson")
+corDataFlat = melt(corData$r, value.name = "r")
+pDataFlat = melt(corData$P, value.name = "p")
+corDataBind = corDataFlat %>% left_join(pDataFlat, by = c("Var1","Var2"))
+
+EnvPlotCor2 = ggplot(corDataBind) +
+   geom_tile(aes(x = Var1, y = Var2, fill = r)) +
+   scale_fill_gradient2(low = "#3B9AB2FF", high = "#F21A00FF") +
+   geom_text(data = filter(corDataBind, r >= 0.7, p < 0.05),aes(x = Var1,    y = Var2, label = round(r, 2))) +
+   geom_text(data = filter(corDataBind, r <= -0.7, p < 0.05),aes(x = Var1,    y = Var2, label = round(r, 2))) +
+   theme_bw() +
+   theme(axis.text.x = element_text(angle = 90))
+
+EnvPlotCor2
+
+#issue when including temp and trying to run vif, removing since barely varies anyways (by ~0.2C) and re-running
+#when run ph, parmean, salinity mean, and nitrate mean, vifs are crazy high?? like in the 20-30 thousands
+envData2 = envData %>% select(BO22_ph, BO22_parmean, BO22_salinitymean_bdmean, BO22_nitratemean_bdmean)
+
+#try diff
+envData3 = envData %>% select(BO22_ph, BO22_parmean, BO22_salinitymean_bdmean, BO22_dissoxmean_bdmean)
+
+corData2 = rcorr(as.matrix(envData2), type = "pearson")
+corDataFlat2 = melt(corData2$r, value.name = "r")
+pDataFlat2 = melt(corData2$P, value.name = "p")
+corDataBind2 = corDataFlat2 %>% left_join(pDataFlat2, by = c("Var1","Var2"))
+
+EnvPlotCor2 = ggplot(corDataBind2) +
+   geom_tile(aes(x = Var1, y = Var2, fill = r)) +
+   scale_fill_gradient2(low = "#3B9AB2FF", high = "#F21A00FF") +
+   geom_text(data = filter(corDataBind2, r >= 0.7, p < 0.05),aes(x = Var1,    y = Var2, label = round(r, 2))) +
+   geom_text(data = filter(corDataBind2, r <= -0.7, p < 0.05),aes(x =        Var1, y = Var2, label = round(r, 2))) +
+   theme_bw() +
+   theme(axis.text.x = element_text(angle = 90))
+
+EnvPlotCor2
+
+#looks better when temp is removed, so moving forward with:
+#BO22_ph, BO22_parmean, BO22_salinitymean_bdmean, BO22_dissoxmean_bdmean
+vif = diag(solve(cor(envData3)))
+vif
+
+pastMa = as.matrix(read.table("data_files/pastNoClones.ibsMat"))
+
+rda1 = dbrda(pastMa ~ ., data = envData3)
+RsquareAdj(rda1)
+anova.cca(rda1)
+
+rda0 = dbrda(pastMa ~ 1, data = envData3)
+rda1 = dbrda(pastMa ~ ., data = envData3)
+
+set.seed(092)
+bestDbrda <- ordiR2step(rda0, rda1)
+bestDbrda$anova
+
+model = envData3 %>% dplyr::select("pH" = BO22_ph, "PAR" = BO22_parmean, "Salinity" = BO22_salinitymean_bdmean, "DO" = BO22_dissoxmean_bdmean)
+
+pastDbrda = dbrda(pastMa ~ pH + DO + Salinity + PAR, model)
+
+pastRdaVar = round(pastDbrda$CA$eig/sum(pastDbrda$CA$eig)*100, 1)
+head(pastRdaVar)
+
+# pastI2P = read.csv("../data/stephanocoeniaMetaData.csv")[-c(66,68,164,166,209,211),] %>% dplyr::select("sample" = tubeID, "pop" = region, "depth" = depthZone)
+# 
+# sintI2P$popdepth = paste(sintI2P$pop, sintI2P$depth)
+
+pastRdaPoints = as.data.frame(scores(pastDbrda)$sites)
+pastRdaPoints$sample = popData$sample
+head(pastRdaPoints)
+
+pastDbrdaData1 = popData %>% left_join(pastRdaPoints)
+head(pastDbrdaData1)
+tail(pastDbrdaData1)
+
+envLoad = as.data.frame(pastDbrda$CCA$biplot)
+envLoad$var = row.names(envLoad)
+
+pastDbrdaData = merge(pastDbrdaData1, aggregate(cbind(mean.x = dbRDA1, mean.y = dbRDA2)~region, pastDbrdaData1, mean), by="region")
+
+pastDbrdaData$region = factor(pastDbrdaData$region)
+levels(pastDbrdaData$region)
+pastDbrdaData$region = factor(pastDbrdaData$region, levels(pastDbrdaData$region)[c(4, 2, 5, 1, 3)])
+
+flPal = paletteer_d("LaCroixColoR::PeachPear")[c(1,2,3,4,5)]
+
+pastDbrdaPlotA = ggplot(pastDbrdaData, aes(x = dbRDA1, y = dbRDA2, color = region, fill = region)) +
+  geom_point(data = pastDbrdaData, aes(x = dbRDA1, y = dbRDA2, fill = region, color = region), size = 2, shape = 21, alpha = 0.5, show.legend = FALSE) +
+  geom_segment(data = envLoad, aes(x = 0, y = 0, xend = dbRDA1, yend = dbRDA2), color = "black", arrow = arrow(length = unit(0.25, "cm"), type = "open"), size = 0.65, inherit.aes = FALSE) +
+  geom_hline(yintercept = 0, color = "gray90", size = 0.5) + #x axis
+  geom_vline(xintercept = 0, color = "gray90", size = 0.5) + #y axis
+  stat_ellipse(data = pastDbrdaData, type = "t", geom = "polygon", alpha = 0.1, show.legend = FALSE) + #adds ellipses
+  geom_text(data = envLoad, aes(x = dbRDA1+0.1, y = dbRDA2+0.2, label = var), color = "black", size = 3, inherit.aes = FALSE) +
+  geom_point(data = pastDbrdaData, aes(x = mean.x, y = mean.y, fill = region), shape = 21, size = 5, color = "black") + #pop centroids indicated by large circles
+  annotate(geom = "text", x = 0.7, y = -1.5, label = bquote("AMOVA:"~.(amovaPerc)*","~italic(p)~" = "~.(amovaP))) +
+  labs(x = paste("dbRDA1 (", pastRdaVar[1]," %)", sep = ""), y =  paste("dbRDA2 (", pastRdaVar[2], " %)", sep = "")) +
+  scale_fill_manual(values = flPal, name = "Region") +
+  scale_color_manual(values = flPal, name = "Region") +
+  guides(shape = guide_legend(override.aes = list(size = 2, stroke = 0.5,   alpha = NA), order = 2), fill = guide_legend(override.aes = list(shape =   22, size = 2, color = flPal, alpha = NA), order = 1)) +
+  theme_bw()
+
+pastDbrdaPlot1 = pastDbrdaPlotA +
+  theme(axis.title.x = element_text(color = "black", size = 10),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.line.x = element_blank(),
+        axis.title.y = element_text(color = "black", size = 10),
+        axis.text.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        axis.line.y = element_blank(),
+        legend.position = "right",
+        legend.title = element_text(size = 8),
+        legend.text = element_text(size = 8),
+        panel.border = element_rect(color = "black", size = 1),
+        panel.background = element_rect(fill = "white"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+
+pastDbrdaPlot1
+
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/DbrdaPlot.png", plot = pastDbrdaPlot1, height = 3.5, width = 7, units = "in", dpi = 300)
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/DbrdaPlot.pdf", plot = pastDbrdaPlot1, height = 3.5, width = 7, units = "in", dpi = 300)
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/DbrdaPlot.tiff", plot = pastDbrdaPlot1, height = 3.5, width = 7, units = "in", dpi = 300)
+```
