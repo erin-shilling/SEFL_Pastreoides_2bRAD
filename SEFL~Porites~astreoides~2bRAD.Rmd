@@ -184,7 +184,7 @@ cloneDendA = ggplot() +
   geom_point(data = cloneDendPoints, aes(x = x, y = y, fill = pop), size = 4, stroke = 0.25, shape = 24) +
   scale_fill_manual(values = flPal, name = "Population") +
   geom_hline(yintercept = 0.165, color = "red", lty = 5, size = 0.75) + # creating a dashed line to indicate a clonal distance threshold
-  geom_text(data = subset(cloneDendPoints, subset = label %in% techReps), aes(x = (x + 0.25), y = (y - .004), label = "*"), angle = 90, size = 10) + # spacing technical replicates further from leaf
+  geom_text(data = subset(cloneDendPoints, subset = label %in% techReps), aes(x = (x + 0.53), y = (y - .0055), label = "*"), angle = 90, size = 10) + # spacing technical replicates further from leaf
 #  geom_text(data = subset(cloneDendPoints, subset = !label %in% techReps), aes(x = x, y = (y - .010), label = "label"), angle = 90) +
   labs(y = "Genetic distance (1 - IBS)") +
   theme_classic()
@@ -209,7 +209,7 @@ cloneDend = cloneDendA + theme(
 
 cloneDend
 
-ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/cloneDend_nolabels.png", plot = cloneDend, height = 5, width = 16, units = "in", dpi = 300)
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/cloneDend_nolabels2.png", plot = cloneDend, height = 5, width = 16, units = "in", dpi = 300)
 ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/cloneDend_nolabels.eps", plot = cloneDend, height = 5, width = 16, units = "in", dpi = 300)
 
 ```
@@ -234,7 +234,7 @@ amova <- poppr.amova(pastGenlightPopulation, ~pop)
 amova
 
 set.seed(694)
-amovasignif <- randtest(amova, nrepet = 99)
+amovasignif <- randtest(amova, nrepet = 999)
 amovasignif$names
 
 amovasignif$obs
@@ -247,7 +247,7 @@ amovaP = amovasignif$pvalue[3]
 amovaPerc
 amovaP
 ```
-Only significant differences between populations, explains 2.73% of variation
+Only significant differences between populations, explains 2.73% of variation, p = 0.001
 
 ```{r, PCoA with IBS}
 # packages: tidyverse, paletteer, vegan if use vectors
@@ -429,16 +429,16 @@ snpFst$Fst = factor(gsub("\\-", "", snpFst$Fst))
 
 snpHeatmapA = ggplot(data = snpFst, aes(Pop, Pop2, fill = as.numeric(as.character(Fst))))+
   geom_tile(color = "white") +
-
-  geom_segment(data = snpFst, aes(x = 0.48, xend = -0.62, y = Pop, yend = Pop, color = region), size = 19) +
-  geom_segment(data = snpFst, aes(x = Pop2, xend = Pop2, y = 0.45, yend = -0.6, color = region2), size = 62.5) +
-  scale_color_manual(values = flPal[], guide = NULL) +
-  scale_fill_gradient(low = "white", high = "red", limit = c(0, 0.07), space = "Lab", name = expression(paste(italic("F")[ST])), na.value = "white",  guide = "colourbar")+
+#add this back in if want colored background for pops
+#  geom_segment(data = snpFst, aes(x = 0.48, xend = -0.62, y = Pop, yend = Pop, color = region), size = 19) +
+#  geom_segment(data = snpFst, aes(x = Pop2, xend = Pop2, y = 0.45, yend = -0.6, color = region2), size = 62.5) +
+#  scale_color_manual(values = flPal[], guide = NULL) +
+  scale_fill_gradient(low = "white", high = "red", limit = c(0, 0.07), space = "Lab", name = expression(paste(italic("F")[ST])), na.value = "white",  guide = "colourbar") +
   geom_text(data = snpFst, aes(Pop, Pop2, label = Fst), color = ifelse(snpQ$Qval <= 0.05,"black", "darkgrey"), size = ifelse(snpQ$Qval < 0.05, 6, 5), fontface = ifelse (snpQ$Qval < 0.05, "bold", "plain")) +
   guides(fill = guide_colorbar(barwidth = 12, barheight = 1, title.position = "top", title.hjust = 0.5)) +
   scale_y_discrete(position = "left") +
   scale_x_discrete(limits = rev(levels(snpFst$Pop))[c(1:5)]) +
-  coord_cartesian(xlim = c(1, 5), ylim = c(1, 5), clip = "off") +
+  coord_cartesian(xlim = c(1, 4), ylim = c(1, 4), clip = "off") +
   theme_minimal()
 
 snpHeatmap = snpHeatmapA + theme(
@@ -449,7 +449,7 @@ snpHeatmap = snpHeatmapA + theme(
   panel.grid.major = element_blank(),
   panel.border = element_blank(),
   axis.ticks = element_blank(),
-  legend.position = c(0.5, 0.87),
+  legend.position = c(0.7, 0.87),
   legend.direction = "horizontal",
   legend.title = element_text(size = 16),
   legend.text = element_text(size = 14),
@@ -458,7 +458,7 @@ snpHeatmap = snpHeatmapA + theme(
 
 snpHeatmap
 
-ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/fstHeatMap.png", plot = snpHeatmap, width = 30, height = 9, units = "cm", dpi = 300)
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/fstHeatMap3.png", plot = snpHeatmap, width = 30, height = 9, units = "cm", dpi = 300)
 ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/fstHeatMap.eps", plot = snpHeatmap, width = 30, height = 9, units = "cm", dpi = 300)
 ```
 

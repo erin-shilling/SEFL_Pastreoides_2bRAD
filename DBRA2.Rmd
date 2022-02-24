@@ -159,11 +159,11 @@ flPal = paletteer_d("LaCroixColoR::PeachPear")[c(1,2,3,4,5)]
 
 #building plot
 pastDbrdaPlotA = ggplot(pastDbrdaData, aes(x = dbRDA1, y = dbRDA2, color = region, fill = region)) +
-  geom_point(data = pastDbrdaData, aes(x = dbRDA1, y = dbRDA2, fill = region, color = region), size = 2, shape = 21, alpha = 0.5, show.legend = FALSE) +
-  geom_segment(data = envLoad, aes(x = 0, y = 0, xend = dbRDA1, yend = dbRDA2), color = "black", arrow = arrow(length = unit(0.25, "cm"), type = "open"), size = 0.65, inherit.aes = FALSE) +
   geom_hline(yintercept = 0, color = "gray90", size = 0.5) + #x axis
   geom_vline(xintercept = 0, color = "gray90", size = 0.5) + #y axis
+  geom_point(data = pastDbrdaData, aes(x = dbRDA1, y = dbRDA2, fill = region, color = region), size = 2, shape = 21, alpha = 0.5, show.legend = FALSE) +
   stat_ellipse(data = pastDbrdaData, type = "t", geom = "polygon", alpha = 0.1, show.legend = FALSE) + #adds ellipses
+  geom_segment(data = envLoad, aes(x = 0, y = 0, xend = dbRDA1, yend = dbRDA2), color = "black", arrow = arrow(length = unit(0.25, "cm"), type = "open"), size = 0.65, inherit.aes = FALSE) +
   geom_text(data = envLoad, aes(x = dbRDA1+0.1, y = dbRDA2+0.2, label = var), color = "black", size = 3, inherit.aes = FALSE) +
   geom_point(data = pastDbrdaData, aes(x = mean.x, y = mean.y, fill = region), shape = 21, size = 5, color = "black") + #pop centroids indicated by large circles
   annotate(geom = "text", x = 0.7, y = -1.5, label = bquote("AMOVA:"~.(amovaPerc)*","~italic(p)~" = "~.(amovaP))) +
