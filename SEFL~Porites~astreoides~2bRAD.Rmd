@@ -458,11 +458,11 @@ snpHeatmap = snpHeatmapA + theme(
 
 snpHeatmap
 
-ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/fstHeatMap3.png", plot = snpHeatmap, width = 30, height = 9, units = "cm", dpi = 300)
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/fstHeatMap_nocolor.png", plot = snpHeatmap, width = 30, height = 9, units = "cm", dpi = 300)
 ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/fstHeatMap.eps", plot = snpHeatmap, width = 30, height = 9, units = "cm", dpi = 300)
 ```
 
-![](C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/fstHeatMap.png)
+![](C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/fstHeatMap_nocolor.png)
 <br>
 
 Heterozygosity & Inbreeding
@@ -471,13 +471,13 @@ Calculating values for later plot analysis
 # packages: tidyverse, rstatix
 #rstatix package for Tukey post hoc
 #Read in population data
-popData = read.csv("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/poritesastreoidesMetaData_clonesremoved.csv") %>% select("sample" = tube_id, "Region" = region)
-popData$Region[popData$Region=="Pompano/LBTS"]<-"Ft. Lauderdale"
+popData = read.csv("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/poritesastreoidesMetaData_clonesremoved.csv") %>% select("sample" = tube_id, "Population" = region)
+popData$Population[popData$Population=="Pompano/LBTS"]<-"Ft. Lauderdale"
 
 popData$a = c(0:35)
-popData$Region = factor(popData$Region)
-levels(popData$Region)
-popData$Region = factor(popData$Region, levels = levels(popData$Region)[c(4, 3, 5, 1, 2)])
+popData$Population = factor(popData$Population)
+levels(popData$Population)
+popData$Population = factor(popData$Population, levels = levels(popData$Population)[c(4, 3, 5, 1, 2)])
 hetAll = read.table("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/hetAllSites")
 
 colnames(hetAll) = c("sample", "All")
@@ -490,42 +490,42 @@ HetSNPs$sample = popData$sample
 pastBreed = read.delim("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/newres")
 pastBreed2 = pastBreed %>% group_by(a) %>% select("inbreed" = Fa)
 pastBreed3 = pastBreed %>% group_by(b) %>% select("inbreed" = Fb)
-pastBreed = bind_rows(pastBreed2, pastBreed3) %>% group_by(a) %>% summarize("inbreed" = mean(inbreed))
+pastBreed = bind_rows(pastBreed2, pastBreed3) %>% group_by(a) %>% summarise("inbreed" = mean(inbreed))
 
 pastRelate = read.delim("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/newres")
 pastRelate2 = pastRelate %>% group_by(a, b) %>% select("relate" = rab)
 pastRelate2 = pastRelate2 %>% left_join(popData, by = "a") %>% left_join(popData, by = c("b" = "a"), suffix = c(".a", ".b")) 
-pastRelate = pastRelate2 %>% filter(Region.a == Region.b) %>% rename(Region = Region.a)
+pastRelate = pastRelate2 %>% filter(Population.a == Population.b) %>% rename(Population = Population.a)
 het = left_join(popData, hetAll, by = "sample") %>% left_join(HetSNPs, by = "sample") %>% mutate("inbreed" = pastBreed$inbreed)
-hetStats = het %>% group_by(Region) %>% dplyr::summarise(N = n(), meanAll = mean(All), sdAll = sd(All), seAll = sd(All)/sqrt(N), meanSnps = mean(SNPs), sdSnps = sd(SNPs), seSnps = sd(SNPs)/sqrt(N), meanInbreed = mean(inbreed), sdInbreed = sd(inbreed), seInbreed = sd(inbreed)/sqrt(N))
+hetStats = het %>% group_by(Population) %>% dplyr::summarise(N = n(), meanAll = mean(All), sdAll = sd(All), seAll = sd(All)/sqrt(N), meanSnps = mean(SNPs), sdSnps = sd(SNPs), seSnps = sd(SNPs)/sqrt(N), meanInbreed = mean(inbreed), sdInbreed = sd(inbreed), seInbreed = sd(inbreed)/sqrt(N))
 min(hetStats$meanAll, na.rm = TRUE)
 max(hetStats$meanAll, na.rm = TRUE)
 min(hetStats$meanSnps, na.rm = TRUE)
 max(hetStats$meanSnps, na.rm = TRUE)
-hetAllLm = lm(data = het, All~Region)
-hetSnpLm = lm(data = het, SNPs~Region)
-inbreedLm = lm(data = het, inbreed~Region)
-relateLm = lm(data = pastRelate, relate~Region)
+hetAllLm = lm(data = het, All~Population)
+hetSnpLm = lm(data = het, SNPs~Population)
+inbreedLm = lm(data = het, inbreed~Population)
+relateLm = lm(data = pastRelate, relate~Population)
 
 #summarizing outputs from lm
 hetAllANOVA = summary(aov(hetAllLm))
 hetAllANOVA
-hetAllpwc <- het %>% tukey_hsd(All~Region)
+hetAllpwc <- het %>% tukey_hsd(All~Population)
 hetAllpwc
 
 hetSnpANOVA = summary(aov(hetSnpLm))
 hetSnpANOVA
-hetSnppwc <- het %>% tukey_hsd(SNPs~Region)
+hetSnppwc <- het %>% tukey_hsd(SNPs~Population)
 hetSnppwc
 
 inbreedANOVA = summary(aov(inbreedLm))
 inbreedANOVA
-inbreedpwc <- het %>% tukey_hsd(inbreed~Region)
+inbreedpwc <- het %>% tukey_hsd(inbreed~Population)
 inbreedpwc
 
 relateANOVA = summary(aov(relateLm))
 relateANOVA
-relatepwc<- aov(relate ~ Region, data = pastRelate) %>% tukey_hsd()
+relatepwc<- aov(relate ~ Population, data = pastRelate) %>% tukey_hsd()
 relatepwc
 
 hetTab = hetStats
@@ -536,8 +536,8 @@ All ANOVAs significant, pairwise comparisons primarily show Jupiter pop has sign
 <br>
 
 ```{r, plots for heterozygosity and inbreeding}
-#packages: paletteer, reshape2, patchwork
-hetMelt = melt(het, id.vars = c("sample", "Region"), variable.name = "type", value.name = "heterozygosity")
+#packages: paletteer, reshape2, patchwork, ggpubr (adds p-values to figures)
+hetMelt = melt(het, id.vars = c("sample", "Population"), variable.name = "type", value.name = "heterozygosity")
 
 flPal = paletteer_d("LaCroixColoR::PeachPear")[c(1,2,3,4,5)]
 #flPal = paletteer_d("rcartocolor::Sunset")[c(7, 6, 4, 3, 1)]
@@ -558,43 +558,53 @@ hetTheme = theme(axis.title.x = element_text(color = "black", size = 12),
 
 dodge <- position_dodge(width = 1)
 
-hetPlotAll = ggplot(data = subset(hetMelt, subset = hetMelt$type == "All"),aes(x = Region, y = heterozygosity, fill = Region)) +
-  geom_point(aes(color = Region),shape = 21, position = position_jitterdodge(seed = 1, dodge.width = 1), size = 2, alpha = 0.7) +
+hetAll_comp <- list( c("Jupiter", "Ft. Lauderdale") )
+
+hetPlotAll = ggplot(data = subset(hetMelt, subset = hetMelt$type == "All"), aes(x = Population, y = heterozygosity, fill = Population)) +
+  geom_point(aes(color = Population),shape = 21, position = position_jitterdodge(seed = 1, dodge.width = 1), size = 2, alpha = 0.7) +
   geom_boxplot(size = 0.5, alpha = 0.7, position = dodge, color = "gray35", outlier.shape = NA) +
-  xlab("Region") +
+  xlab("Population") +
   ylab("Heterozygosity") +
   ggtitle("All loci") +
   scale_fill_manual(values = flPal) +  
   scale_color_manual(values = flPal) +
   theme_bw() +
-  hetTheme
-  
-hetPlotSnps = ggplot(data = subset(hetMelt, subset = hetMelt$type == "SNPs"),aes(x = Region, y = heterozygosity, fill = Region)) +
-  geom_point(aes(color = Region),shape = 21, position = position_jitterdodge(seed = 1, dodge.width = 1), size = 2, alpha = 0.7) +
+  hetTheme + 
+  stat_compare_means(comparisons = hetAll_comp, label = "p.signif", label.y = c(0.0048))
+
+hetSnp_comp <- list( c("Jupiter", "Ft. Lauderdale") )
+
+hetPlotSnps = ggplot(data = subset(hetMelt, subset = hetMelt$type == "SNPs"),aes(x = Population, y = heterozygosity, fill = Population)) +
+  geom_point(aes(color = Population),shape = 21, position = position_jitterdodge(seed = 1, dodge.width = 1), size = 2, alpha = 0.7) +
   geom_boxplot(size = 0.5, alpha = 0.7, position = dodge, color = "gray35", outlier.shape = NA) +
-  xlab("Region") +
+  xlab("Population") +
   ylab("Heterozygosity") +
   ggtitle("SNPs") +
   scale_fill_manual(values = flPal) +
   scale_color_manual(values = flPal) +
   theme_bw() +
-  hetTheme
+  hetTheme +
+  stat_compare_means(comparisons = hetSnp_comp, label = "p.signif", label.y = c(0.43))
 
-inbreedingPlot = ggplot(data = het, aes(x = Region, y = inbreed, fill = Region)) +
-  geom_point(aes(color = Region),shape = 21, position = position_jitterdodge(seed = 1, dodge.width = 1), size = 2, alpha = 0.7) +
+inbreed_comp <- list( c("St. Lucie Reef", "Jupiter"), c("Jupiter", "Ft. Lauderdale"), c("West Palm Beach", "Ft. Lauderdale"), c("Boynton Beach", "Ft. Lauderdale") )
+
+inbreedingPlot = ggplot(data = het, aes(x = Population, y = inbreed, fill = Population)) +
+  geom_point(aes(color = Population), shape = 21, position = position_jitterdodge(seed = 1, dodge.width = 1), size = 2, alpha = 0.7) +
   geom_boxplot(size = 0.5, alpha = 0.7, position = dodge, color = "gray35", outlier.shape = NA) +
-  xlab("Region") +
+  coord_cartesian(ylim = c(0, 0.135)) +
+  xlab("Population") +
   ylab("Inbreeding coefficient") +
   ggtitle("Inbreeding") +
   scale_fill_manual(values = flPal) +  
   scale_color_manual(values = flPal) +
   theme_bw() +
-  hetTheme
+  hetTheme +
+  stat_compare_means(comparisons = inbreed_comp, label = "p.signif", label.y = c(0.07, 0.107, 0.12, 0.09))
 
-relatePlot = ggplot(data = pastRelate, aes(x = Region, y = relate, fill = Region)) +
-  geom_point(aes(color = Region),shape = 21, position = position_jitterdodge(seed = 1, dodge.width = 1), size = 2, alpha = 0.7) +
+relatePlot = ggplot(data = pastRelate, aes(x = Population, y = relate, fill = Population)) +
+  geom_point(aes(color = Population),shape = 21, position = position_jitterdodge(seed = 1, dodge.width = 1), size = 2, alpha = 0.7) +
   geom_boxplot(size = 0.5, alpha = 0.7, position = dodge, color = "gray35", outlier.shape = NA) +
-  xlab("Region") +
+  xlab("Population") +
   ylab("Relatedness") +
   ggtitle("Relatedness") +
   scale_fill_manual(values = flPal) +  
@@ -603,17 +613,17 @@ relatePlot = ggplot(data = pastRelate, aes(x = Region, y = relate, fill = Region
   hetTheme
 
 hetPlots = ((hetPlotAll | hetPlotSnps) / (inbreedingPlot | relatePlot)) +
-  plot_annotation(tag_levels = 'A') +
+  plot_annotation(tag_levels = 'a') +
   plot_layout(guides = "collect")& 
   theme(plot.tag = element_text(size = 16),
         legend.title = element_text(size = 12),
         legend.text = element_text(size = 10),
-        legend.position = "right") 
+        legend.position = "right")
 
 hetPlots
 
-ggsave("figures/heterozygosityPlot.png", plot = hetPlots, width = 22, height = 16, units = "cm", dpi = 300)
-ggsave("figures/heterozygosityPlot.pdf", plot = hetPlots, width = 22, height = 16, units = "cm", dpi = 300)
+ggsave("figures/heterozygosityPlot_pval.png", plot = hetPlots, width = 22, height = 16, units = "cm", dpi = 300)
+ggsave("figures/heterozygosityPlot_pval.pdf", plot = hetPlots, width = 22, height = 16, units = "cm", dpi = 300)
 
 ```
 
