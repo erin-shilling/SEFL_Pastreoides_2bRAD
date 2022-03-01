@@ -63,7 +63,8 @@ present = list_layers(datasets) %>% dplyr::select(dataset_code, layer_code, name
 envVar = load_layers(present$layer_code)
 
 #Import coordinates of sites
-popData=read.csv("data_files/poritesastreoidesMetaData_clonesremoved.csv") %>% select("sample" = tube_id, "region" = region, "depth" = collection_depth_m, "lat" = site_lat, "lon" = site_long)
+popData=read.csv("data_files/poritesastreoidesMetaData_clonesremoved.csv") %>% select("sample" = tube_id, "Population" = region, "depth" = collection_depth_m, "lat" = site_lat, "lon" = site_long)
+popData$Population[popData$Population=="Pompano/LBTS"]<-"Ft. Lauderdale"
 
 envData = data.frame(popData, raster::extract(envVar, popData[,5:4]))
 # write_excel_csv(envData, file= 'Sites_w_Env_Data.csv')
@@ -133,27 +134,27 @@ tail(pastDbrdaData1)
 envLoad = as.data.frame(pastDbrda$CCA$biplot)
 envLoad$var = row.names(envLoad)
 
-pastDbrdaData = merge(pastDbrdaData1, aggregate(cbind(mean.x = dbRDA1, mean.y = dbRDA2)~region, pastDbrdaData1, mean), by="region")
+pastDbrdaData = merge(pastDbrdaData1, aggregate(cbind(mean.x = dbRDA1, mean.y = dbRDA2)~Population, pastDbrdaData1, mean), by="Population")
 
-pastDbrdaData$region = factor(pastDbrdaData$region)
-levels(pastDbrdaData$region)
-pastDbrdaData$region = factor(pastDbrdaData$region, levels(pastDbrdaData$region)[c(4, 2, 5, 1, 3)])
+pastDbrdaData$Population = factor(pastDbrdaData$Population)
+levels(pastDbrdaData$Population)
+pastDbrdaData$Population = factor(pastDbrdaData$Population, levels(pastDbrdaData$Population)[c(4, 3, 5, 1, 2)])
 
 flPal = paletteer_d("LaCroixColoR::PeachPear")[c(1,2,3,4,5)]
 
 #building plot
-pastDbrdaPlotA = ggplot(pastDbrdaData, aes(x = dbRDA1, y = dbRDA2, color = region, fill = region)) +
+pastDbrdaPlotA = ggplot(pastDbrdaData, aes(x = dbRDA1, y = dbRDA2, color = Population, fill = Population)) +
   geom_hline(yintercept = 0, color = "gray90", size = 0.5) + #x axis
   geom_vline(xintercept = 0, color = "gray90", size = 0.5) + #y axis
-  geom_point(data = pastDbrdaData, aes(x = dbRDA1, y = dbRDA2, fill = region, color = region), size = 2, shape = 21, alpha = 0.5, show.legend = FALSE) +
+  geom_point(data = pastDbrdaData, aes(x = dbRDA1, y = dbRDA2, fill = Population, color = Population), size = 2, shape = 21, alpha = 0.5, show.legend = FALSE) +
   stat_ellipse(data = pastDbrdaData, type = "t", geom = "polygon", alpha = 0.1, show.legend = FALSE) + #adds ellipses
   geom_segment(data = envLoad, aes(x = 0, y = 0, xend = dbRDA1, yend = dbRDA2), color = "black", arrow = arrow(length = unit(0.25, "cm"), type = "open"), size = 0.65, inherit.aes = FALSE) +
-  geom_text(data = envLoad, aes(x = dbRDA1+0.1, y = dbRDA2+0.2, label = var), color = "black", size = 3, inherit.aes = FALSE) +
-  geom_point(data = pastDbrdaData, aes(x = mean.x, y = mean.y, fill = region), shape = 21, size = 5, color = "black") + #pop centroids indicated by large circles
+  geom_text(data = envLoad, aes(x = dbRDA1+0.1, y = dbRDA2+0.1, label = var), color = "black", size = 3, inherit.aes = FALSE) +
+  geom_point(data = pastDbrdaData, aes(x = mean.x, y = mean.y, fill = Population), shape = 21, size = 5, color = "black") + #pop centroids indicated by large circles
   annotate(geom = "text", x = 0.7, y = -1.5, label = bquote("AMOVA:"~.(amovaPerc)*","~italic(p)~" = "~.(amovaP))) +
   labs(x = paste("dbRDA1 (", pastRdaVar[1]," %)", sep = ""), y =  paste("dbRDA2 (", pastRdaVar[2], " %)", sep = "")) +
-  scale_fill_manual(values = flPal, name = "Region") +
-  scale_color_manual(values = flPal, name = "Region") +
+  scale_fill_manual(values = flPal, name = "Population") +
+  scale_color_manual(values = flPal, name = "Population") +
   guides(shape = guide_legend(override.aes = list(size = 2, stroke = 0.5, alpha = NA), order = 2), fill = guide_legend(override.aes = list(shape =   22, size = 4, color = flPal, alpha = NA), order = 1)) +
   theme_bw()
 

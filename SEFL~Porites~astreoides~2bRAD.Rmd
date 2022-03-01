@@ -1089,25 +1089,25 @@ baSumm$mean = as.numeric(baSumm$mean)
 baSumm$hpdLow = as.numeric(baSumm$hpdLow)
 baSumm$hpdHigh = as.numeric(baSumm$hpdHigh)
 
-pastSamples = read.csv("data_files/poritesastreoidesMetaData_clonesremoved.csv", header = TRUE) %>% select(sample = tube_id, !sample_id)
-pastSamples$region[pastSamples$region=="Pompano/LBTS"]<-"Ft. Lauderdale"
+pastSamples = read.csv("data_files/poritesastreoidesMetaData_clonesremoved.csv", header = TRUE) %>% select(sample = tube_id, !sample_id, Population = region)
+pastSamples$Population[pastSamples$Population=="Pompano/LBTS"]<-"Ft. Lauderdale"
 
 library(lubridate)
 library(measurements)
-pastSamples$region = factor(pastSamples$region)
-levels(pastSamples$region)
-pastSamples$region = factor(pastSamples$region, levels = levels(pastSamples$region)[c(4, 3, 5, 1, 2)])
+pastSamples$Population = factor(pastSamples$Population)
+levels(pastSamples$Population)
+pastSamples$Population = factor(pastSamples$Population, levels = levels(pastSamples$Population)[c(4, 3, 5, 1, 2)])
 pastSamples$depthM = conv_unit(pastSamples$collection_depth_ft, from = "ft", to = "m") %>% round(1)
 
-seflSites = pastSamples %>% group_by(region)%>% summarize(latDD = first(site_lat), longDD = first(site_long), 
+seflSites = pastSamples %>% group_by(Population)%>% summarize(latDD = first(site_lat), longDD = first(site_long), 
 depthRangeM = paste(min(depthM), "-", max(depthM), sep = ""), 
 n = n()) %>% droplevels() %>% as.data.frame()
 
-seflPastPopsMigrate = seflSites %>% group_by(region) %>% summarise(latDD = first(latDD), longDD = first(longDD)) %>% filter(region %in% c("St. Lucie Reef", "Jupiter", "West Palm Beach", "Boynton Beach", "Ft. Lauderdale")) %>% droplevels()
+seflPastPopsMigrate = seflSites %>% group_by(Population) %>% summarise(latDD = first(latDD), longDD = first(longDD)) %>% filter(Population %in% c("St. Lucie Reef", "Jupiter", "West Palm Beach", "Boynton Beach", "Ft. Lauderdale")) %>% droplevels()
 
 migratePal = c("St. Lucie Reef" = flPal[1], "Jupiter" = flPal[2], "West Palm Beach" = flPal[3], "Boynton Beach" = flPal[4], "Ft. Lauderdale" = flPal[5])
 
-baMapData = baSumm %>% left_join(seflPastPopsMigrate, by = c("pop.i" = "region")) %>% left_join(seflPastPopsMigrate, by = c("pop.j" = "region"), suffix = c(".i", ".j")) %>% filter(hpdLow > 0.00)
+baMapData = baSumm %>% left_join(seflPastPopsMigrate, by = c("pop.i" = "Population")) %>% left_join(seflPastPopsMigrate, by = c("pop.j" = "Population"), suffix = c(".i", ".j")) %>% filter(hpdLow > 0.00)
 
 for(x in 1:nrow(baMapData)) {
   if (baMapData$pop.i[x] == baMapData$pop.j[x]) {
@@ -1127,8 +1127,8 @@ library(ggspatial)
 migrateMap = ggplot() +
   geom_sf(data = florida, fill = "white", size = 0.25) +
   geom_curve(data = baMapData, aes(x = longDD.j, y = latDD.j, xend = longDD.i, yend = latDD.i, color = pop.j, size = mean), arrow = arrow(type = "closed", length = unit(0.0225, "npc")), alpha = 0.7,  curvature = -0.3, na.rm = TRUE) +
-  geom_point(data = seflPastPopsMigrate, aes(x = longDD, y = latDD, fill = region), size = 3.5, shape = 21) +
-  scale_fill_manual(values = flPal, name = "Region") +
+  geom_point(data = seflPastPopsMigrate, aes(x = longDD, y = latDD, fill = Population), size = 3.5, shape = 21) +
+  scale_fill_manual(values = flPal, name = "Population") +
   scale_color_manual(values = migratePal, guide = NULL) +
   scale_size(range = c(0.5, 2), breaks = c(0.05,0.1,0.15), name = expression(paste(italic("m")))) +
   coord_sf(xlim = c(-80.6, -79.6), ylim = c(26, 27.2)) +
