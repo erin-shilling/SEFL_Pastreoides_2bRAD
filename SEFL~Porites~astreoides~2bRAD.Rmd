@@ -1055,7 +1055,6 @@ popi = rep(c("Jupiter", "West Palm Beach", "Boynton Beach", "St. Lucie Reef", "F
 popj = rep(c("Jupiter", "West Palm Beach", "Boynton Beach", "St. Lucie Reef", "Ft. Lauderdale"), times = 5)
 
 baSumm = baSumm %>% mutate(pop.i = popi, pop.j = popj) %>% relocate(c(pop.i, pop.j), .after = pops) %>% dplyr::select(-pops)
-# %>% filter(pop1!=pop2) %>% select(-pops)
 
 baSumm$pop.i = factor(baSumm$pop.i)
 #levels(baSumm$pop.i)
@@ -1135,6 +1134,9 @@ n = n()) %>% droplevels() %>% as.data.frame()
 
 seflPastPopsMigrate = seflSites %>% group_by(Population) %>% summarise(latDD = first(latDD), longDD = first(longDD)) %>% filter(Population %in% c("St. Lucie Reef", "Jupiter", "West Palm Beach", "Boynton Beach", "Ft. Lauderdale")) %>% droplevels()
 
+library(paletteer)
+flPal = paletteer_d("LaCroixColoR::PeachPear")[c(1,2,3,4,5)]
+
 migratePal = c("St. Lucie Reef" = flPal[1], "Jupiter" = flPal[2], "West Palm Beach" = flPal[3], "Boynton Beach" = flPal[4], "Ft. Lauderdale" = flPal[5])
 
 baMapData = baSumm %>% left_join(seflPastPopsMigrate, by = c("pop.i" = "Population")) %>% left_join(seflPastPopsMigrate, by = c("pop.j" = "Population"), suffix = c(".i", ".j")) %>% filter(hpdLow > 0.00)
@@ -1156,7 +1158,12 @@ florida = read_sf("data_files/shp/flCountiesLo.shp") %>% st_transform(crs = 4326
 library(ggspatial)
 migrateMap = ggplot() +
   geom_sf(data = florida, fill = "white", size = 0.25) +
-  geom_curve(data = baMapData, aes(x = longDD.j, y = latDD.j, xend = longDD.i, yend = latDD.i, color = pop.j, size = mean), arrow = arrow(type = "closed", length = unit(0.0225, "npc")), alpha = 0.7,  curvature = -0.3, na.rm = TRUE) +
+  geom_curve(data = baMapData[c(2,4),], aes(x = longDD.j, y = latDD.j, xend = longDD.i+0.01, yend = latDD.i-0.023, color = pop.j, size = mean), alpha = 0.7, arrow = arrow(type = "open", length = unit(0.0225, "npc")), curvature = 0.3) +
+  geom_curve(data = baMapData[c(6),], aes(x = longDD.j, y = latDD.j, xend = longDD.i+0.01, yend = latDD.i-0.021, color = pop.j, size = mean), alpha = 0.7, arrow = arrow(type = "closed", length = unit(0.0225, "npc")), curvature = 0.3) +
+    geom_curve(data = baMapData[c(7),], aes(x = longDD.j, y = latDD.j, xend = longDD.i+0.02, yend = latDD.i-0.02, color = pop.j, size = mean), alpha = 0.7, arrow = arrow(type = "open", length = unit(0.0225, "npc")), curvature = 0.5) +
+  geom_curve(data = baMapData[c(9),], aes(x = longDD.j, y = latDD.j, xend = longDD.i-0.025, yend = latDD.i+0.01, color = pop.j, size = mean), alpha = 0.7, arrow = arrow(type = "closed", length = unit(0.0225, "npc")), curvature = 0.4) +
+  geom_curve(data = baMapData[c(10),], aes(x = longDD.j, y = latDD.j, xend = longDD.i, yend = latDD.i+0.025, color = pop.j, size = mean), alpha = 0.7, arrow = arrow(type = "closed", length = unit(0.0225, "npc")), curvature = 0.3) +
+#  geom_curve(data = baMapData, aes(x = longDD.j, y = latDD.j, xend = longDD.i, yend = latDD.i, color = pop.j, size = mean), arrow = arrow(type = "closed", length = unit(0.0225, "npc")), alpha = 0.7,  curvature = -0.3, na.rm = TRUE) +
   geom_point(data = seflPastPopsMigrate, aes(x = longDD, y = latDD, fill = Population), size = 3.5, shape = 21) +
   scale_fill_manual(values = flPal, name = "Population") +
   scale_color_manual(values = migratePal, guide = NULL) +
@@ -1178,8 +1185,7 @@ migrateMap = ggplot() +
         #legend.direction = "horizontal",
         #legend.box = "vertical",
         #legend.key = element_blank(),
-        legend.background = element_blank()
-  )
+        legend.background = element_blank())
 
 migrateMap
 
