@@ -205,13 +205,14 @@ cloneDend = cloneDendA + theme(
   panel.background = element_blank(),
   plot.background = element_blank(),
   legend.key = element_blank(),
+  legend.background = element_blank(),
   legend.title = element_text(size = 18),
   legend.text = element_text(size = 16),
   legend.position = "bottom")
 
 cloneDend
 
-ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/cloneDend_nolabels2.png", plot = cloneDend, height = 5, width = 16, units = "in", dpi = 300)
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/cloneDend_nolabels_nobg.png", plot = cloneDend, height = 5, width = 16, units = "in", dpi = 300)
 ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/cloneDend_nolabels.eps", plot = cloneDend, height = 5, width = 16, units = "in", dpi = 300)
 
 ```
@@ -293,7 +294,7 @@ snpHeatmapA = ggplot(data = snpFst, aes(Pop, Pop2, fill = as.numeric(as.characte
 #  geom_segment(data = snpFst, aes(x = 0.48, xend = -0.62, y = Pop, yend = Pop, color = region), size = 19) +
 #  geom_segment(data = snpFst, aes(x = Pop2, xend = Pop2, y = 0.45, yend = -0.6, color = region2), size = 62.5) +
 #  scale_color_manual(values = flPal[], guide = NULL) +
-  scale_fill_gradient(low = "white", high = "red", limit = c(0, 0.07), space = "Lab", name = expression(paste(italic("F")[ST])), na.value = "white",  guide = "colourbar") +
+  scale_fill_gradient(low = "white", high = "red", limit = c(0, 0.07), space = "Lab", name = expression(paste(italic("F")[ST])), na.value = "transparent",  guide = "colourbar") +
   geom_text(data = snpFst, aes(Pop, Pop2, label = Fst), color = ifelse(snpQ$Qval <= 0.05,"black", "darkgrey"), size = ifelse(snpQ$Qval < 0.05, 6, 5), fontface = ifelse (snpQ$Qval < 0.05, "bold", "plain")) +
   guides(fill = guide_colorbar(barwidth = 12, barheight = 1, title.position = "top", title.hjust = 0.5)) +
   scale_y_discrete(position = "left") +
@@ -307,18 +308,19 @@ snpHeatmap = snpHeatmapA + theme(
   axis.title.x = element_blank(),
   axis.title.y = element_blank(),
   panel.grid.major = element_blank(),
+  panel.grid.minor = element_blank(),
+  panel.grid = element_blank(),
   panel.border = element_blank(),
   axis.ticks = element_blank(),
   legend.position = c(0.7, 0.87),
   legend.direction = "horizontal",
   legend.title = element_text(size = 16),
   legend.text = element_text(size = 14),
-  plot.title = element_text(size = 16)
-)
+  plot.title = element_text(size = 16))
 
 snpHeatmap
 
-ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/fstHeatMap_nocolor.png", plot = snpHeatmap, width = 30, height = 9, units = "cm", dpi = 300)
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/fstHeatMap_nocolor_nobg.png", plot = snpHeatmap, width = 30, height = 9, units = "cm", dpi = 300, bg = "transparent")
 ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/fstHeatMap.eps", plot = snpHeatmap, width = 30, height = 9, units = "cm", dpi = 300)
 ```
 
@@ -411,10 +413,15 @@ hetTheme = theme(axis.title.x = element_text(color = "black", size = 12),
         legend.position = "right",
         legend.key.size = unit(0.5, 'cm'),
         panel.border = element_rect(color = "black"),
-        panel.background = element_rect(fill = "white"),
-        plot.background = element_rect(fill = "white"),
+#        panel.background = element_rect(fill = "white"),
+#        plot.background = element_rect(fill = "white"),
         panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank())
+        panel.grid.minor = element_blank(),
+        panel.grid = element_blank(),
+        panel.background = element_blank(),
+        plot.background = element_blank(),
+        legend.key = element_blank(),
+        legend.background = element_blank())
 
 dodge <- position_dodge(width = 1)
 
@@ -478,11 +485,15 @@ hetPlots = ((hetPlotAll | hetPlotSnps) / (inbreedingPlot | relatePlot)) +
   theme(plot.tag = element_text(size = 16),
         legend.title = element_text(size = 12),
         legend.text = element_text(size = 10),
-        legend.position = "right")
+        legend.position = "right",
+#        panel.grid = element_blank(),
+        plot.background = element_blank(),
+        legend.key = element_blank(),
+        legend.background = element_blank())
 
 hetPlots
 
-ggsave("figures/heterozygosityPlot_pval.png", plot = hetPlots, width = 22, height = 16, units = "cm", dpi = 300)
+ggsave("figures/heterozygosityPlot_pval_nobg.png", plot = hetPlots, width = 22, height = 16, units = "cm", dpi = 300, bg = "transparent")
 ggsave("figures/heterozygosityPlot_pval.pdf", plot = hetPlots, width = 22, height = 16, units = "cm", dpi = 300)
 
 ```
@@ -647,6 +658,9 @@ pastDbrdaPlot1 = pastDbrdaPlotA +
         legend.position = "right",
         legend.title = element_text(size = 12),
         legend.text = element_text(size = 10),
+#        legend.background = element_rect(fill = "transparent", colour = NA),
+#        legend.key = element_rect(fill = "transparent", colour = NA),
+#        plot.background = element_rect(fill = "transparent", colour = NA)
         panel.border = element_rect(color = "black", size = 1),
         panel.background = element_rect(fill = "white"),
         panel.grid.major = element_blank(),
@@ -654,7 +668,8 @@ pastDbrdaPlot1 = pastDbrdaPlotA +
 
 pastDbrdaPlot1
 
-ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/DbrdaPlot.png", plot = pastDbrdaPlot1, height = 3.5, width = 7, units = "in", dpi = 300)
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/DbrdaPlot_nobg.png", plot = pastDbrdaPlot1, height = 3.5, width = 7, units = "in", dpi = 300)
+#add bg = "transparent" to export with no background color
 ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/DbrdaPlot.pdf", plot = pastDbrdaPlot1, height = 3.5, width = 7, units = "in", dpi = 300)
 ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/DbrdaPlot.tiff", plot = pastDbrdaPlot1, height = 3.5, width = 7, units = "in", dpi = 300)
 ```
@@ -882,11 +897,11 @@ Population structure plot from NGSadmix/CLUMPAK results.
 Based on most probable values for K
 ```{r, ADMIXTURE}
 # packages: paletteer, tidyverse, reshape2
-kColPal3 = paletteer_d("LaCroixColoR::PassionFruit")[c(2,3,6)] #A
-kColPal3 = paletteer_d("LaCroixColoR::Mango")[c(3,5,6)] #B
-kColPal3 = paletteer_d("LaCroixColoR::Berry")[c(1,3,6)] #C
-kColPal3 = paletteer_d("LaCroixColoR::Apricot")[c(2,3,6)] #E
-kColPal3 = paletteer_d("LaCroixColoR::KiwiSandia")[c(3,5,7)] #G
+#kColPal3 = paletteer_d("LaCroixColoR::PassionFruit")[c(2,3,6)] #A
+#kColPal3 = paletteer_d("LaCroixColoR::Mango")[c(3,5,6)] #B
+#kColPal3 = paletteer_d("LaCroixColoR::Berry")[c(1,3,6)] #C
+#kColPal3 = paletteer_d("LaCroixColoR::Apricot")[c(2,3,6)] #E
+#kColPal3 = paletteer_d("LaCroixColoR::KiwiSandia")[c(3,5,7)] #G
 kColPal3 = paletteer_d("LaCroixColoR::MurePepino")[c(3,4,6)] #H
 #kColPal7 = paletteer_c("viridis::viridis", n = 7)
 
@@ -1128,7 +1143,7 @@ levels(pastSamples$Population)
 pastSamples$Population = factor(pastSamples$Population, levels = levels(pastSamples$Population)[c(4, 3, 5, 1, 2)])
 pastSamples$depthM = conv_unit(pastSamples$collection_depth_ft, from = "ft", to = "m") %>% round(1)
 
-seflSites = pastSamples %>% group_by(Population)%>% summarize(latDD = first(site_lat), longDD = first(site_long), 
+seflSites = pastSamples %>% group_by(Population)%>% summarise(latDD = first(site_lat), longDD = first(site_long), 
 depthRangeM = paste(min(depthM), "-", max(depthM), sep = ""), 
 n = n()) %>% droplevels() %>% as.data.frame()
 
@@ -1185,11 +1200,17 @@ migrateMap = ggplot() +
         #legend.direction = "horizontal",
         #legend.box = "vertical",
         #legend.key = element_blank(),
-        legend.background = element_blank())
+#          legend.background = element_rect(fill = "transparent", colour = NA),
+#        legend.key = element_rect(fill = "transparent", colour = NA),
+#        plot.background = element_rect(fill = "transparent", colour = NA),
+#  panel.background = element_rect(fill = "transparent", colour = NA),
+#  rect = element_rect(fill = "transparent"),
+#        legend.background = element_blank()
+)
 
 migrateMap
 
-ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/migrateMap.png", plot = migrateMap, width = 25.5, height = 15, units = "cm",dpi = 300)
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/migrateMap_nobg.png", plot = migrateMap, width = 25.5, height = 15, units = "cm",dpi = 300, bg = "transparent")
 ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/migrateMap.svg", plot = migrateMap, width = 25.5, height = 15, units = "cm",dpi = 300)
 
 ```
