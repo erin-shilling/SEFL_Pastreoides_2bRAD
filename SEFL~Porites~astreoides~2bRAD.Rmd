@@ -939,6 +939,8 @@ seflPastAdmixMelt$Ancestry = factor(seflPastAdmixMelt$Ancestry, levels = rev(lev
 
 write_excel_csv(seflPastAdmixMelt, file= 'Samples in each K.csv')
 
+#making segments that are color coded by population
+#x2 is number of samples for each plot plus 0.7 to oordinate spacing of columns
 popAnno = data.frame(x1 = c(0.3, 0.3, 0.3, 0.3, 0.3), x2 = c(3.7, 10.7, 7.7, 10.7, 6.7), y1 = -0.12, y2 = -0.12, sample = NA, Ancestry = NA, ord  = NA, Fraction = NA,Region= c("St. Lucie", "Jupiter", "West Palm Beach", "Boynton Beach", "Ft. Lauderdale"))
 
 popAnno$Region = factor(popAnno$Region)
