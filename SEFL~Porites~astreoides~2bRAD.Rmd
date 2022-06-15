@@ -290,11 +290,10 @@ snpFst$Fst = factor(gsub("\\-", "", snpFst$Fst))
 
 snpHeatmapA = ggplot(data = snpFst, aes(Pop, Pop2, fill = as.numeric(as.character(Fst))))+
   geom_tile(color = "white") +
-#add this back in if want colored background for pops
-#  geom_segment(data = snpFst, aes(x = 0.48, xend = -0.62, y = Pop, yend = Pop, color = region), size = 19) +
-#  geom_segment(data = snpFst, aes(x = Pop2, xend = Pop2, y = 0.45, yend = -0.6, color = region2), size = 62.5) +
-#  scale_color_manual(values = flPal[], guide = NULL) +
-  scale_fill_gradient(low = "white", high = "red", limit = c(0, 0.07), space = "Lab", name = expression(paste(italic("F")[ST])), na.value = "transparent",  guide = "colourbar") +
+geom_segment(data = snpFst, aes(x = 0.48, xend = -1.62, y = Pop, yend = Pop, color = region), size = 19) +
+geom_segment(data = snpFst, aes(x = Pop2, xend = Pop2, y = 0.45, yend = -0.6, color = region2), size = 62.5) +
+scale_color_manual(values = flPal[], guide = NULL) +
+  scale_fill_gradient(low = "white", high = "red", limit = c(0, 0.07), space = "Lab", name = expression(paste(italic("F")[ST])), na.value = "white",  guide = "colourbar") +
   geom_text(data = snpFst, aes(Pop, Pop2, label = Fst), color = ifelse(snpQ$Qval <= 0.05,"black", "darkgrey"), size = ifelse(snpQ$Qval < 0.05, 6, 5), fontface = ifelse (snpQ$Qval < 0.05, "bold", "plain")) +
   guides(fill = guide_colorbar(barwidth = 12, barheight = 1, title.position = "top", title.hjust = 0.5)) +
   scale_y_discrete(position = "left") +
@@ -311,6 +310,7 @@ snpHeatmap = snpHeatmapA + theme(
   panel.grid.minor = element_blank(),
   panel.grid = element_blank(),
   panel.border = element_blank(),
+  plot.background = element_rect(fill = "white"),
   axis.ticks = element_blank(),
   legend.position = c(0.7, 0.87),
   legend.direction = "horizontal",
@@ -320,6 +320,8 @@ snpHeatmap = snpHeatmapA + theme(
 
 snpHeatmap
 
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/fstHeatMap_pub.png", plot = snpHeatmap, width = 30, height = 9, units = "cm", dpi = 300)
+#export with transparent background
 ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/fstHeatMap_nocolor_nobg.png", plot = snpHeatmap, width = 30, height = 9, units = "cm", dpi = 300, bg = "transparent")
 ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/fstHeatMap.eps", plot = snpHeatmap, width = 30, height = 9, units = "cm", dpi = 300)
 ```
@@ -592,9 +594,12 @@ vif
 
 pastMa = as.matrix(read.table("data_files/pastNoClones.ibsMat"))
 
+##start running ANOVA/models here
 rda1 = dbrda(pastMa ~ ., data = envData2)
 RsquareAdj(rda1)
 anova.cca(rda1)
+
+?dbrda
 
 rda0 = dbrda(pastMa ~ 1, data = envData2)
 rda1 = dbrda(pastMa ~ ., data = envData2)
@@ -674,6 +679,7 @@ ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/DbrdaPlot
 ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/DbrdaPlot.tiff", plot = pastDbrdaPlot1, height = 3.5, width = 7, units = "in", dpi = 300)
 ```
 
+**Not including in manuscript
 Identifying outlier SNPs, indicative of some type of selection taking place
 ```{r, outlier}
 # packages: tidyverse
@@ -940,7 +946,7 @@ seflPastAdmixMelt$Ancestry = factor(seflPastAdmixMelt$Ancestry, levels = rev(lev
 write_excel_csv(seflPastAdmixMelt, file= 'Samples in each K.csv')
 
 #making segments that are color coded by population
-#x2 is number of samples for each plot plus 0.7 to oordinate spacing of columns
+#x2 is number of samples for each plot plus 0.7 to ordinate spacing of columns
 popAnno = data.frame(x1 = c(0.3, 0.3, 0.3, 0.3, 0.3), x2 = c(3.7, 10.7, 7.7, 10.7, 6.7), y1 = -0.12, y2 = -0.12, sample = NA, Ancestry = NA, ord  = NA, Fraction = NA,Region= c("St. Lucie", "Jupiter", "West Palm Beach", "Boynton Beach", "Ft. Lauderdale"))
 
 popAnno$Region = factor(popAnno$Region)
@@ -1175,11 +1181,11 @@ florida = read_sf("data_files/shp/flCountiesLo.shp") %>% st_transform(crs = 4326
 library(ggspatial)
 migrateMap = ggplot() +
   geom_sf(data = florida, fill = "white", size = 0.25) +
-  geom_curve(data = baMapData[c(2,4),], aes(x = longDD.j, y = latDD.j, xend = longDD.i+0.01, yend = latDD.i-0.023, color = pop.j, size = mean), alpha = 0.7, arrow = arrow(type = "open", length = unit(0.0225, "npc")), curvature = 0.3) +
-  geom_curve(data = baMapData[c(6),], aes(x = longDD.j, y = latDD.j, xend = longDD.i+0.01, yend = latDD.i-0.021, color = pop.j, size = mean), alpha = 0.7, arrow = arrow(type = "closed", length = unit(0.0225, "npc")), curvature = 0.3) +
-    geom_curve(data = baMapData[c(7),], aes(x = longDD.j, y = latDD.j, xend = longDD.i+0.02, yend = latDD.i-0.02, color = pop.j, size = mean), alpha = 0.7, arrow = arrow(type = "open", length = unit(0.0225, "npc")), curvature = 0.5) +
-  geom_curve(data = baMapData[c(9),], aes(x = longDD.j, y = latDD.j, xend = longDD.i-0.025, yend = latDD.i+0.01, color = pop.j, size = mean), alpha = 0.7, arrow = arrow(type = "closed", length = unit(0.0225, "npc")), curvature = 0.4) +
-  geom_curve(data = baMapData[c(10),], aes(x = longDD.j, y = latDD.j, xend = longDD.i, yend = latDD.i+0.025, color = pop.j, size = mean), alpha = 0.7, arrow = arrow(type = "closed", length = unit(0.0225, "npc")), curvature = 0.3) +
+  geom_curve(data = baMapData[c(2,4),], aes(x = longDD.j, y = latDD.j, xend = longDD.i+0.01, yend = latDD.i-0.023, color = pop.j, size = mean), arrow = arrow(type = "open", length = unit(0.0225, "npc")), curvature = 0.3) +
+  geom_curve(data = baMapData[c(6),], aes(x = longDD.j, y = latDD.j, xend = longDD.i+0.01, yend = latDD.i-0.021, color = pop.j, size = mean), arrow = arrow(type = "closed", length = unit(0.0225, "npc")), curvature = 0.3) +
+    geom_curve(data = baMapData[c(7),], aes(x = longDD.j, y = latDD.j, xend = longDD.i+0.02, yend = latDD.i-0.02, color = pop.j, size = mean), arrow = arrow(type = "open", length = unit(0.0225, "npc")), curvature = 0.5) +
+  geom_curve(data = baMapData[c(9),], aes(x = longDD.j, y = latDD.j, xend = longDD.i-0.025, yend = latDD.i+0.01, color = pop.j, size = mean), arrow = arrow(type = "closed", length = unit(0.0225, "npc")), curvature = 0.4) +
+  geom_curve(data = baMapData[c(10),], aes(x = longDD.j, y = latDD.j, xend = longDD.i, yend = latDD.i+0.025, color = pop.j, size = mean), arrow = arrow(type = "closed", length = unit(0.0225, "npc")), curvature = 0.3) +
 #  geom_curve(data = baMapData, aes(x = longDD.j, y = latDD.j, xend = longDD.i, yend = latDD.i, color = pop.j, size = mean), arrow = arrow(type = "closed", length = unit(0.0225, "npc")), alpha = 0.7,  curvature = -0.3, na.rm = TRUE) +
   geom_point(data = seflPastPopsMigrate, aes(x = longDD, y = latDD, fill = Population), size = 3.5, shape = 21) +
   scale_fill_manual(values = flPal, name = "Population") +
@@ -1212,6 +1218,8 @@ migrateMap = ggplot() +
 
 migrateMap
 
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/migrateMap_opaque.png", plot = migrateMap, width = 25.5, height = 15, units = "cm",dpi = 300)
+#export with transparent background
 ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/migrateMap_nobg.png", plot = migrateMap, width = 25.5, height = 15, units = "cm",dpi = 300, bg = "transparent")
 ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/migrateMap.svg", plot = migrateMap, width = 25.5, height = 15, units = "cm",dpi = 300)
 
