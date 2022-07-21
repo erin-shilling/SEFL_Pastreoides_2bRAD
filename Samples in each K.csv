@@ -1,0 +1,361 @@
+﻿"sample","Region","ord","Ancestry","Fraction"
+"P049","St. Lucie",1,"cluster3.1",1
+"P057","St. Lucie",2,"cluster3.1",0.9326
+"P073","St. Lucie",3,"cluster3.1",0.7287
+"P011","Jupiter",1,"cluster3.1",1
+"P010","Jupiter",2,"cluster3.1",0.7545
+"P008","Jupiter",3,"cluster3.1",0.6687
+"P004","Jupiter",4,"cluster3.1",0.6495
+"P014","Jupiter",5,"cluster3.1",0.1824
+"P002","Jupiter",6,"cluster3.1",0
+"P003","Jupiter",7,"cluster3.1",0
+"P006","Jupiter",8,"cluster3.1",0
+"P009","Jupiter",9,"cluster3.1",0
+"P015","Jupiter",10,"cluster3.1",0
+"P019","West Palm Beach",1,"cluster3.1",1
+"P020","West Palm Beach",2,"cluster3.1",1
+"P028-2","West Palm Beach",3,"cluster3.1",1
+"P022","West Palm Beach",4,"cluster3.1",0.832
+"P024","West Palm Beach",5,"cluster3.1",0.7438
+"P027","West Palm Beach",6,"cluster3.1",0.5179
+"P029","West Palm Beach",7,"cluster3.1",0.5045
+"P043","Boynton Beach",1,"cluster3.1",1
+"P045","Boynton Beach",2,"cluster3.1",1
+"P038","Boynton Beach",3,"cluster3.1",0.7693
+"P033","Boynton Beach",4,"cluster3.1",0.768
+"P031","Boynton Beach",5,"cluster3.1",0.6692
+"P034","Boynton Beach",6,"cluster3.1",0.6595
+"P040","Boynton Beach",7,"cluster3.1",0.6277
+"P035","Boynton Beach",8,"cluster3.1",0.1301
+"P032","Boynton Beach",9,"cluster3.1",0
+"P044","Boynton Beach",10,"cluster3.1",0
+"P078","Ft. Lauderdale",1,"cluster3.1",1
+"P083","Ft. Lauderdale",2,"cluster3.1",0.9398
+"P077-3","Ft. Lauderdale",3,"cluster3.1",0
+"P084","Ft. Lauderdale",4,"cluster3.1",0
+"P085","Ft. Lauderdale",5,"cluster3.1",0
+"P087","Ft. Lauderdale",6,"cluster3.1",0
+"P049","St. Lucie",1,"cluster3.2",0
+"P057","St. Lucie",2,"cluster3.2",0.0674
+"P073","St. Lucie",3,"cluster3.2",0.0878
+"P011","Jupiter",1,"cluster3.2",0
+"P010","Jupiter",2,"cluster3.2",0.156
+"P008","Jupiter",3,"cluster3.2",0.176
+"P004","Jupiter",4,"cluster3.2",0.1706
+"P014","Jupiter",5,"cluster3.2",0.8176
+"P002","Jupiter",6,"cluster3.2",1
+"P003","Jupiter",7,"cluster3.2",1
+"P006","Jupiter",8,"cluster3.2",1
+"P009","Jupiter",9,"cluster3.2",1
+"P015","Jupiter",10,"cluster3.2",1
+"P019","West Palm Beach",1,"cluster3.2",0
+"P020","West Palm Beach",2,"cluster3.2",0
+"P028-2","West Palm Beach",3,"cluster3.2",0
+"P022","West Palm Beach",4,"cluster3.2",0.001
+"P024","West Palm Beach",5,"cluster3.2",0.1929
+"P027","West Palm Beach",6,"cluster3.2",0.4204
+"P029","West Palm Beach",7,"cluster3.2",0.3644
+"P043","Boynton Beach",1,"cluster3.2",0
+"P045","Boynton Beach",2,"cluster3.2",0
+"P038","Boynton Beach",3,"cluster3.2",0.2098
+"P033","Boynton Beach",4,"cluster3.2",0.1613
+"P031","Boynton Beach",5,"cluster3.2",0.2388
+"P034","Boynton Beach",6,"cluster3.2",0.1751
+"P040","Boynton Beach",7,"cluster3.2",0.364
+"P035","Boynton Beach",8,"cluster3.2",0.8699
+"P032","Boynton Beach",9,"cluster3.2",1
+"P044","Boynton Beach",10,"cluster3.2",0
+"P078","Ft. Lauderdale",1,"cluster3.2",0
+"P083","Ft. Lauderdale",2,"cluster3.2",0
+"P077-3","Ft. Lauderdale",3,"cluster3.2",0
+"P084","Ft. Lauderdale",4,"cluster3.2",0
+"P085","Ft. Lauderdale",5,"cluster3.2",0
+"P087","Ft. Lauderdale",6,"cluster3.2",0
+"P049","St. Lucie",1,"cluster3.3",0
+"P057","St. Lucie",2,"cluster3.3",0
+"P073","St. Lucie",3,"cluster3.3",0.1835
+"P011","Jupiter",1,"cluster3.3",0
+"P010","Jupiter",2,"cluster3.3",0.0895
+"P008","Jupiter",3,"cluster3.3",0.1552
+"P004","Jupiter",4,"cluster3.3",0.18
+"P014","Jupiter",5,"cluster3.3",0
+"P002","Jupiter",6,"cluster3.3",0
+"P003","Jupiter",7,"cluster3.3",0
+"P006","Jupiter",8,"cluster3.3",0
+"P009","Jupiter",9,"cluster3.3",0
+"P015","Jupiter",10,"cluster3.3",0
+"P019","West Palm Beach",1,"cluster3.3",0
+"P020","West Palm Beach",2,"cluster3.3",0
+"P028-2","West Palm Beach",3,"cluster3.3",0
+"P022","West Palm Beach",4,"cluster3.3",0.167
+"P024","West Palm Beach",5,"cluster3.3",0.0633
+"P027","West Palm Beach",6,"cluster3.3",0.0617
+"P029","West Palm Beach",7,"cluster3.3",0.1311
+"P043","Boynton Beach",1,"cluster3.3",0
+"P045","Boynton Beach",2,"cluster3.3",0
+"P038","Boynton Beach",3,"cluster3.3",0.0209
+"P033","Boynton Beach",4,"cluster3.3",0.0707
+"P031","Boynton Beach",5,"cluster3.3",0.092
+"P034","Boynton Beach",6,"cluster3.3",0.1654
+"P040","Boynton Beach",7,"cluster3.3",0.0083
+"P035","Boynton Beach",8,"cluster3.3",0
+"P032","Boynton Beach",9,"cluster3.3",0
+"P044","Boynton Beach",10,"cluster3.3",1
+"P078","Ft. Lauderdale",1,"cluster3.3",0
+"P083","Ft. Lauderdale",2,"cluster3.3",0.0602
+"P077-3","Ft. Lauderdale",3,"cluster3.3",1
+"P084","Ft. Lauderdale",4,"cluster3.3",1
+"P085","Ft. Lauderdale",5,"cluster3.3",1
+"P087","Ft. Lauderdale",6,"cluster3.3",1
+"P049","St. Lucie",1,"cluster7.1",0
+"P057","St. Lucie",2,"cluster7.1",1
+"P073","St. Lucie",3,"cluster7.1",0.2409
+"P011","Jupiter",1,"cluster7.1",0.2467
+"P010","Jupiter",2,"cluster7.1",0.8729
+"P008","Jupiter",3,"cluster7.1",0
+"P004","Jupiter",4,"cluster7.1",0.26
+"P014","Jupiter",5,"cluster7.1",0.032
+"P002","Jupiter",6,"cluster7.1",0
+"P003","Jupiter",7,"cluster7.1",0
+"P006","Jupiter",8,"cluster7.1",0
+"P009","Jupiter",9,"cluster7.1",0
+"P015","Jupiter",10,"cluster7.1",0
+"P019","West Palm Beach",1,"cluster7.1",0.0723
+"P020","West Palm Beach",2,"cluster7.1",0.92
+"P028-2","West Palm Beach",3,"cluster7.1",0.92
+"P022","West Palm Beach",4,"cluster7.1",0.0276
+"P024","West Palm Beach",5,"cluster7.1",0.8247
+"P027","West Palm Beach",6,"cluster7.1",0
+"P029","West Palm Beach",7,"cluster7.1",0.0668
+"P043","Boynton Beach",1,"cluster7.1",0
+"P045","Boynton Beach",2,"cluster7.1",0
+"P038","Boynton Beach",3,"cluster7.1",0.4648
+"P033","Boynton Beach",4,"cluster7.1",0
+"P031","Boynton Beach",5,"cluster7.1",0.4299
+"P034","Boynton Beach",6,"cluster7.1",0.1988
+"P040","Boynton Beach",7,"cluster7.1",0.5281
+"P035","Boynton Beach",8,"cluster7.1",0
+"P032","Boynton Beach",9,"cluster7.1",0
+"P044","Boynton Beach",10,"cluster7.1",0
+"P078","Ft. Lauderdale",1,"cluster7.1",0
+"P083","Ft. Lauderdale",2,"cluster7.1",0
+"P077-3","Ft. Lauderdale",3,"cluster7.1",0
+"P084","Ft. Lauderdale",4,"cluster7.1",0
+"P085","Ft. Lauderdale",5,"cluster7.1",0
+"P087","Ft. Lauderdale",6,"cluster7.1",0
+"P049","St. Lucie",1,"cluster7.2",0
+"P057","St. Lucie",2,"cluster7.2",0
+"P073","St. Lucie",3,"cluster7.2",0.7027
+"P011","Jupiter",1,"cluster7.2",0.0146
+"P010","Jupiter",2,"cluster7.2",0.0405
+"P008","Jupiter",3,"cluster7.2",0.9822
+"P004","Jupiter",4,"cluster7.2",0.4295
+"P014","Jupiter",5,"cluster7.2",0
+"P002","Jupiter",6,"cluster7.2",0
+"P003","Jupiter",7,"cluster7.2",0
+"P006","Jupiter",8,"cluster7.2",0
+"P009","Jupiter",9,"cluster7.2",0
+"P015","Jupiter",10,"cluster7.2",0
+"P019","West Palm Beach",1,"cluster7.2",0
+"P020","West Palm Beach",2,"cluster7.2",0
+"P028-2","West Palm Beach",3,"cluster7.2",0
+"P022","West Palm Beach",4,"cluster7.2",0.7316
+"P024","West Palm Beach",5,"cluster7.2",0.0117
+"P027","West Palm Beach",6,"cluster7.2",0.6685
+"P029","West Palm Beach",7,"cluster7.2",0.3359
+"P043","Boynton Beach",1,"cluster7.2",0.04
+"P045","Boynton Beach",2,"cluster7.2",0.04
+"P038","Boynton Beach",3,"cluster7.2",0.4
+"P033","Boynton Beach",4,"cluster7.2",0.9445
+"P031","Boynton Beach",5,"cluster7.2",0.4
+"P034","Boynton Beach",6,"cluster7.2",0.6355
+"P040","Boynton Beach",7,"cluster7.2",0.1033
+"P035","Boynton Beach",8,"cluster7.2",0
+"P032","Boynton Beach",9,"cluster7.2",0
+"P044","Boynton Beach",10,"cluster7.2",0
+"P078","Ft. Lauderdale",1,"cluster7.2",0
+"P083","Ft. Lauderdale",2,"cluster7.2",0
+"P077-3","Ft. Lauderdale",3,"cluster7.2",0
+"P084","Ft. Lauderdale",4,"cluster7.2",0
+"P085","Ft. Lauderdale",5,"cluster7.2",0
+"P087","Ft. Lauderdale",6,"cluster7.2",0
+"P049","St. Lucie",1,"cluster7.3",0
+"P057","St. Lucie",2,"cluster7.3",0
+"P073","St. Lucie",3,"cluster7.3",0.0096
+"P011","Jupiter",1,"cluster7.3",0
+"P010","Jupiter",2,"cluster7.3",0
+"P008","Jupiter",3,"cluster7.3",0
+"P004","Jupiter",4,"cluster7.3",0.1295
+"P014","Jupiter",5,"cluster7.3",0
+"P002","Jupiter",6,"cluster7.3",0
+"P003","Jupiter",7,"cluster7.3",0
+"P006","Jupiter",8,"cluster7.3",0
+"P009","Jupiter",9,"cluster7.3",0
+"P015","Jupiter",10,"cluster7.3",0
+"P019","West Palm Beach",1,"cluster7.3",0
+"P020","West Palm Beach",2,"cluster7.3",0
+"P028-2","West Palm Beach",3,"cluster7.3",0
+"P022","West Palm Beach",4,"cluster7.3",0.0427
+"P024","West Palm Beach",5,"cluster7.3",0
+"P027","West Palm Beach",6,"cluster7.3",0
+"P029","West Palm Beach",7,"cluster7.3",0.0844
+"P043","Boynton Beach",1,"cluster7.3",0
+"P045","Boynton Beach",2,"cluster7.3",0
+"P038","Boynton Beach",3,"cluster7.3",0
+"P033","Boynton Beach",4,"cluster7.3",0
+"P031","Boynton Beach",5,"cluster7.3",0
+"P034","Boynton Beach",6,"cluster7.3",0.064
+"P040","Boynton Beach",7,"cluster7.3",0
+"P035","Boynton Beach",8,"cluster7.3",0
+"P032","Boynton Beach",9,"cluster7.3",0
+"P044","Boynton Beach",10,"cluster7.3",1
+"P078","Ft. Lauderdale",1,"cluster7.3",0
+"P083","Ft. Lauderdale",2,"cluster7.3",0
+"P077-3","Ft. Lauderdale",3,"cluster7.3",1
+"P084","Ft. Lauderdale",4,"cluster7.3",1
+"P085","Ft. Lauderdale",5,"cluster7.3",1
+"P087","Ft. Lauderdale",6,"cluster7.3",1
+"P049","St. Lucie",1,"cluster7.4",0
+"P057","St. Lucie",2,"cluster7.4",0
+"P073","St. Lucie",3,"cluster7.4",0
+"P011","Jupiter",1,"cluster7.4",0
+"P010","Jupiter",2,"cluster7.4",0.0167
+"P008","Jupiter",3,"cluster7.4",0
+"P004","Jupiter",4,"cluster7.4",0.0243
+"P014","Jupiter",5,"cluster7.4",0.364
+"P002","Jupiter",6,"cluster7.4",1
+"P003","Jupiter",7,"cluster7.4",1
+"P006","Jupiter",8,"cluster7.4",1
+"P009","Jupiter",9,"cluster7.4",1
+"P015","Jupiter",10,"cluster7.4",0
+"P019","West Palm Beach",1,"cluster7.4",0
+"P020","West Palm Beach",2,"cluster7.4",0
+"P028-2","West Palm Beach",3,"cluster7.4",0
+"P022","West Palm Beach",4,"cluster7.4",0
+"P024","West Palm Beach",5,"cluster7.4",0
+"P027","West Palm Beach",6,"cluster7.4",0.1014
+"P029","West Palm Beach",7,"cluster7.4",0.0466
+"P043","Boynton Beach",1,"cluster7.4",0
+"P045","Boynton Beach",2,"cluster7.4",0
+"P038","Boynton Beach",3,"cluster7.4",0
+"P033","Boynton Beach",4,"cluster7.4",0
+"P031","Boynton Beach",5,"cluster7.4",0
+"P034","Boynton Beach",6,"cluster7.4",0.0028
+"P040","Boynton Beach",7,"cluster7.4",0.1354
+"P035","Boynton Beach",8,"cluster7.4",0
+"P032","Boynton Beach",9,"cluster7.4",0
+"P044","Boynton Beach",10,"cluster7.4",0
+"P078","Ft. Lauderdale",1,"cluster7.4",0
+"P083","Ft. Lauderdale",2,"cluster7.4",0
+"P077-3","Ft. Lauderdale",3,"cluster7.4",0
+"P084","Ft. Lauderdale",4,"cluster7.4",0
+"P085","Ft. Lauderdale",5,"cluster7.4",0
+"P087","Ft. Lauderdale",6,"cluster7.4",0
+"P049","St. Lucie",1,"cluster7.5",0
+"P057","St. Lucie",2,"cluster7.5",0
+"P073","St. Lucie",3,"cluster7.5",0
+"P011","Jupiter",1,"cluster7.5",0
+"P010","Jupiter",2,"cluster7.5",0
+"P008","Jupiter",3,"cluster7.5",0
+"P004","Jupiter",4,"cluster7.5",0.0333
+"P014","Jupiter",5,"cluster7.5",0.5364
+"P002","Jupiter",6,"cluster7.5",0
+"P003","Jupiter",7,"cluster7.5",0
+"P006","Jupiter",8,"cluster7.5",0
+"P009","Jupiter",9,"cluster7.5",0
+"P015","Jupiter",10,"cluster7.5",1
+"P019","West Palm Beach",1,"cluster7.5",0
+"P020","West Palm Beach",2,"cluster7.5",0
+"P028-2","West Palm Beach",3,"cluster7.5",0
+"P022","West Palm Beach",4,"cluster7.5",0
+"P024","West Palm Beach",5,"cluster7.5",0.1425
+"P027","West Palm Beach",6,"cluster7.5",0.2161
+"P029","West Palm Beach",7,"cluster7.5",0.3115
+"P043","Boynton Beach",1,"cluster7.5",0
+"P045","Boynton Beach",2,"cluster7.5",0
+"P038","Boynton Beach",3,"cluster7.5",0
+"P033","Boynton Beach",4,"cluster7.5",0
+"P031","Boynton Beach",5,"cluster7.5",0.0101
+"P034","Boynton Beach",6,"cluster7.5",0.054
+"P040","Boynton Beach",7,"cluster7.5",0.1852
+"P035","Boynton Beach",8,"cluster7.5",1
+"P032","Boynton Beach",9,"cluster7.5",1
+"P044","Boynton Beach",10,"cluster7.5",0
+"P078","Ft. Lauderdale",1,"cluster7.5",0
+"P083","Ft. Lauderdale",2,"cluster7.5",0
+"P077-3","Ft. Lauderdale",3,"cluster7.5",0
+"P084","Ft. Lauderdale",4,"cluster7.5",0
+"P085","Ft. Lauderdale",5,"cluster7.5",0
+"P087","Ft. Lauderdale",6,"cluster7.5",0
+"P049","St. Lucie",1,"cluster7.6",1
+"P057","St. Lucie",2,"cluster7.6",0
+"P073","St. Lucie",3,"cluster7.6",0.0068
+"P011","Jupiter",1,"cluster7.6",0.3388
+"P010","Jupiter",2,"cluster7.6",0
+"P008","Jupiter",3,"cluster7.6",0
+"P004","Jupiter",4,"cluster7.6",0.0255
+"P014","Jupiter",5,"cluster7.6",0.0021
+"P002","Jupiter",6,"cluster7.6",0
+"P003","Jupiter",7,"cluster7.6",0
+"P006","Jupiter",8,"cluster7.6",0
+"P009","Jupiter",9,"cluster7.6",0
+"P015","Jupiter",10,"cluster7.6",0
+"P019","West Palm Beach",1,"cluster7.6",0.7411
+"P020","West Palm Beach",2,"cluster7.6",0.04
+"P028-2","West Palm Beach",3,"cluster7.6",0
+"P022","West Palm Beach",4,"cluster7.6",0.095
+"P024","West Palm Beach",5,"cluster7.6",0.0071
+"P027","West Palm Beach",6,"cluster7.6",0
+"P029","West Palm Beach",7,"cluster7.6",0.0651
+"P043","Boynton Beach",1,"cluster7.6",0.08
+"P045","Boynton Beach",2,"cluster7.6",0.0695
+"P038","Boynton Beach",3,"cluster7.6",0
+"P033","Boynton Beach",4,"cluster7.6",0.0254
+"P031","Boynton Beach",5,"cluster7.6",0
+"P034","Boynton Beach",6,"cluster7.6",0.0285
+"P040","Boynton Beach",7,"cluster7.6",0.0017
+"P035","Boynton Beach",8,"cluster7.6",0
+"P032","Boynton Beach",9,"cluster7.6",0
+"P044","Boynton Beach",10,"cluster7.6",0
+"P078","Ft. Lauderdale",1,"cluster7.6",1
+"P083","Ft. Lauderdale",2,"cluster7.6",0.96
+"P077-3","Ft. Lauderdale",3,"cluster7.6",0
+"P084","Ft. Lauderdale",4,"cluster7.6",0
+"P085","Ft. Lauderdale",5,"cluster7.6",0
+"P087","Ft. Lauderdale",6,"cluster7.6",0
+"P049","St. Lucie",1,"cluster7.7",0
+"P057","St. Lucie",2,"cluster7.7",0
+"P073","St. Lucie",3,"cluster7.7",0.04
+"P011","Jupiter",1,"cluster7.7",0.3999
+"P010","Jupiter",2,"cluster7.7",0.0698
+"P008","Jupiter",3,"cluster7.7",0.0178
+"P004","Jupiter",4,"cluster7.7",0.0979
+"P014","Jupiter",5,"cluster7.7",0.0655
+"P002","Jupiter",6,"cluster7.7",0
+"P003","Jupiter",7,"cluster7.7",0
+"P006","Jupiter",8,"cluster7.7",0
+"P009","Jupiter",9,"cluster7.7",0
+"P015","Jupiter",10,"cluster7.7",0
+"P019","West Palm Beach",1,"cluster7.7",0.1866
+"P020","West Palm Beach",2,"cluster7.7",0.04
+"P028-2","West Palm Beach",3,"cluster7.7",0.08
+"P022","West Palm Beach",4,"cluster7.7",0.103
+"P024","West Palm Beach",5,"cluster7.7",0.014
+"P027","West Palm Beach",6,"cluster7.7",0.014
+"P029","West Palm Beach",7,"cluster7.7",0.0897
+"P043","Boynton Beach",1,"cluster7.7",0.88
+"P045","Boynton Beach",2,"cluster7.7",0.8905
+"P038","Boynton Beach",3,"cluster7.7",0.1352
+"P033","Boynton Beach",4,"cluster7.7",0.0302
+"P031","Boynton Beach",5,"cluster7.7",0.16
+"P034","Boynton Beach",6,"cluster7.7",0.0164
+"P040","Boynton Beach",7,"cluster7.7",0.0463
+"P035","Boynton Beach",8,"cluster7.7",0
+"P032","Boynton Beach",9,"cluster7.7",0
+"P044","Boynton Beach",10,"cluster7.7",0
+"P078","Ft. Lauderdale",1,"cluster7.7",0
+"P083","Ft. Lauderdale",2,"cluster7.7",0.04
+"P077-3","Ft. Lauderdale",3,"cluster7.7",0
+"P084","Ft. Lauderdale",4,"cluster7.7",0
+"P085","Ft. Lauderdale",5,"cluster7.7",0
+"P087","Ft. Lauderdale",6,"cluster7.7",0

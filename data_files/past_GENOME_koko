@@ -1,0 +1,207 @@
+#GENOME published by Kevin Wong & Hollie Putnam, July 3rd 2022
+#https://www.biorxiv.org/content/10.1101/2022.07.01.498470v1.full
+#https://www.ncbi.nlm.nih.gov/sra/?term=SRR19144705
+#downloading
+wget https://osf.io/download/wjv8e/
+
+# Creating genome indices for bowtie2
+# put whichever of the paths to the transcriptome file names I want to try where it says GENOME_FASTA
+echo 'bowtie2-build ~/2bRAD/past/genome/past_genome ~/2bRAD/past/genome/past_genome' >btb
+launcher_creator.py -j btb -n btb -t 6:00:00 -e eshilling2013@fau.edu -q shortq7
+sbatch btb.slurm
+
+#index with samtools
+samtools faidx ~/2bRAD/past/genome/past_genome
+
+# Making directory for mapping reads to a reference genome and formatting bam files
+cd ~/2bRAD/past/sefl
+mkdir past_mapped_genome
+srun cp ~/2bRAD/past/sefl/filteredReads/*.trim.gz ~/2bRAD/past/sefl/past_mapped_genome
+cd ~/2bRAD/past/sefl/past_mapped_genome
+
+#unzip the files
+gunzip *trim.gz
+
+# Mapping reads to a reference genome with soft-clipping (Bowtie2 --local option) to avoid indels near read ends
+2bRAD_bowtie2_launcher.pl '\.trim$' ~/2bRAD/past/genome/past_genome > maps
+launcher_creator.py -j maps -n maps -t 6:00:00 -e eshilling2013@fau.edu -q shortq7
+sbatch maps.slurm
+
+# Produces sam files, check to make sure that this matches number of trim Files
+ls *.sam | wc -l
+
+# Calculate alignment rates
+>alignmentRates
+for F in `ls *.trim`; do
+M=`grep -E '^[ATGCN]+$' $F | wc -l | grep -f - maps.e* -A 4 | tail -1 | perl -pe 's/maps\.e\d+-|% overall alignment rate//g'` ;
+echo "$F.sam $M">>alignmentRates;
+done
+
+P001.trim.sam 76.90
+P002.trim.sam 75.73
+P003.trim.sam 89.14
+P004.trim.sam 88.77
+P005.trim.sam 87.51
+P006.trim.sam 87.57
+P007.trim.sam 91.69
+P008.trim.sam 85.65
+P009.trim.sam 86.66
+P010.trim.sam 89.06
+P011.trim.sam 92.16
+P012.trim.sam 80.56
+P013.trim.sam 87.48
+P014.trim.sam 88.61
+P015.trim.sam 87.37
+P018.trim.sam 90.98
+P019.trim.sam 85.06
+P020.trim.sam 78.84
+P021.trim.sam 83.39
+P022.trim.sam 86.71
+P023.trim.sam 87.12
+P024.trim.sam 86.60
+P025.trim.sam 86.47
+P026.trim.sam 86.73
+P027.trim.sam 88.33
+P028-1.trim.sam 90.58
+P028-2.trim.sam 89.06
+P028-3.trim.sam 89.92
+P029.trim.sam 86.42
+P030.trim.sam 87.31
+P031.trim.sam 86.57
+P032.trim.sam 85.95
+P033.trim.sam 86.03
+P034.trim.sam 88.38
+P035.trim.sam 85.65
+P036.trim.sam 85.69
+P037.trim.sam 87.16
+P038.trim.sam 91.33
+P039.trim.sam 76.73
+P040.trim.sam 82.72
+P042.trim.sam 72.16
+P043.trim.sam 81.72
+P044.trim.sam 86.20
+P045.trim.sam 83.65
+P046-1.trim.sam 81.88
+P046-2.trim.sam 79.46
+P046-3.trim.sam 81.40
+P047.trim.sam 80.54
+P048.trim.sam 80.79
+P049.trim.sam 81.68
+P050.trim.sam 78.90
+P051.trim.sam 86.00
+P052.trim.sam 84.35
+P053.trim.sam 86.92
+P054.trim.sam 84.10
+P055.trim.sam 77.10
+P056.trim.sam 86.73
+P057.trim.sam 81.28
+P058.trim.sam 79.18
+P059.trim.sam 78.42
+P060.trim.sam 15.43
+P061.trim.sam 83.66
+P062.trim.sam 78.98
+P063.trim.sam 86.00
+P064.trim.sam 81.66
+P065.trim.sam 86.27
+P066.trim.sam 78.71
+P067.trim.sam 84.84
+P068.trim.sam 71.03
+P069.trim.sam 83.13
+P070.trim.sam 81.44
+P071.trim.sam 87.92
+P072.trim.sam 85.06
+P073.trim.sam 68.94
+P074.trim.sam 44.54
+P075.trim.sam 83.60
+P076.trim.sam 84.38
+P077-1.trim.sam 67.69
+P077-2.trim.sam 68.64
+P077-3.trim.sam 69.45
+P078.trim.sam 79.21
+P079.trim.sam 83.08
+P080.trim.sam 84.18
+P081.trim.sam 78.45
+P082.trim.sam 47.38
+P083.trim.sam 80.99
+P084.trim.sam 68.41
+P085.trim.sam 68.73
+P086.trim.sam 72.22
+P087.trim.sam 66.89
+P088.trim.sam 74.80
+P089.trim.sam 77.62
+P090.trim.sam 69.68
+P1-5_AGGG.trim.sam 85.97
+P1-5_TCCG.trim.sam 86.46
+
+less alignmentRates
+
+#grouping/concatenating the sequence files that didn't get matched up with their correct barcode
+cat P029.trim P1-5_AGGG.trim > P029.trim
+cat P029.trim.bt2.sam P1-5_AGGG.trim.bt2.sam > P029.trim.bt2.sam
+cat P053.trim P1-5_TCCG.trim > P053.trim
+cat P053.trim.bt2.sam P1-5_TCCG.trim.bt2.sam > P053.trim.bt2.sam
+
+#New alignment rates of concatenated files
+P029.trim.sam 85.97
+P053.trim.sam 86.46
+
+#Convert SAM files to BAM files
+#BAM files will be used for genotyping, population structure, etc.
+>s2b
+for file in *.sam; do
+echo "samtools sort -O bam -o ${file/.sam/}.bam $file && samtools index ${file/.sam/}.bam">>s2b;
+done
+
+launcher_creator.py -j s2b -n s2b -q shortq7 -t 06:00:00 -e eshilling2013@fau.edu
+sbatch --mem=200GB s2b.slurm
+
+#Do we have enough BAM files?
+
+ls *bam | wc -l  # should be the same number as number of trim files
+#>yes, 93
+
+G E N O T Y P I N G
+“FUZZY genotyping” with ANGSD - without calling actual genotypes but working with genotype likelihoods at each SNP. Optimal for low-coverage data (<10x).
+
+cd ..
+mkdir ANGSD_genome
+cd ../ANGSD_genome
+mv ../past_mapped_genome/*.bam* .
+
+ls *bam >bamsClones
+
+#Assessing base qualities and coverage depth
+#ANGSD settings: -minMapQ 20: only highly unique mappings (prob of erroneous mapping =< 1%) -baq 1: realign around indels (not terribly relevant for 2bRAD reads mapped with –local option) -maxDepth: highest total depth (sum over all samples) to assess; set to 10x number of samples -minInd: the minimal number of individuals the site must be genotyped in. Reset to 50% of total N at this stage.
+
+export FILTERS="-uniqueOnly 1 -remove_bads 1 -minMapQ 20 -maxDepth 960 -minInd 47"
+export TODO="-doQsDist 1 -doDepth 1 -doCounts 1 -dumpCounts 2"
+
+echo '#!/bin/bash' >pastDD.sh
+echo angsd -b bamsClones -GL 1 $FILTERS $TODO -P 1 -out dd >>pastDD.sh
+
+sbatch --mem=200GB -o pastDD.o%j -e pastDD.e%j --mail-user=eshilling2013@fau.edu --mail-type=ALL pastDD.sh
+
+#Summarizing results (using Misha Matz modified script by Matteo Fumagalli)
+
+echo '#!/bin/bash' >RQC.sh
+echo Rscript ~/bin/plotQC.R prefix=dd >>RQC.sh
+echo gzip -9 dd.counts >>RQC.sh
+sbatch -e RQC.e%j -o RQC.o%j --dependency=afterok:460550 --mem=200GB RQC.sh
+
+#Proportion of sites covered at >5X:
+
+cat quality.txt
+
+#scp dd.pdf to laptop to look at distribution of base quality scores, fraction of sites in each sample passing coverage thresholds and fraction of sites passing genotyping rates cutoffs. Use these to guide choices of -minQ, -minIndDepth and -minInd filters in subsequent ANGSD runs
+#Ryan says to use 75-80% for the minIND, so 71 samples for this first round
+#minQ just keep at 30, doesn't really matter since we've already filtered
+#don't bother with minINDDepth for now
+
+#Identifying clones and technical replicates
+FILTERS="-uniqueOnly 1 -remove_bads 1 -minMapQ 20 -minQ 30 -dosnpstat 1 -doHWE 1 -hwe_pval 1e-5 -sb_pval 1e-5 -hetbias_pval 1e-5 -skipTriallelic 1 -minInd 70 -snp_pval 1e-6 -minMaf 0.05"
+TODO="-doMajorMinor 1 -doMaf 1 -doCounts 1 -makeMatrix 1 -doIBS 1 -doCov 1 -doGeno 8 -doBcf 1 -doPost 1 -doGlf 2"
+
+echo '#!/bin/bash' > pastClones.sh
+echo angsd -b bamsClones -GL 1 $FILTERS $TODO -P 1 -out pastClones >>pastClones.sh
+
+sbatch -o pastClones.o%j -e pastClones.e%j -p shortq7 --mail-type=ALL --mail-user=eshilling2013@fau.edu pastClones.sh
