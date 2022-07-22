@@ -28,6 +28,9 @@ cp ../thedirectoryyou'recopyingthefilefrom/filenametocopy .
 #example
 cp ../ANGSD/pastNoClones.bcf .
 
+#to cancel a job
+scancel 3028976 (jobID)
+
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 S E T U P
@@ -594,81 +597,9 @@ echo angsd -b bamsClones -GL 1 $FILTERS $TODO -P 1 -out pastClones >>pastClones.
 
 sbatch -o pastClones.o%j -e pastClones.e%j -p shortq7 --mail-type=ALL --mail-user=eshilling2013@fau.edu pastClones.sh
 
-###RUN THIS PART IN R
+###STOP HERE AND GO RUN DENDROGRAM IN R
 #Use ibs matrix to identify clones with hierarchical clustering in R. scp to local machine and run chunk below in R
-
-library(tidyverse)
-library(magrittr)
-library(ggplot2)
-library(ggdendro)
-cloneBams = read.csv("C:/Users/erin_/Documents/Voss Lab (M.S.)/Lab Work/P.astreoides popgen/poritesastreoidesMetaData.csv")
-
-cloneMa = as.matrix(read.table("C:/Users/erin_/Documents/Voss Lab (M.S.)/Lab Work/P.astreoides popgen/pastClones.ibsMat"))
-dimnames(cloneMa) = list(cloneBams[,1],cloneBams[,1])
-clonesHc = hclust(as.dist(cloneMa),"ave")
-clonePops = cloneBams$region
-cloneDend = cloneMa %>% as.dist() %>% hclust(.,"ave") %>% as.dendrogram()
-cloneDData = cloneDend %>% dendro_data()
-
-# Making the branches hang shorter so we can easily see clonal groups
-cloneDData$segments$yend2 = cloneDData$segments$yend
-for(i in 1:nrow(cloneDData$segments)) {
-  if (cloneDData$segments$yend2[i] == 0) {
-    cloneDData$segments$yend2[i] = (cloneDData$segments$y[i] - 0.01)}}
-
-cloneDendPoints = cloneDData$labels
-cloneDendPoints$pop = clonePops[order.dendrogram(cloneDend)]
-rownames(cloneDendPoints) = cloneDendPoints$label
-
-# Making points at the leaves to place symbols for populations
-point = as.vector(NA)
-for(i in 1:nrow(cloneDData$segments)) {
-  if (cloneDData$segments$yend[i] == 0) {
-    point[i] = cloneDData$segments$y[i] - 0.01
-  } else {
-    point[i] = NA}}
-
-cloneDendPoints$y = point[!is.na(point)]
-
-techReps = c("P028-1", "P028-2", "P028-3", "P046-1", "P046-2", "P046-3", "P077-1", "P077-2", "P077-3")
-
-cloneDendPoints$pop = factor(cloneDendPoints$pop)
-cloneDendPoints$pop = factor(cloneDendPoints$pop,levels(cloneDendPoints$pop)[c(5,3,6,2,4,1)])
-
-cloneDendA = ggplot() +
-  geom_segment(data = segment(cloneDData), aes(x = x, y = y, xend = xend, yend = yend2), size = 0.5) +
-  geom_point(data = cloneDendPoints, aes(x = x, y = y, fill = pop), size = 4, stroke = 0.25, shape = 24) +
-  scale_fill_brewer(palette = "Dark2", name = "Population") +
-  geom_hline(yintercept = 0.165, color = "red", lty = 5, size = 0.75) + # creating a dashed line to indicate a clonal distance threshold
-  geom_text(data = subset(cloneDendPoints, subset = label %in% techReps), aes(x = x, y = (y - .015), label = label), angle = 90) + # spacing technical replicates further from leaf
-  geom_text(data = subset(cloneDendPoints, subset = !label %in% techReps), aes(x = x, y = (y - .010), label = label), angle = 90) +
-  labs(y = "Genetic distance (1 - IBS)") +
-  theme_classic()
-
-cloneDend = cloneDendA + theme(
-  axis.title.x = element_blank(),
-  axis.text.x = element_blank(),
-  axis.line.x = element_blank(),
-  axis.ticks.x = element_blank(),
-  axis.title.y = element_text(size = 12, color = "black", angle = 90),
-  axis.text.y = element_text(size = 10, color = "black"),
-  axis.line.y = element_line(),
-  axis.ticks.y = element_line(),
-  panel.grid = element_blank(),
-  panel.border = element_blank(),
-  panel.background = element_blank(),
-  plot.background = element_blank(),
-  legend.key = element_blank(),
-  legend.title = element_text(size = 12),
-  legend.text = element_text(size = 10),
-  legend.position = "bottom")
-
-cloneDend
-
-ggsave("C:/Users/erin_/Documents/Voss Lab (M.S.)/Lab Work/P.astreoides popgen/cloneDend.png", plot = cloneDend, height = 8, width = 35, units = "in", dpi = 300)
-ggsave("C:/Users/erin_/Documents/Voss Lab (M.S.)/Lab Work/P.astreoides popgen/cloneDend.eps", plot = cloneDend, height = 8, width = 35, units = "in", dpi = 300)
-
-###END OF R DENDROGRAMS
+#See R markdown code for this
 
 ###HERE STARTING BACK IN KOKO
 #~~~realized I made a mistake when pipetting my technical replicates vs how I listed them in my lab notebook/excel sheet, fixed in R for dendro but now need to fix names in KOKO~~~
@@ -726,6 +657,7 @@ mv P077-2_fixed.trim.gz P077-2.trim.gz
 mv P028-3_fixed.trim.gz P028-3.trim.gz
 mv P046-3_fixed.trim.gz P046-3.trim.gz
 
+#selected with individual from clonal groups to retain based on proportion of reads covered at 5X
 #Removing clones and re-running ANGSD
 mkdir clones
 mv pastClones* clones

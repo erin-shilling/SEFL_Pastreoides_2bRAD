@@ -205,3 +205,75 @@ echo '#!/bin/bash' > pastClones.sh
 echo angsd -b bamsClones -GL 1 $FILTERS $TODO -P 1 -out pastClones >>pastClones.sh
 
 sbatch -o pastClones.o%j -e pastClones.e%j -p shortq7 --mail-type=ALL --mail-user=eshilling2013@fau.edu pastClones.sh
+
+#selected with individual from clonal groups to retain based on proportion of reads covered at 5X
+#Removing clones and re-running ANGSD
+mkdir clones
+mv pastClones* clones
+
+ls *.bam > bamsNoClones
+
+##change to my clones
+####and going to have to remove all of my actual samples that turned out to be clones as well
+cat bamsClones | grep -v 'P018.trim.un.bt2.bam\|P028-1.trim.un.bt2.bam\|P028-3.trim.un.bt2.bam\|P005.trim.un.bt2.bam\|P012.trim.un.bt2.bam\|P013.trim.un.bt2.bam\|P021.trim.un.bt2.bam\|P023.trim.un.bt2.bam\|P025.trim.un.bt2.bam\|P026.trim.un.bt2.bam\|P030.trim.un.bt2.bam\|P052.trim.un.bt2.bam\|P054.trim.un.bt2.bam\|P059.trim.un.bt2.bam\|P060.trim.un.bt2.bam\|P061.trim.un.bt2.bam\|P062.trim.un.bt2.bam\|P064.trim.un.bt2.bam\|P065.trim.un.bt2.bam\|P066.trim.un.bt2.bam\|P067.trim.un.bt2.bam\|P068.trim.un.bt2.bam\|P069.trim.un.bt2.bam\|P071.trim.un.bt2.bam\|P072.trim.un.bt2.bam\|P075.trim.un.bt2.bam\|P055.trim.un.bt2.bam\|P056.trim.un.bt2.bam\|P058.trim.un.bt2.bam\|P070.trim.un.bt2.bam\|P074.trim.un.bt2.bam\|P076.trim.un.bt2.bam\|P079.trim.un.bt2.bam\|P080.trim.un.bt2.bam\|P081.trim.un.bt2.bam\|P082.trim.un.bt2.bam\|P088.trim.un.bt2.bam\|P089.trim.un.bt2.bam\|P077-1.trim.un.bt2.bam\|P077-2.trim.un.bt2.bam\|P086.trim.un.bt2.bam\|P090.trim.un.bt2.bam\|P046-1.trim.un.bt2.bam\|P046-2.trim.un.bt2.bam\|P046-3.trim.un.bt2.bam\|P047.trim.un.bt2.bam\|P048.trim.un.bt2.bam\|P050.trim.un.bt2.bam\|P051.trim.un.bt2.bam\|P053.trim.un.bt2.bam\|P063.trim.un.bt2.bam\|P036.trim.un.bt2.bam\|P037.trim.un.bt2.bam\|P039.trim.un.bt2.bam\|P042.trim.un.bt2.bam\|P001.trim.un.bt2.bam\|P007.trim.un.bt2.bam' >bamsNoClones
+
+##36 "individuals" left after removal of clones
+FILTERS="-uniqueOnly 1 -remove_bads 1 -minMapQ 20 -minQ 30 -dosnpstat 1 -doHWE 1 -hwe_pval 1e-5 -sb_pval 1e-5 -hetbias_pval 1e-5 -skipTriallelic 1 -minInd 27 -snp_pval 1e-6 -minMaf 0.05"
+TODO="-doMajorMinor 1 -doMaf 1 -doCounts 1 -makeMatrix 1 -doIBS 1 -doCov 1 -doGeno 8 -doBcf 1 -doPost 1 -doGlf 2"
+
+echo '#!/bin/bash' > pastNoClones.sh
+echo srun angsd -b bamsNoClones -GL 1 $FILTERS $TODO -P 1 -out pastNoClones >> pastNoClones.sh
+
+sbatch -o pastNoClones.o%j -e pastNoClones.e%j -p shortq7 --mail-type=ALL --mail-user=eshilling2013@fau.edu pastNoClones.sh
+
+#How many SNPs?
+grep "filtering:" pastNoClones.e*
+
+12,995 SNPs
+#H E T E R O Z Y G O S I T Y
+#Calculating Heterozygosity across all loci (variant//invariant) using ANGSD and R script from Misha Matz (https://github.com/z0on/2bRAD_denovo)
+
+echo '#!/bin/bash' > RHetVar.sh
+echo heterozygosity_beagle.R pastNoClones.beagle.gz >> RHetVar.sh
+
+sbatch -e RHet.e%j -o RHet.o%j --mem=200GB --mail-user eshilling2013@fau.edu --mail-type=ALL RHetVar.sh
+
+cp RHet.e656736 HetSNPs
+
+mkdir angsdPopStats
+
+#Note there are no MAF or snp filters so as not to affect allelic frequencies that may change heterozygosity calculations
+FILTERS="-uniqueOnly 1 -remove_bads 1  -skipTriallelic 1 -minMapQ 20 -minQ 30 -doHWE 1 -sb_pval 1e-5 -hetbias_pval 1e-5 -minInd 27"
+TODO="-doMajorMinor 1 -doMaf 1 -dosnpstat 1 -doPost 2 -doGeno 11 -doGlf 2"
+echo '#!/bin/bash' > pastPopStats.sh
+echo srun angsd -b bamsNoClones -GL 1 $FILTERS $TODO -P 1 -out pastPopStats >> pastPopStats.sh
+sbatch --mem=200GB -o pastPopStats.o%j -e pastPopStats.e%j -p shortq7 --mail-type=ALL --mail-user=eshilling2013@fau.edu pastPopStats.sh
+
+mv pastPopStats* angsdPopStats/
+cd angsdPopStats
+
+#How many sites?
+grep "filtering:" pastPopStats.e*
+2,392,833
+
+#Calculate heterozygosity
+echo '#!/bin/bash' > RHet.sh
+echo heterozygosity_beagle.R pastPopStats.beagle.gz >> RHet.sh
+
+sbatch -e RHet.e%j -o RHet.o%j --mem=200GB --mail-user eshilling2013@fau.edu --mail-type=ALL RHet.sh
+
+cp RHet.e3034362 HetAllSites
+
+I N B R E E D I N G   &   R E L A T E D N E S S
+
+cd ~/2bRAD/past/sefl/ANGSD
+
+FILTERS="-uniqueOnly 1 -remove_bads 1 -minMapQ 20 -minQ 30 -dosnpstat 1 -doHWE 1 -hwe_pval 1e-5 -sb_pval 1e-5 -hetbias_pval 1e-5 -skipTriallelic 1 -minInd 27 -snp_pval 1e-6 -minMaf 0.05"
+TODO="-doMajorMinor 1 -doMaf 1 -doCounts 1 -makeMatrix 1 -doIBS 1 -doCov 1 -doGeno 8 -doBcf 1 -doPost 1 -doGlf 3"
+
+echo '#!/bin/bash' > pastNgsRelate.sh
+echo srun angsd -b bamsNoClones -GL 1 $FILTERS $TODO -P 1 -out pastNgsRelate >> pastNgsRelate.sh
+
+sbatch --mem=200GB -o pastNgsRelate.o%j -e pastNgsRelate.e%j -p shortq7 --mail-type=ALL --mail-user=eshilling2013@fau.edu pastNgsRelate.sh
+
+##Stopped here on 7/22/22
