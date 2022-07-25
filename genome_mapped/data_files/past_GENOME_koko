@@ -1,0 +1,611 @@
+#GENOME published by Kevin Wong & Hollie Putnam, July 3rd 2022
+#https://www.biorxiv.org/content/10.1101/2022.07.01.498470v1.full
+#https://www.ncbi.nlm.nih.gov/sra/?term=SRR19144705
+#downloading
+wget https://osf.io/download/wjv8e/
+
+# Creating genome indices for bowtie2
+# put whichever of the paths to the transcriptome file names I want to try where it says GENOME_FASTA
+echo 'bowtie2-build ~/2bRAD/past/genome/past_genome ~/2bRAD/past/genome/past_genome' >btb
+launcher_creator.py -j btb -n btb -t 6:00:00 -e eshilling2013@fau.edu -q shortq7
+sbatch btb.slurm
+
+#index with samtools
+samtools faidx ~/2bRAD/past/genome/past_genome
+
+# Making directory for mapping reads to a reference genome and formatting bam files
+cd ~/2bRAD/past/sefl
+mkdir past_mapped_genome
+srun cp ~/2bRAD/past/sefl/filteredReads/*.trim.gz ~/2bRAD/past/sefl/past_mapped_genome
+cd ~/2bRAD/past/sefl/past_mapped_genome
+
+#unzip the files
+gunzip *trim.gz
+
+# Mapping reads to a reference genome with soft-clipping (Bowtie2 --local option) to avoid indels near read ends
+2bRAD_bowtie2_launcher.pl '\.trim$' ~/2bRAD/past/genome/past_genome > maps
+launcher_creator.py -j maps -n maps -t 6:00:00 -e eshilling2013@fau.edu -q shortq7
+sbatch maps.slurm
+
+# Produces sam files, check to make sure that this matches number of trim Files
+ls *.sam | wc -l
+
+# Calculate alignment rates
+>alignmentRates
+for F in `ls *.trim`; do
+M=`grep -E '^[ATGCN]+$' $F | wc -l | grep -f - maps.e* -A 4 | tail -1 | perl -pe 's/maps\.e\d+-|% overall alignment rate//g'` ;
+echo "$F.sam $M">>alignmentRates;
+done
+
+P001.trim.sam 76.90
+P002.trim.sam 75.73
+P003.trim.sam 89.14
+P004.trim.sam 88.77
+P005.trim.sam 87.51
+P006.trim.sam 87.57
+P007.trim.sam 91.69
+P008.trim.sam 85.65
+P009.trim.sam 86.66
+P010.trim.sam 89.06
+P011.trim.sam 92.16
+P012.trim.sam 80.56
+P013.trim.sam 87.48
+P014.trim.sam 88.61
+P015.trim.sam 87.37
+P018.trim.sam 90.98
+P019.trim.sam 85.06
+P020.trim.sam 78.84
+P021.trim.sam 83.39
+P022.trim.sam 86.71
+P023.trim.sam 87.12
+P024.trim.sam 86.60
+P025.trim.sam 86.47
+P026.trim.sam 86.73
+P027.trim.sam 88.33
+P028-1.trim.sam 90.58
+P028-2.trim.sam 89.06
+P028-3.trim.sam 89.92
+P029.trim.sam 86.42
+P030.trim.sam 87.31
+P031.trim.sam 86.57
+P032.trim.sam 85.95
+P033.trim.sam 86.03
+P034.trim.sam 88.38
+P035.trim.sam 85.65
+P036.trim.sam 85.69
+P037.trim.sam 87.16
+P038.trim.sam 91.33
+P039.trim.sam 76.73
+P040.trim.sam 82.72
+P042.trim.sam 72.16
+P043.trim.sam 81.72
+P044.trim.sam 86.20
+P045.trim.sam 83.65
+P046-1.trim.sam 81.88
+P046-2.trim.sam 79.46
+P046-3.trim.sam 81.40
+P047.trim.sam 80.54
+P048.trim.sam 80.79
+P049.trim.sam 81.68
+P050.trim.sam 78.90
+P051.trim.sam 86.00
+P052.trim.sam 84.35
+P053.trim.sam 86.92
+P054.trim.sam 84.10
+P055.trim.sam 77.10
+P056.trim.sam 86.73
+P057.trim.sam 81.28
+P058.trim.sam 79.18
+P059.trim.sam 78.42
+P060.trim.sam 15.43
+P061.trim.sam 83.66
+P062.trim.sam 78.98
+P063.trim.sam 86.00
+P064.trim.sam 81.66
+P065.trim.sam 86.27
+P066.trim.sam 78.71
+P067.trim.sam 84.84
+P068.trim.sam 71.03
+P069.trim.sam 83.13
+P070.trim.sam 81.44
+P071.trim.sam 87.92
+P072.trim.sam 85.06
+P073.trim.sam 68.94
+P074.trim.sam 44.54
+P075.trim.sam 83.60
+P076.trim.sam 84.38
+P077-1.trim.sam 67.69
+P077-2.trim.sam 68.64
+P077-3.trim.sam 69.45
+P078.trim.sam 79.21
+P079.trim.sam 83.08
+P080.trim.sam 84.18
+P081.trim.sam 78.45
+P082.trim.sam 47.38
+P083.trim.sam 80.99
+P084.trim.sam 68.41
+P085.trim.sam 68.73
+P086.trim.sam 72.22
+P087.trim.sam 66.89
+P088.trim.sam 74.80
+P089.trim.sam 77.62
+P090.trim.sam 69.68
+P1-5_AGGG.trim.sam 85.97
+P1-5_TCCG.trim.sam 86.46
+
+less alignmentRates
+
+#grouping/concatenating the sequence files that didn't get matched up with their correct barcode
+cat P029.trim P1-5_AGGG.trim > P029.trim
+cat P029.trim.bt2.sam P1-5_AGGG.trim.bt2.sam > P029.trim.bt2.sam
+cat P053.trim P1-5_TCCG.trim > P053.trim
+cat P053.trim.bt2.sam P1-5_TCCG.trim.bt2.sam > P053.trim.bt2.sam
+
+#New alignment rates of concatenated files
+P029.trim.sam 85.97
+P053.trim.sam 86.46
+
+#Convert SAM files to BAM files
+#BAM files will be used for genotyping, population structure, etc.
+>s2b
+for file in *.sam; do
+echo "samtools sort -O bam -o ${file/.sam/}.bam $file && samtools index ${file/.sam/}.bam">>s2b;
+done
+
+launcher_creator.py -j s2b -n s2b -q shortq7 -t 06:00:00 -e eshilling2013@fau.edu
+sbatch --mem=200GB s2b.slurm
+
+#Do we have enough BAM files?
+
+ls *bam | wc -l  # should be the same number as number of trim files
+#>yes, 93
+
+G E N O T Y P I N G
+“FUZZY genotyping” with ANGSD - without calling actual genotypes but working with genotype likelihoods at each SNP. Optimal for low-coverage data (<10x).
+
+cd ..
+mkdir ANGSD_genome
+cd ../ANGSD_genome
+mv ../past_mapped_genome/*.bam* .
+
+ls *bam >bamsClones
+
+#Assessing base qualities and coverage depth
+#ANGSD settings: -minMapQ 20: only highly unique mappings (prob of erroneous mapping =< 1%) -baq 1: realign around indels (not terribly relevant for 2bRAD reads mapped with –local option) -maxDepth: highest total depth (sum over all samples) to assess; set to 10x number of samples -minInd: the minimal number of individuals the site must be genotyped in. Reset to 50% of total N at this stage.
+
+export FILTERS="-uniqueOnly 1 -remove_bads 1 -minMapQ 20 -maxDepth 960 -minInd 47"
+export TODO="-doQsDist 1 -doDepth 1 -doCounts 1 -dumpCounts 2"
+
+echo '#!/bin/bash' >pastDD.sh
+echo angsd -b bamsClones -GL 1 $FILTERS $TODO -P 1 -out dd >>pastDD.sh
+
+sbatch --mem=200GB -o pastDD.o%j -e pastDD.e%j --mail-user=eshilling2013@fau.edu --mail-type=ALL pastDD.sh
+
+#Summarizing results (using Misha Matz modified script by Matteo Fumagalli)
+
+echo '#!/bin/bash' >RQC.sh
+echo Rscript ~/bin/plotQC.R prefix=dd >>RQC.sh
+echo gzip -9 dd.counts >>RQC.sh
+sbatch -e RQC.e%j -o RQC.o%j --dependency=afterok:460550 --mem=200GB RQC.sh
+
+#Proportion of sites covered at >5X:
+
+cat quality.txt
+
+#scp dd.pdf to laptop to look at distribution of base quality scores, fraction of sites in each sample passing coverage thresholds and fraction of sites passing genotyping rates cutoffs. Use these to guide choices of -minQ, -minIndDepth and -minInd filters in subsequent ANGSD runs
+#Ryan says to use 75-80% for the minIND, so 71 samples for this first round
+#minQ just keep at 30, doesn't really matter since we've already filtered
+#don't bother with minINDDepth for now
+
+#Identifying clones and technical replicates
+FILTERS="-uniqueOnly 1 -remove_bads 1 -minMapQ 20 -minQ 30 -dosnpstat 1 -doHWE 1 -hwe_pval 1e-5 -sb_pval 1e-5 -hetbias_pval 1e-5 -skipTriallelic 1 -minInd 70 -snp_pval 1e-6 -minMaf 0.05"
+TODO="-doMajorMinor 1 -doMaf 1 -doCounts 1 -makeMatrix 1 -doIBS 1 -doCov 1 -doGeno 8 -doBcf 1 -doPost 1 -doGlf 2"
+
+echo '#!/bin/bash' > pastClones.sh
+echo angsd -b bamsClones -GL 1 $FILTERS $TODO -P 1 -out pastClones >>pastClones.sh
+
+sbatch -o pastClones.o%j -e pastClones.e%j -p shortq7 --mail-type=ALL --mail-user=eshilling2013@fau.edu pastClones.sh
+
+#selected with individual from clonal groups to retain based on proportion of reads covered at 5X
+#Removing clones and re-running ANGSD
+mkdir clones
+mv pastClones* clones
+
+ls *.bam > bamsNoClones
+
+####and going to have to remove all of my actual samples that turned out to be clones as well
+cat bamsClones | grep -v 'P018.trim.bt2.bam\|P028-1.trim.bt2.bam\|P028-3.trim.bt2.bam\|P005.trim.bt2.bam\|P012.trim.bt2.bam\|P013.trim.bt2.bam\|P021.trim.bt2.bam\|P023.trim.bt2.bam\|P025.trim.bt2.bam\|P026.trim.bt2.bam\|P030.trim.bt2.bam\|P052.trim.bt2.bam\|P054.trim.bt2.bam\|P059.trim.bt2.bam\|P060.trim.bt2.bam\|P061.trim.bt2.bam\|P062.trim.bt2.bam\|P064.trim.bt2.bam\|P065.trim.bt2.bam\|P066.trim.bt2.bam\|P067.trim.bt2.bam\|P068.trim.bt2.bam\|P069.trim.bt2.bam\|P071.trim.bt2.bam\|P072.trim.bt2.bam\|P075.trim.bt2.bam\|P055.trim.bt2.bam\|P056.trim.bt2.bam\|P058.trim.bt2.bam\|P070.trim.bt2.bam\|P074.trim.bt2.bam\|P076.trim.bt2.bam\|P079.trim.bt2.bam\|P080.trim.bt2.bam\|P081.trim.bt2.bam\|P082.trim.bt2.bam\|P088.trim.bt2.bam\|P089.trim.bt2.bam\|P077-1.trim.bt2.bam\|P077-2.trim.bt2.bam\|P086.trim.bt2.bam\|P090.trim.bt2.bam\|P046-1.trim.bt2.bam\|P046-2.trim.bt2.bam\|P046-3.trim.bt2.bam\|P047.trim.bt2.bam\|P048.trim.bt2.bam\|P050.trim.bt2.bam\|P051.trim.bt2.bam\|P053.trim.bt2.bam\|P063.trim.bt2.bam\|P036.trim.bt2.bam\|P037.trim.bt2.bam\|P039.trim.bt2.bam\|P042.trim.bt2.bam\|P001.trim.bt2.bam\|P007.trim.bt2.bam' >bamsNoClones
+
+##36 "individuals" left after removal of clones
+FILTERS="-uniqueOnly 1 -remove_bads 1 -minMapQ 20 -minQ 30 -dosnpstat 1 -doHWE 1 -hwe_pval 1e-5 -sb_pval 1e-5 -hetbias_pval 1e-5 -skipTriallelic 1 -minInd 27 -snp_pval 1e-6 -minMaf 0.05"
+TODO="-doMajorMinor 1 -doMaf 1 -doCounts 1 -makeMatrix 1 -doIBS 1 -doCov 1 -doGeno 8 -doBcf 1 -doPost 1 -doGlf 2"
+
+echo '#!/bin/bash' > pastNoClones.sh
+echo srun angsd -b bamsNoClones -GL 1 $FILTERS $TODO -P 1 -out pastNoClones >> pastNoClones.sh
+
+sbatch -o pastNoClones.o%j -e pastNoClones.e%j -p shortq7 --mail-type=ALL --mail-user=eshilling2013@fau.edu pastNoClones.sh
+
+#How many SNPs?
+grep "filtering:" pastNoClones.e*
+
+13,338 SNPs
+
+#H E T E R O Z Y G O S I T Y
+#Calculating Heterozygosity across all loci (variant//invariant) using ANGSD and R script from Misha Matz (https://github.com/z0on/2bRAD_denovo)
+
+echo '#!/bin/bash' > RHetVar.sh
+echo heterozygosity_beagle.R pastNoClones.beagle.gz >> RHetVar.sh
+
+sbatch -e RHet.e%j -o RHet.o%j --mem=200GB --mail-user eshilling2013@fau.edu --mail-type=ALL RHetVar.sh
+
+cp RHet.e3052714 HetSNPs
+
+mkdir angsdPopStats
+
+#Note there are no MAF or snp filters so as not to affect allelic frequencies that may change heterozygosity calculations
+FILTERS="-uniqueOnly 1 -remove_bads 1  -skipTriallelic 1 -minMapQ 20 -minQ 30 -doHWE 1 -sb_pval 1e-5 -hetbias_pval 1e-5 -minInd 27"
+TODO="-doMajorMinor 1 -doMaf 1 -dosnpstat 1 -doPost 2 -doGeno 11 -doGlf 2"
+echo '#!/bin/bash' > pastPopStats.sh
+echo srun angsd -b bamsNoClones -GL 1 $FILTERS $TODO -P 1 -out pastPopStats >> pastPopStats.sh
+sbatch --mem=200GB -o pastPopStats.o%j -e pastPopStats.e%j -p shortq7 --mail-type=ALL --mail-user=eshilling2013@fau.edu pastPopStats.sh
+
+mv pastPopStats* angsdPopStats/
+cd angsdPopStats
+
+#How many sites?
+grep "filtering:" pastPopStats.e*
+1,716,249
+
+#Calculate heterozygosity
+echo '#!/bin/bash' > RHet.sh
+echo heterozygosity_beagle.R pastPopStats.beagle.gz >> RHet.sh
+
+sbatch -e RHet.e%j -o RHet.o%j --mem=200GB --mail-user eshilling2013@fau.edu --mail-type=ALL RHet.sh
+
+cp RHet.e3052717 HetAllSites
+
+I N B R E E D I N G   &   R E L A T E D N E S S
+
+cd ~/2bRAD/past/sefl/ANGSD
+
+FILTERS="-uniqueOnly 1 -remove_bads 1 -minMapQ 20 -minQ 30 -dosnpstat 1 -doHWE 1 -hwe_pval 1e-5 -sb_pval 1e-5 -hetbias_pval 1e-5 -skipTriallelic 1 -minInd 27 -snp_pval 1e-6 -minMaf 0.05"
+TODO="-doMajorMinor 1 -doMaf 1 -doCounts 1 -makeMatrix 1 -doIBS 1 -doCov 1 -doGeno 8 -doBcf 1 -doPost 1 -doGlf 3"
+
+echo '#!/bin/bash' > pastNgsRelate.sh
+echo srun angsd -b bamsNoClones -GL 1 $FILTERS $TODO -P 1 -out pastNgsRelate >> pastNgsRelate.sh
+
+sbatch --mem=200GB -o pastNgsRelate.o%j -e pastNgsRelate.e%j -p shortq7 --mail-type=ALL --mail-user=eshilling2013@fau.edu pastNgsRelate.sh
+
+zcat pastNgsRelate.mafs.gz | cut -f5 |sed 1d >freq
+
+echo '#!/bin/bash' > ngsRelate.sh
+echo ngsRelate -g pastNgsRelate.glf.gz -n 36 -f freq  -O newres >> ngsRelate.sh
+
+sbatch -e ngsRelate.e%j -o ngsRelate.o%j --mem=200GB --mail-user eshilling2013@fau.edu --mail-type=ALL ngsRelate.sh
+
+mkdir ../ngsRelate_genome
+
+mv freq ../ngsRelate_genome/
+mv *pastNgs*Relate* ../ngsRelate_genome/
+mv newres ../ngsRelate_genome
+
+cd ../ngsRelate_genome
+
+cd ~2bRAD/past/sefl/
+
+mkdir bayescan_genome
+cd bayescan_genome
+
+#Note do not use the renamed version, pgdspider has a tough time parsing the samples into pops when you do
+cp ../ANGSD_genome/pastNoClones.bcf .
+#cp ../ANGSD_genome/pastNoClones.vcf .
+#srun gunzip pastNoClones.vcf.gz
+
+#my koko didn't have this file type, only have .bcf
+#convert bcf to vcf.gz
+bcftools view -O z -o pastNoClones.vcf.gz pastNoClones.bcf
+
+#trying again
+#it didn't want to make a copy of the file so I just unzipped the one, can always convert from bcf again
+srun gunzip pastNoClones.vcf.gz
+
+#made a TAB-DELIMITED txt file "seflPastBsPops.txt" with sample bam files & the population they belong to
+#needs to be in the bayescan directory
+
+echo "############
+# VCF Parser questions
+PARSER_FORMAT=VCF
+# Do you want to include a file with population definitions?
+VCF_PARSER_POP_QUESTION=true
+# Only input following regions (refSeqName:start:end, multiple regions: whitespace separated):
+VCF_PARSER_REGION_QUESTION=
+# What is the ploidy of the data?
+VCF_PARSER_PLOIDY_QUESTION=DIPLOID
+# Only output following individuals (ind1, ind2, ind4, ...):
+VCF_PARSER_IND_QUESTION=
+# Output genotypes as missing if the read depth of a position for the sample is below:
+VCF_PARSER_READ_QUESTION=
+# Take most likely genotype if "PL" or "GL" is given in the genotype field?
+VCF_PARSER_PL_QUESTION=true
+# Do you want to exclude loci with only missing data?
+VCF_PARSER_EXC_MISSING_LOCI_QUESTION=false
+# Select population definition file:
+VCF_PARSER_POP_FILE_QUESTION=./seflPastBsPops.txt
+# Only output SNPs with a phred-scaled quality of at least:
+VCF_PARSER_QUAL_QUESTION=
+# Do you want to include non-polymorphic SNPs?
+VCF_PARSER_MONOMORPHIC_QUESTION=false
+# Output genotypes as missing if the phred-scale genotype quality is below:
+VCF_PARSER_GTQUAL_QUESTION=
+# GESTE / BayeScan Writer questions
+WRITER_FORMAT=GESTE_BAYE_SCAN
+# Specify which data type should be included in the GESTE / BayeScan file  (GESTE / BayeScan can only analyze one data type per file):
+GESTE_BAYE_SCAN_WRITER_DATA_TYPE_QUESTION=SNP
+############" >vcf2bayescan.spid
+
+java -Xmx1024m -Xms512m -jar ~/bin/PGDSpider_2.0.7.1/PGDSpider2-cli.jar -inputfile pastNoClones.bcf -outputfile seflpast.bayescan -spid vcf2bayescan.spid
+
+#Launch BayeScan (Takes 12+ hr depending on read count/SNPs)
+echo '#!/bin/bash' > pastBayescan.sh
+echo bayescan seflpast.bayescan -threads=100 >> pastBayescan.sh
+
+sbatch -e pastBayescan.e%j -o pastBayescan.o%j -p mediumq7 --mail-user eshilling2013@fau.edu --mail-type=ALL pastBayescan.sh
+
+srun removeBayescanOutliers.pl bayescan=seflpast.baye_fst.txt vcf=pastNoClones.bcf FDR=0.05 mode=extract > seflpastVcfOutliers.vcf
+
+##Using BayeScEnv we can look for outliers related to depth
+
+echo "21.64 14.67 18.38 3.05 6.96" > depth.txt
+
+cp seflpast.bayescan seflpast.bayeScEnv
+
+echo '#!/bin/bash' > pastBayeScEnv.sh
+echo bayescenv seflpast.bayeScEnv -env depth.txt >> pastBayeScEnv.sh
+
+sbatch -e pastBayeScEnv.e%j -o pastBayeScEnv.o%j -p longq7 --mail-user eshilling2013@fau.edu --mail-type=ALL pastBayeScEnv.sh
+
+srun removeBayescanOutliers.pl bayescan=seflpast.bayeS_fst.txt vcf=pastNoClones.bcf FDR=0.05 mode=extract > seflpasttBScEnvVcfOutliers.vcf
+
+##Looking at minor allele frequencies by population Split outlier .vcf by populations
+awk '$2 ~ /jupiter/ {print $1}' seflPastBsPops.txt > jup.pop
+awk '$2 ~ /westpalm/ {print $1}' seflPastBsPops.txt > wpb.pop
+awk '$2 ~ /boynton/ {print $1}' seflPastBsPops.txt > boyn.pop
+awk '$2 ~ /stlucie/ {print $1}' seflPastBsPops.txt > slr.pop
+awk '$2 ~ /pompano/ {print $1}' seflPastBsPops.txt > pmp.pop
+
+#####COULDN'T GET THIS TO RUN#####
+echo '#!/bin/bash' > miaFreq.sh
+for file in *.vcf; do
+echo "vcftools --vcf $file --freq --out ${file/.vcf/}" >> miaFreq.sh
+done
+
+sbatch -e miaFreq.e%j -o miaFreq.o%j -p shortq7 --mail-user eshilling2013@fau.edu --mail-type=ALL miaFreq.sh
+##Combine into one file for analysis
+rm seflpastVcfOutliers.frq
+
+for file in *.frq; do
+awk '{s=(NR==1)?"POP":"\t"FILENAME;$0=$0 OFS s}1' $file > $file.1;
+sed 's/.frq*$//g' $file.1 > $file.2;
+sed 's/:/\t/g' $file.2 > $file.3;
+done
+
+rm *.frq *.frq.1 *.frq.2
+for file in *.frq.3; do
+mv $file ${file/.3/}
+done
+
+awk FNR!=1 *.frq > alleleFreq.txt
+
+echo -e "chrom\tpos\tnAlleles\tnChr\tmajAl\tmajFreq\tminAl\tminFreq\tpop" | cat - alleleFreq.txt > seflpastAlleleFreq.txt
+
+rm alleleFreq.txt
+
+##Looking at minor allele frequencies of inbred individuals in shallow populations
+#First split .vcf into inbred and regular samples for each shallow population
+for pop in *bred.pop; do
+awk '{print $1}' $pop > ${pop/.pop/}.bams;
+done
+
+echo '#!/bin/bash' > vcfInbreedSplit.sh
+for pop in *.bams; do
+echo "bcftools view -S $pop seflpastVcfOutliers.vcf > ${pop/.bams/}.vcf" >> vcfInbreedSplit.sh;
+done
+
+sbatch -e vcfInbreedSplit.e%j -o vcfInbreedSplit.o%j -p shortq7 --mail-user eshilling2013@fau.edu --mail-type=ALL vcfInbreedSplit.sh
+
+##Calculate minor allele frequencies
+echo '#!/bin/bash' > miaInbredFreq.sh
+for file in *bred.vcf; do
+echo "vcftools --vcf $file --freq --out ${file/.vcf/}" >> miaInbredFreq.sh
+done
+
+sbatch -e miaInbredFreq.e%j -o miaInbredFreq.o%j -p shortq7 --mail-user eshilling2013@fau.edu --mail-type=ALL miaInbredFreq.sh
+
+##Combine into one file for analysis
+for file in *bred.frq; do
+awk '{s=(NR==1)?"POP":"\t"FILENAME;$0=$0 OFS s}1' $file > $file.1;
+sed 's/.frq*$//g' $file.1 > $file.2;
+sed 's/:/\t/g' $file.2 > $file.3;
+done
+
+rm *.frq *.frq.1 *.frq.2
+
+for file in *.frq.3; do
+mv $file ${file/.3/}
+done
+
+for file in *Inbred.frq; do
+awk '{s=(NR==1)?"INBRED":"\tInbred";$0=$0 OFS s}1' $file > $file.1;
+done
+
+for file in *Outbred.frq; do
+awk '{s=(NR==1)?"INBRED":"\tOutbred";$0=$0 OFS s}1' $file > $file.1;
+done
+
+for file in *.frq.1; do
+mv $file ${file/.1/}
+done
+
+awk FNR!=1 *bred.frq > alleleFreq.txt
+
+echo -e "chrom\tpos\tnAlleles\tnChr\tmajAl\tmajFreq\tminAl\tminFreq\tpop\tinbred" | cat - alleleFreq.txt > seflpastInbredAlleleFreq.txt
+
+rm alleleFreq.txt
+###DIDN'T RUN ANYTHING ABOVE HERE###
+
+P O P U L A T I O N   S T R U C T U R E
+#Calculate population structure from genotype likelihoods using NGSadmix for K from 2 to 11 : FIRST remove all clones/genotyping replicates! (we did this).
+##Need to add note here to change to your ANGSD directory where the beagle files are (I added, not on the github page)
+cd ../ANGSD_genome
+mkdir ../ngsAdmix_genome
+cp *beagle* ../ngsAdmix_genome
+
+zipper.py -f bam -a -9 --launcher -e eshilling2013@fau.edu
+sbatch zip.slurm
+
+cd ../ngsAdmix_genome
+
+##Create a file with 50 replicate simulations for each value of K 1-8 (num pops + 3)
+ngsAdmixLauncher.py -f pastNoClones.beagle.gz --maxK 8 -r 50 -n seflPast --launcher -e eshilling2013@fau.edu
+
+sbatch --mem=200GB seflPastNgsAdmix.slurm
+
+##Calculating most likely value of K
+#Next, take the likelihood value from each run of NGSadmix and put them into a file that can be used with Clumpak to calculate the most likely K using the methods of Evanno et al. (2005).
+>seflPastNgsAdmixLogfile
+for log in seflPast*.log; do
+grep -Po 'like=\K[^ ]+' $log >> seflPastNgsAdmixLogfile;
+done
+
+##Format for CLUMPAK in R
+R
+
+##You are now using R in the terminal
+logs <- as.data.frame(read.table("seflPastNgsAdmixLogfile"))
+
+#output is organized with 7, 8 preceding 1, 2, 3 etc.
+logs$K <- c(rep("7", 50), rep("8", 50), rep("1", 50), rep("2", 50), rep("3", 50),
+rep("4", 50), rep("5", 50), rep("6", 50))
+write.table(logs[, c(2, 1)], "seflPastNgsAdmixLogfile_formatted", row.names = F,
+        col.names = F, quote = F)
+quit()
+
+#No need to save workspace image [press 'n']
+n
+
+##Check that your formatted logfile has the appropriate number of entries
+
+cat seflPastNgsAdmixLogfile_formatted | wc -l
+##>400?
+
+##make copies of .qopt files to run structure selector on (.Q files)
+for file in seflPast*.qopt; do
+filename=$(basename -- "$file" .qopt);
+cp "$file" "$filename".Q;
+done
+
+mkdir seflPastQ
+mv seflPast*Q seflPastQ
+
+zip -r seflPastQ.zip seflPastQ
+
+## M I G R A T I O N &nbsp; M O D E L I N G
+To use BayesAss3 (XXX) we first need to convert our ANGSD output into genotype format
+```{bash, bayesass}
+cd~/2bRAD/past/sefl
+mkdir bayesAss_genome
+
+cd bayesAss_genome
+cp ../ANGSD_genome/pastNoClones.bcf .
+cp ../bayescan_genome/seflPastBsPops.txt .
+
+echo "# VCF Parser questions
+PARSER_FORMAT=VCF
+
+# Only output SNPs with a phred-scaled quality of at least:
+VCF_PARSER_QUAL_QUESTION=
+# Select population definition file:
+VCF_PARSER_POP_FILE_QUESTION=./seflPastBsPops.txt
+# What is the ploidy of the data?
+VCF_PARSER_PLOIDY_QUESTION=DIPLOID
+# Do you want to include a file with population definitions?
+VCF_PARSER_POP_QUESTION=true
+# Output genotypes as missing if the phred-scale genotype quality is below:
+VCF_PARSER_GTQUAL_QUESTION=
+# Do you want to include non-polymorphic SNPs?
+VCF_PARSER_MONOMORPHIC_QUESTION=false
+# Only output following individuals (ind1, ind2, ind4, ...):
+VCF_PARSER_IND_QUESTION=
+# Only input following regions (refSeqName:start:end, multiple regions: whitespace separated):
+VCF_PARSER_REGION_QUESTION=
+# Output genotypes as missing if the read depth of a position for the sample is below:
+VCF_PARSER_READ_QUESTION=
+# Take most likely genotype if "PL" or "GL" is given in the genotype field?
+VCF_PARSER_PL_QUESTION=true
+# Do you want to exclude loci with only missing data?
+VCF_PARSER_EXC_MISSING_LOCI_QUESTION=true
+
+# Immanc (BayesAss) Writer questions
+WRITER_FORMAT=IMMANC
+
+# Specify the locus/locus combination you want to write to the Immanc (BayesAss) file:
+IMMANC_WRITER_LOCUS_COMBINATION_QUESTION=
+# Specify which data type should be included in the Immanc (BayesAss)) file (Immanc (BayesAss) can only analyze one data type per file):
+IMMANC_WRITER_DATA_TYPE_QUESTION=SNP" >seflPastBA.spid
+
+module load pgdspider-2.1.1.2-gcc-9.2.0-ghxvd4c
+
+pgdSpider=/opt/ohpc/pub/spack/opt/spack/linux-centos7-x86_64/gcc-9.2.0/pgdspider-2.1.1.2-ghxvd4c4ieqngkbutakc7x6j4pfkqm5e/bin/PGDSpider2-cli.jar
+
+echo '#!/bin/bash' > pgdSpider.sh
+echo "java -Xmx1024m -Xms512m -jar $pgdSpider -inputformat VCF -outputformat IMMANC vcf -inputfile pastNoClones.bcf -outputfile seflPastBayesAss.txt -spid seflPastBA.spid" >>pgdSpider.sh
+
+sbatch -e pgdSpider.e%j -o pgdSpider.o%j -p mediumq7 --mail-user eshilling2013@fau.edu --mail-type=ALL pgdSpider.sh
+
+
+###Something is going wrong at this step, my output file seflPastBayesAss.txt doesn't have the pop names in it
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## Default params:
+#MCMC reps: 1,000,000
+#burn in: 100,000
+#sampling freq: 100
+#delta migration (1): 0.1
+#delta allele freq (3): 0.1
+#delta inbreeding (4): 0.1
+
+## Herrera params:
+#MCMC reps: 100,000,000
+#burn in: 50,000,000
+#sampling freq: 1,000
+#delta migration: 0.35
+#delta allele freq: 0.9
+#delta inbreeding: 0.09
+
+#Ryan says maybe try 5 or 10 mil for MCMC reps for mine to start, 1 million burn in
+
+rm pastNoClones.bcf
+rm seflPastBsPops.txt
+
+module load gcc-9.2.0-gcc-8.3.0-ebpgkrt gsl-2.5-gcc-9.2.0-i6lf4jb netlib-lapack-3.9.1-gcc-9.2.0-gcqg2b2 BayesAss/3.0.4.2
+
+##example of first test run from de novo
+echo '#!/bin/bash' > BATest
+echo BA3SNP -v -i 5000000 -b 500000 -n 100 seflPastBayesAss.txt >> BATest
+
+sbatch --mem=200GB -e BATest.e%j -o BATest.o%j -p shortq7 --mail-user eshilling2013@fau.edu --mail-type=ALL BATest
+#logL: -519655.06 % done: [0.02] % accepted: (0.69, 0.00, 0.90, 0.01, 0.74)
+#looking only at first, third & fourth values^
+#need to lower first two parameters, so increase -m and -a
+#increase the third, so lower -f
+
+# we are looking for 20—60% acceptance, ideally somewhere near 20—30%
+# relationships between mixing parameters and acceptance rates are inverse
+# defaults are 0.1 (all parameters are scale 0—1)
+# increase [-m] increase [-a] and decrease [-f]
+
+#have run several test iterations to optimize this when did de novo genome, so going to start with those optimized parameters and go from there
+echo '#!/bin/bash' > BATest
+echo BA3SNP -v -i 5000000 -b 500000 -n 1000 -m 0.32 -a 0.75 -f 0.002 seflPastBayesAss.txt >> BATest
+
+sbatch -e BATest.e%j -o BATest.o%j -p shortq7 --mail-user eshilling2013@fau.edu --mail-type=ALL BATest
+#logL:  % done: [0.00] % accepted: ()
