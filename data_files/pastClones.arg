@@ -1,7 +1,7 @@
 	-> Command: 
 angsd -b bamsClones -GL 1 -uniqueOnly 1 -remove_bads 1 -minMapQ 20 -minQ 30 -dosnpstat 1 -doHWE 1 -hwe_pval 1e-5 -sb_pval 1e-5 -hetbias_pval 1e-5 -skipTriallelic 1 -minInd 70 -snp_pval 1e-6 -minMaf 0.05 -doMajorMinor 1 -doMaf 1 -doCounts 1 -makeMatrix 1 -doIBS 1 -doCov 1 -doGeno 8 -doBcf 1 -doPost 1 -doGlf 2 -P 1 -out pastClones 
 	-> angsd version: 0.933 (htslib: 1.10.2) build(Sep  9 2020 09:43:27)
-	-> Tue Jul 20 14:18:14 2021
+	-> Thu Jul 21 16:41:17 2022
 ----------------
 multiReader.cpp:
 	-nLines	50	(Number of lines to read)
@@ -251,5 +251,5 @@ abcWriteBcf.cpp:
 		->"pastClones.covMat"
 		->"pastClones.bcf"
 
-	[ALL done] cpu-time used =  936.99 sec
-	[ALL done] walltime used =  960.00 sec
+	[ALL done] cpu-time used =  455.93 sec
+	[ALL done] walltime used =  574.00 sec

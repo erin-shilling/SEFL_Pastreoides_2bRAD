@@ -1,7 +1,7 @@
 	-> Command: 
 /opt/ohpc/pub/spack/opt/spack/linux-centos7-x86_64/gcc-9.2.0/angsd-0.933-65d64ppmin34af7edhioyjoldnqw5fjb/bin/angsd -b bamsNoClones -GL 1 -uniqueOnly 1 -remove_bads 1 -minMapQ 20 -minQ 30 -dosnpstat 1 -doHWE 1 -hwe_pval 1e-5 -sb_pval 1e-5 -hetbias_pval 1e-5 -skipTriallelic 1 -minInd 27 -snp_pval 1e-6 -minMaf 0.05 -doMajorMinor 1 -doMaf 1 -doCounts 1 -makeMatrix 1 -doIBS 1 -doCov 1 -doGeno 8 -doBcf 1 -doPost 1 -doGlf 2 -P 1 -out pastNoClones 
 	-> angsd version: 0.933 (htslib: 1.10.2) build(Sep  9 2020 09:43:27)
-	-> Wed Jul 21 16:12:02 2021
+	-> Fri Jul 22 11:06:17 2022
 ----------------
 multiReader.cpp:
 	-nLines	50	(Number of lines to read)
@@ -251,5 +251,5 @@ abcWriteBcf.cpp:
 		->"pastNoClones.covMat"
 		->"pastNoClones.bcf"
 
-	[ALL done] cpu-time used =  332.88 sec
-	[ALL done] walltime used =  345.00 sec
+	[ALL done] cpu-time used =  207.28 sec
+	[ALL done] walltime used =  280.00 sec
