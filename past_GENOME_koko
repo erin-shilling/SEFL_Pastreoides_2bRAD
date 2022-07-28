@@ -363,7 +363,6 @@ echo '#!/bin/bash' > pastBayeScEnv.sh
 echo bayescenv seflpast.bayeScEnv -env depth.txt >> pastBayeScEnv.sh
 
 sbatch -e pastBayeScEnv.e%j -o pastBayeScEnv.o%j -p longq7 --mail-user eshilling2013@fau.edu --mail-type=ALL pastBayeScEnv.sh
-##started this @ 10:30 am on 7/27###
 
 srun removeBayescanOutliers.pl bayescan=seflpast.bayeS_fst.txt vcf=pastNoClones.bcf FDR=0.05 mode=extract > seflpasttBScEnvVcfOutliers.vcf
 
@@ -374,86 +373,6 @@ awk '$2 ~ /boynton/ {print $1}' seflPastBsPops.txt > boyn.pop
 awk '$2 ~ /stlucie/ {print $1}' seflPastBsPops.txt > slr.pop
 awk '$2 ~ /pompano/ {print $1}' seflPastBsPops.txt > pmp.pop
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#####COULDN'T GET THIS TO RUN#####
-echo '#!/bin/bash' > miaFreq.sh
-for file in *.vcf; do
-echo "vcftools --vcf $file --freq --out ${file/.vcf/}" >> miaFreq.sh
-done
-
-sbatch -e miaFreq.e%j -o miaFreq.o%j -p shortq7 --mail-user eshilling2013@fau.edu --mail-type=ALL miaFreq.sh
-##Combine into one file for analysis
-rm seflpastVcfOutliers.frq
-
-for file in *.frq; do
-awk '{s=(NR==1)?"POP":"\t"FILENAME;$0=$0 OFS s}1' $file > $file.1;
-sed 's/.frq*$//g' $file.1 > $file.2;
-sed 's/:/\t/g' $file.2 > $file.3;
-done
-
-rm *.frq *.frq.1 *.frq.2
-for file in *.frq.3; do
-mv $file ${file/.3/}
-done
-
-awk FNR!=1 *.frq > alleleFreq.txt
-
-echo -e "chrom\tpos\tnAlleles\tnChr\tmajAl\tmajFreq\tminAl\tminFreq\tpop" | cat - alleleFreq.txt > seflpastAlleleFreq.txt
-
-rm alleleFreq.txt
-
-##Looking at minor allele frequencies of inbred individuals in shallow populations
-#First split .vcf into inbred and regular samples for each shallow population
-for pop in *bred.pop; do
-awk '{print $1}' $pop > ${pop/.pop/}.bams;
-done
-
-echo '#!/bin/bash' > vcfInbreedSplit.sh
-for pop in *.bams; do
-echo "bcftools view -S $pop seflpastVcfOutliers.vcf > ${pop/.bams/}.vcf" >> vcfInbreedSplit.sh;
-done
-
-sbatch -e vcfInbreedSplit.e%j -o vcfInbreedSplit.o%j -p shortq7 --mail-user eshilling2013@fau.edu --mail-type=ALL vcfInbreedSplit.sh
-
-##Calculate minor allele frequencies
-echo '#!/bin/bash' > miaInbredFreq.sh
-for file in *bred.vcf; do
-echo "vcftools --vcf $file --freq --out ${file/.vcf/}" >> miaInbredFreq.sh
-done
-
-sbatch -e miaInbredFreq.e%j -o miaInbredFreq.o%j -p shortq7 --mail-user eshilling2013@fau.edu --mail-type=ALL miaInbredFreq.sh
-
-##Combine into one file for analysis
-for file in *bred.frq; do
-awk '{s=(NR==1)?"POP":"\t"FILENAME;$0=$0 OFS s}1' $file > $file.1;
-sed 's/.frq*$//g' $file.1 > $file.2;
-sed 's/:/\t/g' $file.2 > $file.3;
-done
-
-rm *.frq *.frq.1 *.frq.2
-
-for file in *.frq.3; do
-mv $file ${file/.3/}
-done
-
-for file in *Inbred.frq; do
-awk '{s=(NR==1)?"INBRED":"\tInbred";$0=$0 OFS s}1' $file > $file.1;
-done
-
-for file in *Outbred.frq; do
-awk '{s=(NR==1)?"INBRED":"\tOutbred";$0=$0 OFS s}1' $file > $file.1;
-done
-
-for file in *.frq.1; do
-mv $file ${file/.1/}
-done
-
-awk FNR!=1 *bred.frq > alleleFreq.txt
-
-echo -e "chrom\tpos\tnAlleles\tnChr\tmajAl\tmajFreq\tminAl\tminFreq\tpop\tinbred" | cat - alleleFreq.txt > seflpastInbredAlleleFreq.txt
-
-rm alleleFreq.txt
-###DIDN'T RUN ANYTHING ABOVE HERE###
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 P O P U L A T I O N   S T R U C T U R E
@@ -515,8 +434,9 @@ zip -r seflPastQ.zip seflPastQ
 
 #in StructureSelector, upload this zipped file as "admixture" file, and upload popMap file
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## M I G R A T I O N &nbsp; M O D E L I N G
-To use BayesAss3 (XXX) we first need to convert our ANGSD output into genotype format
+To use BayesAss3 we first need to convert our ANGSD output into genotype format
 ```{bash, bayesass}
 cd~/2bRAD/past/sefl
 mkdir bayesAss_genome
@@ -585,7 +505,7 @@ sbatch -e pgdSpider.e%j -o pgdSpider.o%j -p mediumq7 --mail-user eshilling2013@f
 #delta allele freq: 0.9
 #delta inbreeding: 0.09
 
-#Ryan says maybe try 5 or 10 mil for MCMC reps for mine to start, 1 million burn in
+#Try 5 or 10 mil for MCMC reps for mine to start, 1 million burn in?
 
 rm pastNoClones.bcf
 rm seflPastBsPops.txt
@@ -631,7 +551,7 @@ echo BA3SNP -v -i 5000000 -b 500000 -n 1000 -m 0.32 -a 0.80 -f 0.0039 seflPastBa
 sbatch -e BATest.e%j -o BATest.o%j -p shortq7 --mail-user eshilling2013@fau.edu --mail-type=ALL BATest
 #logL:  % done: [6530.79] % accepted: (0.36, 0.00, 0.36, 0.35, 0.75)
 
-#Perfect, moving forward with real runs now
+#Perfect, moving forward with full test run now to look for convergence between runs
 
 #####################################################
 Make and launch 10 iterations of BayesAss, each in its own run directory so we can keep all trace files (saved as 'BA3trace.txt' and would overwrite if not in separate directories). We are using [-s $RANDOM] to use a random start seed for each independent run
@@ -659,8 +579,9 @@ done
 
 #ran in about 15 hours
 
-#now examine in Trace
-##going to try running with 20,000,000 reps, 3,000,000 burn in from Trace examination
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#now examine in Tracer
+##going to try running with 20,000,000 reps, 3,000,000 burn in from Tracer examination
 ##so going to re-check that my deltas still work when running it with these new parameters
 
 echo '#!/bin/bash' > BATest
