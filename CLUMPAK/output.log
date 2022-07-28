@@ -1,0 +1,63 @@
+Wed Jul 27 22:50:00 2022: Running validation tests on input files
+Wed Jul 27 22:50:00 2022: Finished validating - Submitting job to queue
+Wed Jul 27 22:50:03 2022: Job 1658951375 was submitted to queue.
+Wed Jul 27 22:50:04 2022: Job 1658951375 started running.
+Wed Jul 27 22:50:04 2022: Retrieving data from files for each K
+Wed Jul 27 22:50:04 2022: K=1 mean: -371942.697447
+Wed Jul 27 22:50:04 2022: K=1 standard deviation: 1.76395850352514e-10
+Wed Jul 27 22:50:04 2022: K=1 median: -371942.697447
+Wed Jul 27 22:50:04 2022: K=2 mean: -352725.64141404
+Wed Jul 27 22:50:04 2022: K=2 standard deviation: 1046.26360476261
+Wed Jul 27 22:50:04 2022: K=2 median: -351769.692048
+Wed Jul 27 22:50:04 2022: K=3 mean: -334797.49843388
+Wed Jul 27 22:50:04 2022: K=3 standard deviation: 54.094854168016
+Wed Jul 27 22:50:04 2022: K=3 median: -334846.8737
+Wed Jul 27 22:50:04 2022: K=4 mean: -322061.96587376
+Wed Jul 27 22:50:04 2022: K=4 standard deviation: 1699.04150443937
+Wed Jul 27 22:50:04 2022: K=4 median: -321003.397936
+Wed Jul 27 22:50:04 2022: K=5 mean: -310826.87411288
+Wed Jul 27 22:50:04 2022: K=5 standard deviation: 945.207301892803
+Wed Jul 27 22:50:04 2022: K=5 median: -310341.066209
+Wed Jul 27 22:50:04 2022: K=6 mean: -301559.26029854
+Wed Jul 27 22:50:04 2022: K=6 standard deviation: 1053.2262141245
+Wed Jul 27 22:50:04 2022: K=6 median: -301261.271425
+Wed Jul 27 22:50:04 2022: K=7 mean: -292104.89343456
+Wed Jul 27 22:50:04 2022: K=7 standard deviation: 423.753998340816
+Wed Jul 27 22:50:04 2022: K=7 median: -292069.8203675
+Wed Jul 27 22:50:04 2022: K=8 mean: -282712.42833226
+Wed Jul 27 22:50:04 2022: K=8 standard deviation: 404.790201527171
+Wed Jul 27 22:50:04 2022: K=8 median: -282510.552487
+Wed Jul 27 22:50:04 2022: Calculating Best K by Evanno
+Wed Jul 27 22:50:04 2022: Ln'(2) = 19217.0560329597
+Wed Jul 27 22:50:04 2022: Ln'(3) = 17928.1429801601
+Wed Jul 27 22:50:04 2022: Ln'(4) = 12735.53256012
+Wed Jul 27 22:50:04 2022: Ln'(5) = 11235.09176088
+Wed Jul 27 22:50:04 2022: Ln'(6) = 9267.61381433986
+Wed Jul 27 22:50:04 2022: Ln'(7) = 9454.36686398019
+Wed Jul 27 22:50:04 2022: Ln'(8) = 9392.46510229987
+Wed Jul 27 22:50:04 2022: |Ln''(K=2)| = 1288.91305279959
+Wed Jul 27 22:50:04 2022: |Ln''(K=3)| = 5192.61042004015
+Wed Jul 27 22:50:04 2022: |Ln''(K=4)| = 1500.44079923996
+Wed Jul 27 22:50:04 2022: |Ln''(K=5)| = 1967.47794654017
+Wed Jul 27 22:50:04 2022: |Ln''(K=6)| = 186.753049640334
+Wed Jul 27 22:50:04 2022: |Ln''(K=7)| = 61.9017616803176
+Wed Jul 27 22:50:04 2022: Delta(K=2) = 1.2319199931379
+Wed Jul 27 22:50:04 2022: Delta(K=3) = 95.9908386833273
+Wed Jul 27 22:50:04 2022: Delta(K=4) = 0.883110150822983
+Wed Jul 27 22:50:04 2022: Delta(K=5) = 2.0815306257159
+Wed Jul 27 22:50:04 2022: Delta(K=6) = 0.177315231178113
+Wed Jul 27 22:50:04 2022: Delta(K=7) = 0.146079475173545
+Wed Jul 27 22:50:04 2022: Max Delta K: 95.9908386833273
+Wed Jul 27 22:50:04 2022: Optimal K by Evanno is: 3
+Wed Jul 27 22:50:04 2022: Using median values of Ln Prob of Data to calculate Prob(K=k):
+Wed Jul 27 22:50:04 2022: Prob(K=1) = 0
+Wed Jul 27 22:50:04 2022: Prob(K=2) = 0
+Wed Jul 27 22:50:04 2022: Prob(K=3) = 0
+Wed Jul 27 22:50:04 2022: Prob(K=4) = 0
+Wed Jul 27 22:50:04 2022: Prob(K=5) = 0
+Wed Jul 27 22:50:04 2022: Prob(K=6) = 0
+Wed Jul 27 22:50:04 2022: Prob(K=7) = 0
+Wed Jul 27 22:50:04 2022: Prob(K=8) = 1
+Wed Jul 27 22:50:04 2022: Max Probability: 1
+Wed Jul 27 22:50:04 2022: The k for which Prob(K=k) obtains the highest value is: 8
+Wed Jul 27 22:50:04 2022: Creating job zip file

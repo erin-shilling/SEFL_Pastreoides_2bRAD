@@ -21,7 +21,7 @@ All analyses were performed in R version 4.1.1. This is the code that accompanie
 if (!require("pacman")) install.packages("pacman")
 
 pacman::p_load_gh("pmartinezarbizu/pairwiseAdonis/pairwiseAdonis", "ropensci/rnaturalearthhires")
-pacman::p_load("cowplot", "ggrepel", "ggspatial", "maps", "paletteer", "patchwork", "rgdal", "rnaturalearth", "sf", "tidyverse", "reshape2", "MCMC.OTU", "pairwiseAdonis", "RColorBrewer", "Redmonder", "flextable", "lubridate", "officer", "adegenet", "dendextend", "gdata", "ggdendro", "hierfstat", "Imap", "kableExtra", "poppr", "StAMPP", "vcfR", "vegan", "boa", "measurements", "magick", "rgeos", "magrittr", "ggplot2", "rstatix", "ggpubr")
+pacman::p_load("cowplot", "ggrepel", "ggspatial", "maps", "paletteer", "patchwork", "rgdal", "rnaturalearth", "sf", "tidyverse", "reshape2", "MCMC.OTU", "pairwiseAdonis", "RColorBrewer", "Redmonder", "flextable", "lubridate", "officer", "adegenet", "dendextend", "gdata", "ggdendro", "hierfstat", "Imap", "kableExtra", "poppr", "StAMPP", "vcfR", "vegan", "boa", "measurements", "magick", "rgeos", "magrittr", "ggplot2", "rstatix", "ggpubr", "Hmisc")
 ```
 
 Map and shapefile data
@@ -447,8 +447,6 @@ envData = data.frame(popData, raster::extract(envVar, popData[,5:4]))
 # write_excel_csv(envData, file= 'Sites_w_Env_Data.csv')
 
 #visualizing to then remove variables that had significant colinearity >0.7
-library(Hmisc)
-library(reshape2)
 
 #including depth and latitude as well
 corData = rcorr(as.matrix(envData[,c(3, 4, 6:ncol(envData))]), type = "pearson")
@@ -562,6 +560,31 @@ ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/genome_mapped/fig
 ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/genome_mapped/figures/DbrdaPlot.tiff", plot = pastDbrdaPlot1, height = 3.5, width = 7, units = "in", dpi = 300)
 ```
 
+```{r, Variance partitioning dbRDA}
+pastModel = envData2 %>% dplyr::select("Depth" = depth, "Latitude" = lat)
+
+pastDbrda = dbrda(pastMa ~ Depth + Latitude, pastModel)
+
+pastDbrdaVarPart = varpart(pastMa, ~ depth, ~ lat, data = envData2)
+
+pastDbrdaDepth = dbrda(pastMa ~ Depth, pastModel)
+pastDbrdaLat = dbrda(pastMa ~ Latitude, pastModel)
+
+plot(pastDbrdaVarPart, Xnames = c("Depth", "Latitude"), bg = c(4:7), digits = 2)
+
+pastDbrdaVarPart
+
+set.seed(004)
+anova(pastDbrda)
+
+set.seed(003)
+anova(pastDbrdaDepth)
+
+set.seed(002)
+anova(pastDbrdaLat)
+
+```
+
 ```{r, Pairwise Fst}
 #packages: tidyverse, vcfR, adegenet, StAMPP, gdata, reshape2, paletteer
 pastVcf = read.vcfR("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/pastNoClones.bcf", verbose = FALSE)
@@ -671,55 +694,25 @@ ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/fstHeatMa
 
 ```
 
-```{r, DAPC to calculate most likely K?}
-pastVcf = read.vcfR("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/pastNoClones.bcf", verbose = FALSE)
-pastGenlightPopDepth = vcfR2genlight(pastVcf, n.cores = 2) # Converts the vcf file into a file format that poppr uses the "genlight" format
-
-locNames(pastGenlightPopDepth) = paste(pastVcf@fix[,1],pastVcf@fix[,2],sep="_")
-popData = read.csv("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/poritesastreoidesMetaData_clonesremoved.csv") %>% dplyr::select("sample" = tube_id, "pop" = region) # Reads in population data for each sample
-
-popData$pop = factor(popData$pop)
-levels(popData$pop)
-popData$pop = factor(popData$pop, levels(popData$pop)[c(4, 2, 5, 1, 3)])
-
-strata(pastGenlightPopDepth) = data.frame(popData)
-setPop(pastGenlightPopDepth) = ~pop
-
-pastGenlightPopDepth$pop = factor(pastGenlightPopDepth$pop)
-levels(pastGenlightPopDepth$pop)
-pastGenlightPopDepth$pop = factor(pastGenlightPopDepth$pop, 
-                                levels(pastGenlightPopDepth$pop)[c(4, 1, 2, 3, 5)])
-
-grp = find.clusters(pastGenlightPopDepth, n.pca = 35, max.n.clust = 8, choose.n.clust = FALSE, criterion = "goesup")
-
-```
-
-##haven't done this yet, not sure how to pick K
 ADMIXTURE plot
 Population structure plot from NGSadmix/CLUMPAK results.
 Based on most probable values for K
+From CLUMPAK outputs, want the .output file within the "K" folder that you want to display
+K=2 -->
 ```{r, ADMIXTURE}
 # packages: paletteer, tidyverse, reshape2
-#kColPal3 = paletteer_d("LaCroixColoR::PassionFruit")[c(2,3,6)] #A
-#kColPal3 = paletteer_d("LaCroixColoR::Mango")[c(3,5,6)] #B
-#kColPal3 = paletteer_d("LaCroixColoR::Berry")[c(1,3,6)] #C
-#kColPal3 = paletteer_d("LaCroixColoR::Apricot")[c(2,3,6)] #E
-#kColPal3 = paletteer_d("LaCroixColoR::KiwiSandia")[c(3,5,7)] #G
-kColPal3 = paletteer_d("LaCroixColoR::MurePepino")[c(3,4,6)]#H
-#kColPal7 = paletteer_c("viridis::viridis", n = 7)
+kColPal3 = paletteer_d("LaCroixColoR::MurePepino")[c(3,4,6)]
+kColPal3 = paletteer_d("LaCroixColoR::KiwiSandia")[c(4,5,3)]
 
 flPal = paletteer_d("LaCroixColoR::PeachPear")[c(1,2,3,4,5)]
 
 admixpops = read.csv("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/poritesastreoidesMetaData_clonesremoved.csv") %>% select("sample" = tube_id, "Region" = region)
 
 ##Figure for manuscript visualizing only K = 3
-clumpp3 = read.table("data_files/pastClumppK3", header = FALSE)
-clumpp7 = read.table("data_files/pastClumppK7", header = FALSE)
+clumpp3 = read.table("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/pastClumpK3.output", header = FALSE)
 clumpp3$V1 = admixpops$sample
-clumpp7$V1 = admixpops$sample
 
-seflPastAdmix = admixpops %>% left_join(clumpp3[,c(1,6:8)], by = c("sample" = "V1")) %>% left_join(clumpp7[,c(1, 6:12)], by = c("sample" = "V1")) %>% rename("cluster3.1" = "V6.x", "cluster3.2" = "V7.x", "cluster3.3" = "V8.x",
-"cluster7.1" = "V6.y", "cluster7.2" = "V7.y", "cluster7.3" = "V8.y", "cluster7.4" = "V9", "cluster7.5" = "V10", "cluster7.6" = "V11", "cluster7.7" = "V12")
+seflPastAdmix = admixpops %>% left_join(clumpp3[,c(1,6:8)], by = c("sample" = "V1")) %>% rename("cluster3.1" = "V6", "cluster3.2" = "V7", "cluster3.3" = "V8")
 
 seflPastAdmix$Region = factor(seflPastAdmix$Region)
 seflPastAdmix$Region = factor(seflPastAdmix$Region, levels(seflPastAdmix$Region)[c(4, 2, 5, 1, 3)])
@@ -728,7 +721,7 @@ levels(seflPastAdmix$Region)[1] = "St. Lucie"
 levels(seflPastAdmix$Region)[5] = "Ft. Lauderdale"
 
 seflPastAdmix = arrange(seflPastAdmix, Region, -cluster3.1)
-popCounts = seflPastAdmix %>% group_by(Region) %>% summarize(n = n())
+popCounts = seflPastAdmix %>% group_by(Region) %>% dplyr::summarize(n = n())
 
 popCounts
 
@@ -786,101 +779,6 @@ admixPlotK3 = admixPlotK3A + admixTheme
 admixPlotK3
 
 ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/admixturePlotK3.png", plot = admixPlotK3, width = 15, height = 5, units = "cm", dpi = 300)
-
-#Figure for supplemental with both K = 3 & K = 7
-kColPal7 = paletteer_d("LaCroixColoR::MurePepino")[c(1:7)]
-
-clumpp3 = read.table("data_files/pastClumppK3", header = FALSE)
-clumpp7 = read.table("data_files/pastClumppK7", header = FALSE)
-clumpp3$V1 = admixpops$sample
-clumpp7$V1 = admixpops$sample
-
-seflPastAdmix = admixpops %>% left_join(clumpp3[,c(1,6:8)], by = c("sample" = "V1")) %>% 
-  left_join(clumpp7[,c(1, 6:12)], by = c("sample" = "V1")) %>% rename("cluster3.1" = "V6.x", "cluster3.2" = "V7.x", "cluster3.3" = "V8.x","cluster7.1" = "V6.y", "cluster7.2" = "V7.y", "cluster7.3" = "V8.y", "cluster7.4" = "V9", "cluster7.5" = "V10", "cluster7.6" = "V11", "cluster7.7" = "V12")
-
-seflPastAdmix$Region = factor(seflPastAdmix$Region)
-seflPastAdmix$Region = factor(seflPastAdmix$Region, levels(seflPastAdmix$Region)[c(4, 2, 5, 1, 3)])
-
-levels(seflPastAdmix$Region)[1] = "St. Lucie"
-levels(seflPastAdmix$Region)[5] = "Ft. Lauderdale"
-
-seflPastAdmix = arrange(seflPastAdmix, Region, -cluster3.1)
-popCounts = seflPastAdmix %>% group_by(Region) %>% summarize(n = n())
-
-popCounts
-
-popCountList = reshape2::melt(lapply(popCounts$n,function(x){c(1:x)}))
-seflPastAdmix$ord = popCountList$value
-
-seflPastAdmixMelt = melt(seflPastAdmix, id.vars=c("sample", "Region", "ord"), variable.name="Ancestry", value.name="Fraction")
-
-seflPastAdmixMelt$Ancestry = factor(seflPastAdmixMelt$Ancestry)
-seflPastAdmixMelt$Ancestry = factor(seflPastAdmixMelt$Ancestry, levels = rev(levels(seflPastAdmixMelt$Ancestry)))
-
-write_excel_csv(seflPastAdmixMelt, file= 'Samples in each K.csv')
-
-#making segments that are color coded by population
-#x2 is number of samples for each plot plus 0.7 to ordinate spacing of columns
-popAnno = data.frame(x1 = c(0.3, 0.3, 0.3, 0.3, 0.3), x2 = c(3.7, 10.7, 7.7, 10.7, 6.7), y1 = -0.12, y2 = -0.12, sample = NA, Ancestry = NA, ord  = NA, Fraction = NA,Region= c("St. Lucie", "Jupiter", "West Palm Beach", "Boynton Beach", "Ft. Lauderdale"))
-
-popAnno$Region = factor(popAnno$Region)
-popAnno$Region = factor(popAnno$Region, levels = levels(popAnno$Region)[c(4, 3, 5, 1, 2)])
-
-admixTheme = theme_bw()+
-  theme(plot.title = element_text(hjust = 0, size = 10),
-  panel.grid = element_blank(),
-  panel.background = element_rect(fill = "gray25", colour = "gray25"),
-  panel.border = element_rect(fill = NA, color = "black", size = 1, linetype = "solid"),
-  panel.spacing.x = grid:::unit(0.05, "lines"),
-  panel.spacing.y = grid:::unit(0.05, "lines"),
-  axis.text.x = element_blank(),
-  axis.text.y = element_blank(),
-  axis.ticks.x = element_blank(),
-  axis.ticks.y = element_blank(),
-  axis.title = element_blank(),
-  strip.background.x = element_blank(),
-  strip.background.y = element_blank(),
-  strip.text = element_text(size = 8),
-  strip.text.y.left = element_text(size = 10, angle = 90),
-  strip.text.x.bottom = element_text(vjust = -.1, color = "black"),
-  legend.key = element_blank(),
-  legend.position = "none",
-  legend.title = element_text(size = 8))
-
-admixPlotK3A = ggplot(data = subset(seflPastAdmixMelt, subset = seflPastAdmixMelt$Ancestry %in% c("cluster3.1", "cluster3.2", "cluster3.3")), aes(x = ord, y = Fraction, fill = Ancestry, order = sample)) +
-    geom_segment(data = popAnno, aes(x = x1, xend = x2, y = y1, yend = y2, color = Region), size = 7) +
-  geom_bar(stat = "identity", position = "fill", width = 1, colour = "grey25", size = 0.2) +
-  facet_grid(.~ Region, scales = "free", switch = "both", space = "free") +
-  scale_x_discrete(expand = c(0, 0)) +
-  scale_y_continuous(expand = c(0.001, 0.001)) +
-  scale_fill_manual(values = kColPal3) +
-  scale_color_manual(values = flPal) +
-  ggtitle(expression(paste(italic("K")," = 3", sep =""))) +
-  coord_cartesian(ylim = c(-0.01, 1.01), clip = "off")
-
-admixPlotK3 = admixPlotK3A + admixTheme
-
-admixPlotK7A = ggplot(data = subset(seflPastAdmixMelt, subset = !(seflPastAdmixMelt$Ancestry %in% c("cluster3.1", "cluster3.2", "cluster3.3"))), aes(x = ord, y = Fraction, fill = Ancestry, order = sample)) +    
-  geom_segment(data = popAnno, aes(x = x1, xend = x2, y = y1, yend = y2, color = Region), size = 7) +
-  geom_bar(stat = "identity", position = "fill", width = 1, colour = "grey25", size = 0.2) +
-  facet_grid(.~ Region, scales = "free", switch = "both", space = "free") +
-  scale_x_discrete(expand = c(0, 0)) +
-  scale_y_continuous(expand = c(0.001, 0.001)) +
-  scale_fill_manual(values = kColPal7) +
-  scale_color_manual(values = flPal) +
-  ggtitle(expression(paste(italic("K")," = 7", sep =""))) +
-  coord_cartesian(ylim = c(-.01, 1.01), clip = "off")
- 
-admixPlotK7 = admixPlotK7A + admixTheme
- admixPlotK3 = admixPlotK3A + admixTheme + 
-   theme(strip.text.y.left = element_blank())
-
-admixPlotK <- ggarrange(admixPlotK3, admixPlotK7,
-                    ncol = 1, nrow = 2)
-
-admixPlotK
-
-ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/genome_mapped/figures/admixturePlotK3+7.png", plot = admixPlotK, width = 15, height = 10, units = "cm", dpi = 300)
 ```
 
 Identifying outlier SNPs, indicative of some type of selection taking place
@@ -1177,4 +1075,29 @@ write_excel_csv(zooxProp, file= 'Zooxs proportions no clones.csv')
 ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/zooxSNP_noclones.png", plot = zooxSNP, width = 20, height = 8, units = "cm", dpi = 300)
 ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/zooxSNP_noclones.eps", plot = zooxSNP, width = 20, height = 8, units = "cm", dpi = 300)
 ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/zooxSNP_noclones.tiff", plot = zooxSNP, width = 20, height = 8, units = "cm", dpi = 300)
+```
+
+Irrelevant or redundant analyses not included in manuscript
+#probably remove this
+```{r, DAPC to calculate most likely K?}
+pastVcf = read.vcfR("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/pastNoClones.bcf", verbose = FALSE)
+pastGenlightPopDepth = vcfR2genlight(pastVcf, n.cores = 2) # Converts the vcf file into a file format that poppr uses the "genlight" format
+
+locNames(pastGenlightPopDepth) = paste(pastVcf@fix[,1],pastVcf@fix[,2],sep="_")
+popData = read.csv("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/poritesastreoidesMetaData_clonesremoved.csv") %>% dplyr::select("sample" = tube_id, "pop" = region) # Reads in population data for each sample
+
+popData$pop = factor(popData$pop)
+levels(popData$pop)
+popData$pop = factor(popData$pop, levels(popData$pop)[c(4, 2, 5, 1, 3)])
+
+strata(pastGenlightPopDepth) = data.frame(popData)
+setPop(pastGenlightPopDepth) = ~pop
+
+pastGenlightPopDepth$pop = factor(pastGenlightPopDepth$pop)
+levels(pastGenlightPopDepth$pop)
+pastGenlightPopDepth$pop = factor(pastGenlightPopDepth$pop, 
+                                levels(pastGenlightPopDepth$pop)[c(4, 1, 2, 3, 5)])
+
+grp = find.clusters(pastGenlightPopDepth, max.n.clust = 8)
+
 ```

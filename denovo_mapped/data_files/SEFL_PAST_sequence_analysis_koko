@@ -913,7 +913,7 @@ echo -e "chrom\tpos\tnAlleles\tnChr\tmajAl\tmajFreq\tminAl\tminFreq\tpop\tinbred
 rm alleleFreq.txt
 
 P O P U L A T I O N   S T R U C T U R E
-#Calculate population structure from genotype likelihoods using NGSadmix for K from 2 to 11 : FIRST remove all clones/genotyping replicates! (we did this).
+#Calculate population structure from genotype likelihoods using NGSadmix for K from 2 to 8 : FIRST remove all clones/genotyping replicates! (we did this).
 ##Need to add note here to change to your ANGSD directory where the beagle files are (I added, not on the github page)
 cd ../ANGSD
 mkdir ../ngsAdmix

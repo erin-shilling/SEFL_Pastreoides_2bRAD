@@ -457,7 +457,7 @@ rm alleleFreq.txt
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 P O P U L A T I O N   S T R U C T U R E
-#Calculate population structure from genotype likelihoods using NGSadmix for K from 2 to 11 : FIRST remove all clones/genotyping replicates! (we did this).
+#Calculate population structure from genotype likelihoods using NGSadmix for K from 2 to 8 : FIRST remove all clones/genotyping replicates! (we did this).
 ##Need to add note here to change to your ANGSD directory where the beagle files are (I added, not on the github page)
 cd ../ANGSD_genome
 mkdir ../ngsAdmix_genome
@@ -486,9 +486,8 @@ R
 ##You are now using R in the terminal
 logs <- as.data.frame(read.table("seflPastNgsAdmixLogfile"))
 
-#output is organized with 7, 8 preceding 1, 2, 3 etc.
-logs$K <- c(rep("7", 50), rep("8", 50), rep("1", 50), rep("2", 50), rep("3", 50),
-rep("4", 50), rep("5", 50), rep("6", 50))
+logs$K <- c(rep("1", 50), rep("2", 50), rep("3", 50),
+rep("4", 50), rep("5", 50), rep("6", 50), rep("7", 50), rep("8", 50))
 write.table(logs[, c(2, 1)], "seflPastNgsAdmixLogfile_formatted", row.names = F,
         col.names = F, quote = F)
 quit()
@@ -496,10 +495,12 @@ quit()
 #No need to save workspace image [press 'n']
 n
 
-##Check that your formatted logfile has the appropriate number of entries
+##Check that your formatted logfile has the appropriate number of entries (8 times 50)
 
 cat seflPastNgsAdmixLogfile_formatted | wc -l
-##>400?
+##>400
+
+##in CLUMPAK, you will go to "Best K" heading, select Log Probability table file, and input this file^
 
 ##make copies of .qopt files to run structure selector on (.Q files)
 for file in seflPast*.qopt; do
@@ -511,6 +512,8 @@ mkdir seflPastQ
 mv seflPast*Q seflPastQ
 
 zip -r seflPastQ.zip seflPastQ
+
+#in StructureSelector, upload this zipped file as "admixture" file, and upload popMap file
 
 ## M I G R A T I O N &nbsp; M O D E L I N G
 To use BayesAss3 (XXX) we first need to convert our ANGSD output into genotype format
