@@ -702,7 +702,7 @@ K=2 -->
 ```{r, ADMIXTURE}
 # packages: paletteer, tidyverse, reshape2
 kColPal3 = paletteer_d("LaCroixColoR::MurePepino")[c(3,4,6)]
-kColPal3 = paletteer_d("LaCroixColoR::KiwiSandia")[c(4,5,3)]
+kColPal3 = c("#AFDE62", "mediumpurple3", "#FF8C8D")
 
 flPal = paletteer_d("LaCroixColoR::PeachPear")[c(1,2,3,4,5)]
 
@@ -714,6 +714,8 @@ clumpp3$V1 = admixpops$sample
 
 seflPastAdmix = admixpops %>% left_join(clumpp3[,c(1,6:8)], by = c("sample" = "V1")) %>% rename("cluster3.1" = "V6", "cluster3.2" = "V7", "cluster3.3" = "V8")
 
+
+
 seflPastAdmix$Region = factor(seflPastAdmix$Region)
 seflPastAdmix$Region = factor(seflPastAdmix$Region, levels(seflPastAdmix$Region)[c(4, 2, 5, 1, 3)])
 
@@ -721,6 +723,10 @@ levels(seflPastAdmix$Region)[1] = "St. Lucie"
 levels(seflPastAdmix$Region)[5] = "Ft. Lauderdale"
 
 seflPastAdmix = arrange(seflPastAdmix, Region, -cluster3.1)
+
+cloneCounts = c("8","20","6","","","3","","","","","","5","","","","2","","","","","5","","","","","","","","","","","","3","8","","")
+seflPastAdmix$clones = cloneCounts
+
 popCounts = seflPastAdmix %>% group_by(Region) %>% dplyr::summarize(n = n())
 
 popCounts
@@ -728,7 +734,7 @@ popCounts
 popCountList = reshape2::melt(lapply(popCounts$n,function(x){c(1:x)}))
 seflPastAdmix$ord = popCountList$value
 
-seflPastAdmixMelt = melt(seflPastAdmix, id.vars=c("sample", "Region", "ord"), variable.name="Ancestry", value.name="Fraction")
+seflPastAdmixMelt = melt(seflPastAdmix, id.vars=c("sample", "Region", "ord", "clones"), variable.name="Ancestry", value.name="Fraction")
 
 seflPastAdmixMelt$Ancestry = factor(seflPastAdmixMelt$Ancestry)
 seflPastAdmixMelt$Ancestry = factor(seflPastAdmixMelt$Ancestry, levels = rev(levels(seflPastAdmixMelt$Ancestry)))
@@ -766,6 +772,7 @@ admixTheme = theme_bw()+
 admixPlotK3A = ggplot(data = subset(seflPastAdmixMelt, subset = seflPastAdmixMelt$Ancestry %in% c("cluster3.1", "cluster3.2", "cluster3.3")), aes(x = ord, y = Fraction, fill = Ancestry, order = sample)) +
     geom_segment(data = popAnno, aes(x = x1, xend = x2, y = y1, yend = y2, color = Region), size = 7) +
   geom_bar(stat = "identity", position = "fill", width = 1, colour = "grey25", size = 0.2) +
+  geom_text(aes(x = ord, label = clones), y = 0.1, size = 3) +
   facet_grid(.~ Region, scales = "free", switch = "both", space = "free") +
   scale_x_discrete(expand = c(0, 0)) +
   scale_y_continuous(expand = c(0.001, 0.001)) +
