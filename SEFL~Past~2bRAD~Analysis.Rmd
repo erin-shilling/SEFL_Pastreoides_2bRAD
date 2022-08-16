@@ -37,7 +37,7 @@ pastSamples$region = factor(pastSamples$region, levels = levels(pastSamples$regi
 pastSamples$collection_date = mdy(pastSamples$collection_date) %>% format("%d %b %Y")
 pastSamples$depthM = conv_unit(pastSamples$collection_depth_ft, from = "ft", to = "m") %>% round(1)
 
-seflSites = pastSamples %>% group_by(region)%>% summarize(latDD = first(site_lat), longDD = first(site_long), depthRangeM = paste(min(depthM), "-", max(depthM), sep = ""), n = n(), date = as.character(min(collection_date))) %>% droplevels() %>% as.data.frame()
+seflSites = pastSamples %>% group_by(region) %>% summarise(latDD = first(site_lat), longDD = first(site_long), depthRangeM = paste(min(depthM), "-", max(depthM), sep = ""), n = n(), date = as.character(min(collection_date))) %>% droplevels() %>% as.data.frame()
 
 states = st_as_sf(ne_states(country = c("United States of America")))
 countries = st_as_sf(ne_countries(country = c("Cuba", "The Bahamas")))
@@ -47,7 +47,7 @@ frt = read_sf("data_files/shp/flReefs.shp") %>% st_transform(crs = 4326)
 countyNames = st_as_sf(maps::map("county", plot = FALSE, fill = TRUE)) %>% st_transform(crs = 4326) %>% filter(grepl("florida", ID)) %>% filter(grepl("palm beach|broward|martin", ID))
 countyNames$ID = c("Broward \nCounty", "Martin \nCounty", "Palm Beach \nCounty")
 
-popLabs = pastSamples %>% group_by(region)%>% summarize(latDD = first(site_lat), longDD = first(site_long))
+popLabs = pastSamples %>% group_by(region)%>% summarise(latDD = first(site_lat), longDD = first(site_long))
 levels(popLabs$region) = c("St. Lucie", "Jupiter", "West Palm", "Boynton", "Ft. Lauderdale")
 
 ```
@@ -214,7 +214,7 @@ No clonal groups are changed after running it on the genome aligned dataset
 <br>
 
 Heterozygosity & Inbreeding
-Calculating values for later plot analysis
+Calculating values for later plotting
 ```{r, popStats}
 # packages: tidyverse, rstatix
 #rstatix package for Tukey post hoc
@@ -711,7 +711,7 @@ Based on most probable values for K
 From CLUMPAK outputs, want the .output file within the "K" folder that you want to display
 ```{r, ADMIXTURE}
 # packages: paletteer, tidyverse, reshape2
-kColPal3 = paletteer_d("LaCroixColoR::MurePepino")[c(3,4,6)]
+#kColPal3 = paletteer_d("LaCroixColoR::MurePepino")[c(3,4,6)]
 kColPal3 = c("#AFDE62", "mediumpurple3", "#FF8C8D")
 
 flPal = paletteer_d("LaCroixColoR::PeachPear")[c(1,2,3,4,5)]
@@ -723,8 +723,6 @@ clumpp3 = read.table("data_files/pastClumpK3.output", header = FALSE)
 clumpp3$V1 = admixpops$sample
 
 seflPastAdmix = admixpops %>% left_join(clumpp3[,c(1,6:8)], by = c("sample" = "V1")) %>% rename("cluster3.1" = "V6", "cluster3.2" = "V7", "cluster3.3" = "V8")
-
-
 
 seflPastAdmix$Region = factor(seflPastAdmix$Region)
 seflPastAdmix$Region = factor(seflPastAdmix$Region, levels(seflPastAdmix$Region)[c(4, 2, 5, 1, 3)])
@@ -892,7 +890,7 @@ migrateA = ggplot(data = baSumm, aes(pop.i, pop.j, fill = as.numeric(as.characte
   geom_segment(data = baSumm, aes(x = 0.4755, xend = -0.65, y = pop.j, yend = pop.j, color = pop.j), size = 16) + #changing y bar of pop names
   geom_segment(data = baSumm, aes(x = pop.i, xend = pop.i, y = 0.45, yend = -0.1, color = pop.i), size = 35) + #changing x bar of pop names
   scale_color_manual(values = flPal[c(1:5, 1:5)], guide = NULL) +
-  scale_fill_gradientn(colours = paletteer_c("viridis::viridis", n = 10)[3:10], limit = c(0,0.17), space = "Lab", name = expression(paste(italic("m"))), na.value = "gray85",  guide = "colourbar", values = c(0, 0.05, 0.1, 0.15, 0.2,0.5,0.75,1)) + #key for color scale of heatmap
+  scale_fill_gradientn(colours = paletteer_c("viridis::viridis", n = 10)[3:10], limit = c(0,0.23), space = "Lab", name = expression(paste(italic("m"))), na.value = "gray85",  guide = "colourbar", values = c(0, 0.05, 0.1, 0.15, 0.2,0.5,0.75,1)) + #key for color scale of heatmap
   geom_text(data = baSumm, aes(x = pop.i, y = pop.j, label = paste(mean, "\n", sep = "")), color = ifelse(baSumm$mean > 0.6, "red", "gray5"), fontface = "bold") + #format for center values (i.e. PMP vs PMP)
   geom_text(data = baSumm, aes(x = pop.i, y = pop.j, label = paste("\n(",hpdLow,"–",hpdHigh, ")", sep = "")), color = ifelse(baSumm$mean > 0.6, "red", "gray5"), size = 3.25) +
   labs(x = "Sink", y = "Source") +
@@ -963,10 +961,15 @@ for(x in 1:nrow(baMapData)) {
 
 library(sf)
 florida = read_sf("data_files/shp/flCountiesLo.shp") %>% st_transform(crs = 4326)
+frt = read_sf("data_files/shp/flReefs.shp") %>% st_transform(crs = 4326)
+
+countyNames = st_as_sf(maps::map("county", plot = FALSE, fill = TRUE)) %>% st_transform(crs = 4326) %>% filter(grepl("florida", ID)) %>% filter(grepl("palm beach|broward|martin", ID))
+countyNames$ID = c("Broward \nCounty", "Martin \nCounty", "Palm Beach \nCounty")
 
 library(ggspatial)
 migrateMap = ggplot() +
   geom_sf(data = florida, fill = "white", size = 0.25) +
+  geom_sf(data = frt, fill = "gray80", size = 0) +
   geom_curve(data = baMapData[c(2,4),], aes(x = longDD.j, y = latDD.j, xend = longDD.i+0.01, yend = latDD.i-0.023, color = pop.j, size = mean), arrow = arrow(type = "open", length = unit(0.0225, "npc")), curvature = 0.3) +
   geom_curve(data = baMapData[c(6),], aes(x = longDD.j, y = latDD.j, xend = longDD.i+0.01, yend = latDD.i-0.021, color = pop.j, size = mean), arrow = arrow(type = "closed", length = unit(0.0225, "npc")), curvature = 0.3) +
     geom_curve(data = baMapData[c(7),], aes(x = longDD.j, y = latDD.j, xend = longDD.i+0.02, yend = latDD.i-0.02, color = pop.j, size = mean), arrow = arrow(type = "open", length = unit(0.0225, "npc")), curvature = 0.5) +
@@ -974,6 +977,8 @@ migrateMap = ggplot() +
   geom_curve(data = baMapData[c(10),], aes(x = longDD.j, y = latDD.j, xend = longDD.i, yend = latDD.i+0.025, color = pop.j, size = mean), arrow = arrow(type = "closed", length = unit(0.0225, "npc")), curvature = 0.3) +
 #  geom_curve(data = baMapData, aes(x = longDD.j, y = latDD.j, xend = longDD.i, yend = latDD.i, color = pop.j, size = mean), arrow = arrow(type = "closed", length = unit(0.0225, "npc")), alpha = 0.7,  curvature = -0.3, na.rm = TRUE) +
   geom_point(data = seflPastPopsMigrate, aes(x = longDD, y = latDD, fill = Population), size = 3.5, shape = 21) +
+    geom_sf_text(data = countyNames, aes(label = ID), nudge_x = c(0.1, 0, 0.1),
+               nudge_y = c(0, -.025, -0.1)) +
   scale_fill_manual(values = flPal, name = "Population") +
   scale_color_manual(values = migratePal, guide = NULL) +
   scale_size(range = c(0.5, 2), breaks = c(0.05,0.1,0.15,0.20), name = expression(paste(italic("m")))) +
