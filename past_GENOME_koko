@@ -601,4 +601,11 @@ sbatch -e BayesAss$i.e%j -o BayesAss$i.o%j -p longq7 --mem=100GB --exclusive --m
 cd ..;
 done
 
-##started running @11:15 am on 7/27/22
+# after all runs complete copy files to main BayesAss directory
+cd ~/2bRAD/past/sefl/bayesAss_genome
+
+cp run*/*Out.txt .
+
+for i in {01..10}; do
+cp run$i/BA3trace.txt BA3trace$i.txt;
+done

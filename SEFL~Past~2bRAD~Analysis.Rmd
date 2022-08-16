@@ -380,11 +380,15 @@ hetPlots = ((hetPlotAll | hetPlotSnps) / (inbreedingPlot | relatePlot)) +
 
 hetPlots
 
+<<<<<<< Updated upstream
 ggsave("figures/heterozygosityPlot_pval.png", plot = hetPlots, width = 22, height = 16, units = "cm", dpi = 300)
 ggsave("figures/heterozygosityPlot_pval.pdf", plot = hetPlots, width = 22, height = 16, units = "cm", dpi = 300)
 
+=======
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/heterozygosityPlot_pval.png", plot = hetPlots, width = 22, height = 16, units = "cm", dpi = 300)
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/heterozygosityPlot_pval.pdf", plot = hetPlots, width = 22, height = 16, units = "cm", dpi = 300)
+>>>>>>> Stashed changes
 ```
-
 
 ```{r, Analysis of Molecular Variance}
 #packages: tidyverse, vcfR, adegenet, poppr
@@ -404,7 +408,7 @@ amova <- poppr.amova(pastGenlightPopulation, ~pop)
 amova
 
 set.seed(694)
-amovasignif <- randtest(amova, nrepet = 99)
+amovasignif <- randtest(amova, nrepet = 999)
 amovasignif$names
 
 amovasignif$obs
@@ -420,7 +424,7 @@ amovaP
 Only significant differences between populations, explains 2.75% of variation, p = 0.001
 
 Distance Based Redundancy Analysis with Environmental Factors
-```{r, env data}
+```{r, env data & dbRDA}
 #packages: sdmpredictors, Hmisc, reshape2, adespatial
 options(sdmpredictors_datadir="data_files/bioOracle", timeout = max(300, getOption("timeout")))
 
@@ -524,7 +528,7 @@ pastDbrdaPlotA = ggplot(pastDbrdaData, aes(x = dbRDA1, y = dbRDA2, color = Popul
   geom_point(data = pastDbrdaData, aes(x = dbRDA1, y = dbRDA2, fill = Population, color = Population), size = 2, shape = 21, alpha = 0.5, show.legend = FALSE) +
   stat_ellipse(data = pastDbrdaData, type = "t", geom = "polygon", alpha = 0.1, show.legend = FALSE) + #adds ellipses
   geom_segment(data = envLoad, aes(x = 0, y = 0, xend = dbRDA1, yend = dbRDA2), color = "black", arrow = arrow(length = unit(0.25, "cm"), type = "open"), size = 0.65, inherit.aes = FALSE) +
-  geom_text(data = envLoad, aes(x = dbRDA1+0.22, y = dbRDA2, label = var), color = "black", size = 3, inherit.aes = FALSE) +
+  geom_text(data = envLoad, aes(x = dbRDA1+0.25, y = dbRDA2, label = var), color = "black", size = 3, inherit.aes = FALSE) +
   geom_point(data = pastDbrdaData, aes(x = mean.x, y = mean.y, fill = Population), shape = 21, size = 5, color = "black") + #pop centroids indicated by large circles
   annotate(geom = "text", x = 0.7, y = -1.5, label = bquote("AMOVA:"~.(amovaPerc)*","~italic(p)~" = "~.(amovaP))) +
   labs(x = paste("dbRDA1 (", pastRdaVar[1]," %)", sep = ""), y =  paste("dbRDA2 (", pastRdaVar[2], " %)", sep = "")) +
@@ -555,9 +559,15 @@ pastDbrdaPlot1 = pastDbrdaPlotA +
 
 pastDbrdaPlot1
 
+<<<<<<< Updated upstream
 ggsave("genome_mapped/figures/DbrdaPlot.png", plot = pastDbrdaPlot1, height = 3.5, width = 7, units = "in", dpi = 300)
 #add bg = "transparent" to export with no background color
 ggsave("genome_mapped/figures/DbrdaPlot.tiff", plot = pastDbrdaPlot1, height = 3.5, width = 7, units = "in", dpi = 300)
+=======
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/DbrdaPlot.png", plot = pastDbrdaPlot1, height = 3.5, width = 7, units = "in", dpi = 300)
+#add bg = "transparent" to export with no background color
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/DbrdaPlot.tiff", plot = pastDbrdaPlot1, height = 3.5, width = 7, units = "in", dpi = 300)
+>>>>>>> Stashed changes
 ```
 
 ```{r, Variance partitioning dbRDA}
@@ -585,6 +595,7 @@ anova(pastDbrdaLat)
 
 ```
 
+Fst pairwise comparisons & plotting
 ```{r, Pairwise Fst}
 #packages: tidyverse, vcfR, adegenet, StAMPP, gdata, reshape2, paletteer
 pastVcf = read.vcfR("data_files/pastNoClones.bcf", verbose = FALSE)
@@ -698,7 +709,6 @@ ADMIXTURE plot
 Population structure plot from NGSadmix/CLUMPAK results.
 Based on most probable values for K
 From CLUMPAK outputs, want the .output file within the "K" folder that you want to display
-K=2 -->
 ```{r, ADMIXTURE}
 # packages: paletteer, tidyverse, reshape2
 kColPal3 = paletteer_d("LaCroixColoR::MurePepino")[c(3,4,6)]
@@ -786,6 +796,219 @@ admixPlotK3 = admixPlotK3A + admixTheme
 admixPlotK3
 
 ggsave("figures/admixturePlotK3.png", plot = admixPlotK3, width = 15, height = 5, units = "cm", dpi = 300)
+```
+
+BayesAss Analyses
+First load BAtrace files into Tracer, make sure burn-in is correct, it defaults to 10% of runs
+Select all trace files, then select an individual trace, then view the "Trace" tab, and should see that oscillations for the most part are similar/overlap
+This is just a visual check step, you are also testing this statistically below
+
+Checking deviance among model runs
+```{r, BA3 traces}
+library(tidyverse)
+
+fileList = substr(list.files("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/bayesAss/", "BA3trace.*.txt$"),1,10)
+
+bayesian_deviance <- function(trace, burnin = 0, sampling.interval = 0){
+  if(burnin == 0) stop('No burnin specified')
+  if(sampling.interval == 0) stop('No sampling interval specified')
+  range <- (trace$State > burnin & trace$State %% sampling.interval == 0)
+  D <- -2*mean(trace$LogProb[range])
+  return(D)
+}
+
+for(i in 1:length(fileList)){
+  assign(fileList[i], read.delim(paste("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/bayesAss/", fileList[i], ".txt", sep = ""))) %>% dplyr::select(-last_col())
+  print(paste(fileList[i], bayesian_deviance(get(fileList[i]), burnin = 2000000, sampling.interval = 100)))
+}
+```
+
+<br>
+
+All traces have similar deviance.
+Using the trace with the lowest deviance- #01
+```{r, BA3}
+bayesAss = read.delim("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/bayesAss/BA3trace01.txt") %>% filter(State > 2000000) %>% dplyr::select(-State, -LogProb, -X)
+
+baMean = bayesAss %>% summarise(across(everything(), list(mean))) %>% t() %>% as_tibble() %>% rename(., mean=V1) %>% mutate(pops = colnames(bayesAss))
+
+baSumm = bayesAss %>% summarise(across(everything(), list(median))) %>% t() %>% as_tibble() %>% rename(., median=V1) %>% mutate(pops = baMean$pops, mean = round(baMean$mean, 3)) %>% relocate(median, .after = mean)
+
+#takes median and makes it only 3 decimal places
+baSumm$median = round(baSumm$median, 3)
+
+library(TeachingDemos)
+baHpd =as.data.frame(t(sapply(bayesAss, emp.hpd)))
+colnames(baHpd) = c("hpdLow", "hpdHigh")
+baHpd$pops = rownames(baHpd)
+
+library(LaplacesDemon)
+ESS = as.data.frame(sapply(bayesAss, ESS))
+
+baSumm = baSumm %>% left_join(baHpd)
+baSumm$hpdLow = round(baSumm$hpdLow, 3)
+baSumm$hpdHigh = round(baSumm$hpdHigh, 3)
+baSumm$ESS = ESS
+
+#figure out how your pops are numbered by looking at one of your BAOut files
+## Population Index -> Population Label:
+#0->jupiter
+#1->westpalm
+#2->boynton
+#3->stlucie
+#4->pompano
+
+#i and j are the sink & source populations
+#i is the sink, j is the source
+#write out how you want it to appear on your stepwise plot
+popi = rep(c("Jupiter", "West Palm Beach", "Boynton Beach", "St. Lucie Reef", "Ft. Lauderdale"), each = 5)
+
+popj = rep(c("Jupiter", "West Palm Beach", "Boynton Beach", "St. Lucie Reef", "Ft. Lauderdale"), times = 5)
+
+baSumm = baSumm %>% mutate(pop.i = popi, pop.j = popj) %>% relocate(c(pop.i, pop.j), .after = pops) %>% dplyr::select(-pops)
+
+baSumm$pop.i = factor(baSumm$pop.i)
+#levels(baSumm$pop.i)
+baSumm$pop.i = factor(baSumm$pop.i, levels = levels(baSumm$pop.i)[c(4, 3, 5, 1, 2)])
+
+baSumm$pop.j = factor(baSumm$pop.j)
+baSumm$pop.j = factor(baSumm$pop.j, levels = levels(baSumm$pop.j)[c(4, 3, 5, 1, 2)])
+
+```
+<br>
+
+Heat map of migration coefficients
+```{r, migrationPlots}
+library(ggplot2)
+library(paletteer)
+baSumm$mean = sprintf('%.3f', baSumm$mean)
+baSumm$hpdLow = sprintf('%.3f', baSumm$hpdLow)
+baSumm$hpdHigh = sprintf('%.3f', baSumm$hpdHigh)
+
+flPal = paletteer_d("LaCroixColoR::PeachPear")[c(1,2,3,4,5)]
+
+migrateA = ggplot(data = baSumm, aes(pop.i, pop.j, fill = as.numeric(as.character(mean)))) +
+  geom_tile(color = "white") +
+  geom_segment(data = baSumm, aes(x = 0.4755, xend = -0.65, y = pop.j, yend = pop.j, color = pop.j), size = 16) + #changing y bar of pop names
+  geom_segment(data = baSumm, aes(x = pop.i, xend = pop.i, y = 0.45, yend = -0.1, color = pop.i), size = 35) + #changing x bar of pop names
+  scale_color_manual(values = flPal[c(1:5, 1:5)], guide = NULL) +
+  scale_fill_gradientn(colours = paletteer_c("viridis::viridis", n = 10)[3:10], limit = c(0,0.17), space = "Lab", name = expression(paste(italic("m"))), na.value = "gray85",  guide = "colourbar", values = c(0, 0.05, 0.1, 0.15, 0.2,0.5,0.75,1)) + #key for color scale of heatmap
+  geom_text(data = baSumm, aes(x = pop.i, y = pop.j, label = paste(mean, "\n", sep = "")), color = ifelse(baSumm$mean > 0.6, "red", "gray5"), fontface = "bold") + #format for center values (i.e. PMP vs PMP)
+  geom_text(data = baSumm, aes(x = pop.i, y = pop.j, label = paste("\n(",hpdLow,"–",hpdHigh, ")", sep = "")), color = ifelse(baSumm$mean > 0.6, "red", "gray5"), size = 3.25) +
+  labs(x = "Sink", y = "Source") +
+  guides(fill = guide_colorbar(barwidth = 1, barheight = 10, title.position = "top", title.hjust = 0.5, frame.colour = "black", frame.linewidth = 1, ticks.colour = "black")) + #m coefficient scale key
+  scale_y_discrete(limits = rev(levels(baSumm$pop.i))[c(1:5)], position = "left") +
+  # scale_x_discrete() +
+  coord_cartesian(xlim = c(1, 5), ylim = c(1, 5), clip = "off") +
+  theme_minimal()
+
+migrate = migrateA + theme(
+  axis.text.x = element_text(vjust = 1, size = 9, hjust = 0.5, color = "black"),
+  axis.text.y = element_text(size = 9, color = "black"),
+  axis.title.x = element_text(size = 14, vjust = -1.5),
+  axis.title.y = element_text(size = 14),
+  panel.grid.major = element_blank(),
+  axis.ticks = element_blank(),
+  legend.position = "right",
+  legend.direction = "vertical",
+  legend.title = element_text(size = 14, face = "bold"),
+  legend.text = element_text(size = 10)
+)
+
+migrate
+
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/migrate.png", plot = migrate, width = 20, height = 8, units = "cm", dpi = 300)
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/migrate.svg", plot = migrate, width = 20, height = 8, units = "cm", dpi = 300)
+```
+
+Map of m coefficients as flow between sites
+```{r, migration map}
+baSumm$mean = as.numeric(baSumm$mean)
+baSumm$hpdLow = as.numeric(baSumm$hpdLow)
+baSumm$hpdHigh = as.numeric(baSumm$hpdHigh)
+
+pastSamples = read.csv("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/data_files/poritesastreoidesMetaData_clonesremoved.csv", header = TRUE) %>% select(sample = tube_id, !sample_id, Population = region)
+pastSamples$Population[pastSamples$Population=="Pompano/LBTS"]<-"Ft. Lauderdale"
+
+library(lubridate)
+library(measurements)
+pastSamples$Population = factor(pastSamples$Population)
+levels(pastSamples$Population)
+pastSamples$Population = factor(pastSamples$Population, levels = levels(pastSamples$Population)[c(4, 3, 5, 1, 2)])
+pastSamples$depthM = conv_unit(pastSamples$collection_depth_ft, from = "ft", to = "m") %>% round(1)
+
+seflSites = pastSamples %>% group_by(Population)%>% summarise(latDD = first(site_lat), longDD = first(site_long), 
+depthRangeM = paste(min(depthM), "-", max(depthM), sep = ""), 
+n = n()) %>% droplevels() %>% as.data.frame()
+
+seflPastPopsMigrate = seflSites %>% group_by(Population) %>% summarise(latDD = first(latDD), longDD = first(longDD)) %>% filter(Population %in% c("St. Lucie Reef", "Jupiter", "West Palm Beach", "Boynton Beach", "Ft. Lauderdale")) %>% droplevels()
+
+library(paletteer)
+flPal = paletteer_d("LaCroixColoR::PeachPear")[c(1,2,3,4,5)]
+
+migratePal = c("St. Lucie Reef" = flPal[1], "Jupiter" = flPal[2], "West Palm Beach" = flPal[3], "Boynton Beach" = flPal[4], "Ft. Lauderdale" = flPal[5])
+
+baMapData = baSumm %>% left_join(seflPastPopsMigrate, by = c("pop.i" = "Population")) %>% left_join(seflPastPopsMigrate, by = c("pop.j" = "Population"), suffix = c(".i", ".j")) %>% filter(hpdLow > 0.00)
+
+for(x in 1:nrow(baMapData)) {
+  if (baMapData$pop.i[x] == baMapData$pop.j[x]) {
+    baMapData$latDD.i[x] = NA;
+    baMapData$latDD.j[x] = NA;
+    baMapData$longDD.i[x] = NA;
+    baMapData$longDD.j[x] = NA;
+    baMapData$mean[x] = NA;
+    baMapData$median[x] = NA
+  }
+}
+
+library(sf)
+florida = read_sf("data_files/shp/flCountiesLo.shp") %>% st_transform(crs = 4326)
+
+library(ggspatial)
+migrateMap = ggplot() +
+  geom_sf(data = florida, fill = "white", size = 0.25) +
+  geom_curve(data = baMapData[c(2,4),], aes(x = longDD.j, y = latDD.j, xend = longDD.i+0.01, yend = latDD.i-0.023, color = pop.j, size = mean), arrow = arrow(type = "open", length = unit(0.0225, "npc")), curvature = 0.3) +
+  geom_curve(data = baMapData[c(6),], aes(x = longDD.j, y = latDD.j, xend = longDD.i+0.01, yend = latDD.i-0.021, color = pop.j, size = mean), arrow = arrow(type = "closed", length = unit(0.0225, "npc")), curvature = 0.3) +
+    geom_curve(data = baMapData[c(7),], aes(x = longDD.j, y = latDD.j, xend = longDD.i+0.02, yend = latDD.i-0.02, color = pop.j, size = mean), arrow = arrow(type = "open", length = unit(0.0225, "npc")), curvature = 0.5) +
+  geom_curve(data = baMapData[c(9),], aes(x = longDD.j, y = latDD.j, xend = longDD.i-0.025, yend = latDD.i+0.01, color = pop.j, size = mean), arrow = arrow(type = "closed", length = unit(0.0225, "npc")), curvature = 0.4) +
+  geom_curve(data = baMapData[c(10),], aes(x = longDD.j, y = latDD.j, xend = longDD.i, yend = latDD.i+0.025, color = pop.j, size = mean), arrow = arrow(type = "closed", length = unit(0.0225, "npc")), curvature = 0.3) +
+#  geom_curve(data = baMapData, aes(x = longDD.j, y = latDD.j, xend = longDD.i, yend = latDD.i, color = pop.j, size = mean), arrow = arrow(type = "closed", length = unit(0.0225, "npc")), alpha = 0.7,  curvature = -0.3, na.rm = TRUE) +
+  geom_point(data = seflPastPopsMigrate, aes(x = longDD, y = latDD, fill = Population), size = 3.5, shape = 21) +
+  scale_fill_manual(values = flPal, name = "Population") +
+  scale_color_manual(values = migratePal, guide = NULL) +
+  scale_size(range = c(0.5, 2), breaks = c(0.05,0.1,0.15,0.20), name = expression(paste(italic("m")))) +
+  coord_sf(xlim = c(-80.6, -79.6), ylim = c(26, 27.2)) +
+  scale_x_continuous(breaks = c(seq(-80.6, -79.6, by = 0.2))) +
+  scale_y_continuous(breaks = c(seq(26, 27.2, by = 0.2))) +
+  annotation_scale(location = "br") +
+  annotation_north_arrow(location = "br", which_north = "true", style = north_arrow_minimal(), pad_x = unit(-0.25, "cm") , pad_y = unit(0.75, "cm")) +
+  guides(fill = guide_legend(override.aes = list(shape = 22, color = NA, size = 4), order = 1)) +
+#size = guide_legend(override.aes = list(linetype = 1, shape = NA, alpha = 1), order = 2, ncol = 3)) +
+  theme_bw() +
+  theme(panel.background = element_rect(fill = "aliceblue"),
+        panel.border = element_rect(color = "black", size = 0.75, fill = NA),
+        axis.title = element_blank(),
+        axis.ticks = element_line(color = "black"),
+        axis.text = element_text(color = "black"),
+        #legend.position = "bottom",
+        #legend.direction = "horizontal",
+        legend.box = "vertical",
+        #legend.key = element_blank(),
+#          legend.background = element_rect(fill = "transparent", colour = NA),
+#        legend.key = element_rect(fill = "transparent", colour = NA),
+#        plot.background = element_rect(fill = "transparent", colour = NA),
+#  panel.background = element_rect(fill = "transparent", colour = NA),
+#  rect = element_rect(fill = "transparent"),
+#        legend.background = element_blank()
+)
+
+migrateMap
+
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/migrateMap.png", plot = migrateMap, width = 20, height = 15, units = "cm",dpi = 300)
+#export with transparent background
+#ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/denovo_mapped/figures/migrateMap_nobg.png", plot = migrateMap, width = 25.5, height = 15, units = "cm",dpi = 300, bg = "transparent")
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/migrateMap.svg", plot = migrateMap, width = 20, height = 15, units = "cm",dpi = 300)
+
 ```
 
 SUPPLEMENTAL
