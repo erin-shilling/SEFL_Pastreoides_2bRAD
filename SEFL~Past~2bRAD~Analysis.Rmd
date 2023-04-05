@@ -304,19 +304,35 @@ vif
 
 pastMa = as.matrix(read.table("data_files/pastNoClones.ibsMat"))
 
+#run PCA on genetic structure/IBS matrix to get PCs to act as proxy for neutral structure
+pca <- rda(pastMa[,-1], scale=T)
+plot(pca)
+screeplot(pca, type = "barplot", npcs=10, main="PCA Eigenvalues")
+
+#extracting those to add into dataframe
+PCs <- scores(pca, choices=c(1:3), display="sites", scaling=0)
+PCs
+
+#and now add into envData2
+envData2 = data.frame(envData2, PCs)
+
 ##start running ANOVA/models here
 rda1 = dbrda(pastMa ~ ., data = envData2)
 RsquareAdj(rda1)
 anova.cca(rda1)
 
+#null model
 rda0 = dbrda(pastMa ~ 1, data = envData2)
-rda1 = dbrda(pastMa ~ ., data = envData2)
+#rda1 = dbrda(pastMa ~ ., data = envData2)
+
+#full model
+RDAfull <- rda(pastMa ~ lat + depth + BO22_nitratemean_bdmean, envData2)
 
 set.seed(092)
 bestDbrda <- ordiR2step(rda0, rda1)
 bestDbrda$anova
 
-#nitrate not selected for in best model, so removing at this step
+#neither nitrate nor PCs of genetic structure were selected for in best model, so removing at this step
 #PAR deemed not ecologically relevant after further examination
 model = envData2 %>% dplyr::select("Depth" = depth, "Latitude" = lat)
 
