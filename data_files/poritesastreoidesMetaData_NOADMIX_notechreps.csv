@@ -2,7 +2,6 @@ tube_id,species,collection_date,collection_time,county,region,site,site_lat,site
 P001,Porites astreoides,1/14/2021,10:22,Palm Beach,Jupiter,SELF-06,26.897735,-80.01638333,1,14-I-21-1-001,72,21.95,brown,,Green
 P002,Porites astreoides,1/14/2021,10:26,Palm Beach,Jupiter,SELF-06,26.897735,-80.01638333,4,14-I-21-1-002,73,22.25,brown,,Pink
 P003,Porites astreoides,1/14/2021,10:29,Palm Beach,Jupiter,SELF-06,26.897735,-80.01638333,25,14-I-21-1-003,73,22.25,brown,,Pink
-P004,Porites astreoides,1/14/2021,10:32,Palm Beach,Jupiter,SELF-06,26.897735,-80.01638333,36,14-I-21-1-004,73,22.25,yellow,,Admixed
 P005,Porites astreoides,1/14/2021,10:35,Palm Beach,Jupiter,SELF-06,26.897735,-80.01638333,37,14-I-21-1-005,73,22.25,brown,,Pink
 P006,Porites astreoides,1/14/2021,10:37,Palm Beach,Jupiter,SELF-06,26.897735,-80.01638333,38,14-I-21-1-006,77,23.47,brown,,Pink
 P007,Porites astreoides,1/14/2021,10:42,Palm Beach,Jupiter,SELF-06,26.897735,-80.01638333,39,14-I-21-1-007,73,22.25,brown,,Green
@@ -12,7 +11,6 @@ P010,Porites astreoides,1/14/2021,10:50,Palm Beach,Jupiter,SELF-06,26.897735,-80
 P011,Porites astreoides,1/14/2021,10:52,Palm Beach,Jupiter,SELF-06,26.897735,-80.01638333,367,14-I-21-1-011,69,21.03,brown,,Green
 P012,Porites astreoides,1/14/2021,10:54,Palm Beach,Jupiter,SELF-06,26.897735,-80.01638333,360,14-I-21-1-012,70,21.34,brown,,Pink
 P013,Porites astreoides,1/14/2021,10:56,Palm Beach,Jupiter,SELF-06,26.897735,-80.01638333,361,14-I-21-1-013,71,21.64,brown,,Pink
-P014,Porites astreoides,1/14/2021,10:58,Palm Beach,Jupiter,SELF-06,26.897735,-80.01638333,362,14-I-21-1-014,68,20.73,brown,,Admixed
 P015,Porites astreoides,1/14/2021,11:00,Palm Beach,Jupiter,SELF-06,26.897735,-80.01638333,52,14-I-21-1-015,70,21.34,brown,,Green
 P018,Porites astreoides,1/15/2021,10:51,Palm Beach,West Palm Beach,SEFL-12,26.65238667,-80.02068167,32,15-I-21-1-003,53,16.15,brown,,Green
 P019,Porites astreoides,1/15/2021,10:56,Palm Beach,West Palm Beach,SEFL-12,26.65238667,-80.02068167,33,15-I-21-1-004,51,15.54,brown,,Green
@@ -23,10 +21,7 @@ P023,Porites astreoides,1/15/2021,11:14,Palm Beach,West Palm Beach,SEFL-12,26.65
 P024,Porites astreoides,1/15/2021,11:16,Palm Beach,West Palm Beach,SEFL-12,26.65238667,-80.02068167,38,15-I-21-1-009,47,14.33,brown,,Green
 P025,Porites astreoides,1/15/2021,11:19,Palm Beach,West Palm Beach,SEFL-12,26.65238667,-80.02068167,39,15-I-21-1-010,46,14.02,yellow,,Green
 P026,Porites astreoides,1/15/2021,11:22,Palm Beach,West Palm Beach,SEFL-12,26.65238667,-80.02068167,40,15-I-21-1-011,49,14.94,brown,,Green
-P027,Porites astreoides,1/15/2021,12:00,Palm Beach,West Palm Beach,SEFL-12,26.65238667,-80.02068167,21,15-I-21-2-001,47,14.33,brown,,Admixed
 P028-1,Porites astreoides,1/15/2021,12:02,Palm Beach,West Palm Beach,SEFL-12,26.65238667,-80.02068167,22,15-I-21-2-002,46,14.02,brown,,Green
-P028-2,Porites astreoides,1/15/2021,12:02,Palm Beach,West Palm Beach,SEFL-12,26.65238667,-80.02068167,22,15-I-21-2-002,46,14.02,brown,,Green
-P028-3,Porites astreoides,1/15/2021,12:02,Palm Beach,West Palm Beach,SEFL-12,26.65238667,-80.02068167,22,15-I-21-2-002,46,14.02,brown,,Green
 P029,Porites astreoides,1/15/2021,12:05,Palm Beach,West Palm Beach,SEFL-12,26.65238667,-80.02068167,23,15-I-21-2-003,46,14.02,brown,,Green
 P030,Porites astreoides,1/15/2021,12:07,Palm Beach,West Palm Beach,SEFL-12,26.65238667,-80.02068167,24,15-I-21-2-004,46,14.02,brown,,Green
 P031,Porites astreoides,1/21/2021,10:20,Palm Beach,Boynton Beach,SEFL-16,26.5235517,-80.031692,1,21-I-21-1-001,48,14.63,yellow,,Green
@@ -44,8 +39,6 @@ P043,Porites astreoides,1/21/2021,10:49,Palm Beach,Boynton Beach,SEFL-16,26.5235
 P044,Porites astreoides,1/21/2021,10:50,Palm Beach,Boynton Beach,SEFL-16,26.5235517,-80.031692,61,21-I-21-1-014,67,20.42,brown,,Purple
 P045,Porites astreoides,1/21/2021,10:53,Palm Beach,Boynton Beach,SEFL-16,26.5235517,-80.031692,62,21-I-21-1-015,69,21.03,brown,,Green
 P046-1,Porites astreoides,2/5/2021,10:19,St. Lucie,St. Lucie Reef,Central,27.13166667,-80.1340333,1,21-II-21-1-001,10,3.05,not recorded,,Green
-P046-2,Porites astreoides,2/5/2021,10:19,St. Lucie,St. Lucie Reef,Central,27.13166667,-80.1340333,1,21-II-21-1-001,10,3.05,not recorded,,Green
-P046-3,Porites astreoides,2/5/2021,10:19,St. Lucie,St. Lucie Reef,Central,27.13166667,-80.1340333,1,21-II-21-1-001,10,3.05,not recorded,,Green
 P047,Porites astreoides,2/5/2021,10:21,St. Lucie,St. Lucie Reef,Central,27.13166667,-80.1340333,2,21-II-21-1-002,9,2.74,not recorded,,Green
 P048,Porites astreoides,2/5/2021,10:22,St. Lucie,St. Lucie Reef,Central,27.13166667,-80.1340333,3,21-II-21-1-003,8,2.44,not recorded,,Green
 P049,Porites astreoides,2/5/2021,10:24,St. Lucie,St. Lucie Reef,Central,27.13166667,-80.1340333,4,21-II-21-1-004,9,2.74,not recorded,,Green
@@ -54,10 +47,7 @@ P051,Porites astreoides,2/5/2021,10:26,St. Lucie,St. Lucie Reef,Central,27.13166
 P052,Porites astreoides,2/5/2021,10:28,St. Lucie,St. Lucie Reef,Central,27.13166667,-80.1340333,7,21-II-21-1-007,9,2.74,not recorded,,Green
 P053,Porites astreoides,2/5/2021,10:29,St. Lucie,St. Lucie Reef,Central,27.13166667,-80.1340333,8,21-II-21-1-008,8,2.44,not recorded,,Green
 P054,Porites astreoides,2/5/2021,10:32,St. Lucie,St. Lucie Reef,Central,27.13166667,-80.1340333,9,21-II-21-1-009,8,2.44,not recorded,,Green
-P055,Porites astreoides,2/5/2021,10:33,St. Lucie,St. Lucie Reef,Central,27.13166667,-80.1340333,10,21-II-21-1-010,8,2.44,not recorded,,Admixed
-P056,Porites astreoides,2/5/2021,10:36,St. Lucie,St. Lucie Reef,Central,27.13166667,-80.1340333,11,21-II-21-1-011,11,3.35,not recorded,,Admixed
 P057,Porites astreoides,2/5/2021,10:37,St. Lucie,St. Lucie Reef,Central,27.13166667,-80.1340333,12,21-II-21-1-012,11,3.35,not recorded,,Green
-P058,Porites astreoides,2/5/2021,10:38,St. Lucie,St. Lucie Reef,Central,27.13166667,-80.1340333,13,21-II-21-1-013,9,2.74,not recorded,,Admixed
 P059,Porites astreoides,2/5/2021,10:40,St. Lucie,St. Lucie Reef,Central,27.13166667,-80.1340333,14,21-II-21-1-014,11,3.35,not recorded,,Green
 P060,Porites astreoides,2/5/2021,10:40,St. Lucie,St. Lucie Reef,Central,27.13166667,-80.1340333,15,21-II-21-1-015,9,2.74,not recorded,,Green
 P061,Porites astreoides,2/5/2021,10:41,St. Lucie,St. Lucie Reef,Central,27.13166667,-80.1340333,16,21-II-21-1-016,10,3.05,not recorded,,Green
@@ -69,16 +59,11 @@ P066,Porites astreoides,2/5/2021,10:50,St. Lucie,St. Lucie Reef,Central,27.13166
 P067,Porites astreoides,2/5/2021,10:52,St. Lucie,St. Lucie Reef,Central,27.13166667,-80.1340333,22,21-II-21-1-022,10,3.05,not recorded,,Green
 P068,Porites astreoides,2/5/2021,10:54,St. Lucie,St. Lucie Reef,Central,27.13166667,-80.1340333,24,21-II-21-1-023,10,3.05,not recorded,,Green
 P069,Porites astreoides,2/5/2021,10:55,St. Lucie,St. Lucie Reef,Central,27.13166667,-80.1340333,23,21-II-21-1-024,10,3.05,not recorded,,Green
-P070,Porites astreoides,2/5/2021,10:58,St. Lucie,St. Lucie Reef,Central,27.13166667,-80.1340333,25,21-II-21-1-025,10,3.05,not recorded,,Admixed
 P071,Porites astreoides,2/5/2021,11:01,St. Lucie,St. Lucie Reef,Central,27.13166667,-80.1340333,26,21-II-21-1-026,10,3.05,not recorded,,Green
 P072,Porites astreoides,2/5/2021,11:03,St. Lucie,St. Lucie Reef,Central,27.13166667,-80.1340333,27,21-II-21-1-027,10,3.05,not recorded,,Green
-P073,Porites astreoides,2/5/2021,11:05,St. Lucie,St. Lucie Reef,Central,27.13166667,-80.1340333,28,21-II-21-1-028,10,3.05,not recorded,,Admixed
-P074,Porites astreoides,2/5/2021,11:08,St. Lucie,St. Lucie Reef,Central,27.13166667,-80.1340333,29,21-II-21-1-029,15,4.57,not recorded,,Admixed
 P075,Porites astreoides,2/5/2021,11:09,St. Lucie,St. Lucie Reef,Central,27.13166667,-80.1340333,30,21-II-21-1-030,15,4.57,not recorded,,Green
 P076,Porites astreoides,3/2/2021,11:23,Broward,Ft. Lauderdale,BC1,26.14758,-80.0961,32,2-III-21-1-001,27,8.23,not recorded,,Purple
 P077-1,Porites astreoides,3/2/2021,11:35,Broward,Ft. Lauderdale,BC1,26.14758,-80.0961,33,2-III-21-1-002,22,6.71,not recorded,,Purple
-P077-2,Porites astreoides,3/2/2021,11:35,Broward,Ft. Lauderdale,BC1,26.14758,-80.0961,33,2-III-21-1-002,22,6.71,not recorded,,Purple
-P077-3,Porites astreoides,3/2/2021,11:35,Broward,Ft. Lauderdale,BC1,26.14758,-80.0961,33,2-III-21-1-002,22,6.71,not recorded,,Purple
 P078,Porites astreoides,3/2/2021,11:42,Broward,Ft. Lauderdale,BC1,26.14758,-80.0961,34,2-III-21-1-003,23,7.01,not recorded,,Green
 P079,Porites astreoides,3/2/2021,11:46,Broward,Ft. Lauderdale,BC1,26.14758,-80.0961,35,2-III-21-1-004,24,7.32,not recorded,,Purple
 P080,Porites astreoides,3/2/2021,11:51,Broward,Ft. Lauderdale,BC1,26.14758,-80.0961,327,2-III-21-1-005,22,6.71,not recorded,,Purple
