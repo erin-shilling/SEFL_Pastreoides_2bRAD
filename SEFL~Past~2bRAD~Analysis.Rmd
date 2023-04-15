@@ -81,7 +81,7 @@ floridaMap
 
 Final map of sites
 Create a map of study sites with insets and legend
-```{r, study map}
+```{r, Figure 1, study map}
 #packages: magick, cowplot
 
 flPal = paletteer_d("LaCroixColoR::PeachPear")[c(1,2,3,4,5)]
@@ -136,7 +136,7 @@ ggsave("figures/pastMap.eps", plot = seflMap, width = 12, height = 13, units = "
 
 <br>
 
-```{r, Dendrogram to identify clones}
+```{r, Figure 2, Dendrogram to identify clones}
 #packages: tidyverse, ggdendro, paletteer
 cloneBams = read.csv("data_files/poritesastreoidesMetaData.csv")
 cloneMa = as.matrix(read.table("data_files/pastClones.ibsMat"))
@@ -247,7 +247,7 @@ amovaP
 Only significant differences between populations, explains 2.75% of variation, p = 0.001
 
 Distance Based Redundancy Analysis with Environmental Factors
-```{r, env data & dbRDA}
+```{r, Figure 3, env data & dbRDA}
 #packages: sdmpredictors, Hmisc, reshape2, adespatial
 options(sdmpredictors_datadir="data_files/bioOracle", timeout = max(300, getOption("timeout")))
 
@@ -360,7 +360,7 @@ pastDbrdaData$Population = factor(pastDbrdaData$Population, levels(pastDbrdaData
 
 flPal = paletteer_d("LaCroixColoR::PeachPear")[c(1,2,3,4,5)]
 
-#building plot
+#building plot for Figure 3
 pastDbrdaPlotA = ggplot(pastDbrdaData, aes(x = dbRDA1, y = dbRDA2, color = Population, fill = Population)) +
   geom_hline(yintercept = 0, color = "gray90", size = 0.5) + #x axis
   geom_vline(xintercept = 0, color = "gray90", size = 0.5) + #y axis
@@ -433,7 +433,7 @@ anova(pastDbrdaLat)
 ```
 
 Fst pairwise comparisons & plotting
-```{r, Pairwise Fst}
+```{r, Figure 4, Pairwise Fst}
 #packages: tidyverse, vcfR, adegenet, StAMPP, gdata, reshape2, paletteer
 pastVcf = read.vcfR("data_files/pastNoClones.bcf", verbose = FALSE)
 pastGenlightPopulation = vcfR2genlight(pastVcf, n.cores = 1)
@@ -546,7 +546,7 @@ ADMIXTURE plot
 Population structure plot from NGSadmix/CLUMPAK results.
 Based on most probable values for K
 From CLUMPAK outputs, want the .output file within the "K" folder that you want to display
-```{r, ADMIXTURE}
+```{r, Figure 5, ADMIXTURE}
 # packages: paletteer, tidyverse, reshape2
 #kColPal3 = paletteer_d("LaCroixColoR::MurePepino")[c(3,4,6)]
 kColPal3 = c("#AFDE62", "mediumpurple3", "#FF8C8D")
@@ -633,7 +633,7 @@ admixPlotK3
 ggsave("figures/admixturePlotK3.png", plot = admixPlotK3, width = 15, height = 5, units = "cm", dpi = 300)
 ```
 
-```{r, no clones dendro}
+```{r, Figure 6, no clones dendro}
 #packages: tidyverse, ggdendro, paletteer
 cloneBams = read.csv("data_files/poritesastreoidesMetaData_clonesremoved.csv")
 cloneMa = as.matrix(read.table("data_files/pastNoClones.ibsMat"))
@@ -704,7 +704,8 @@ NocloneDend
 ggsave("figures/NocloneDend_GENOME_shapes.png", plot = NocloneDend, height = 5, width = 12, units = "in", dpi = 300)
 ```
 
-#Fst of K populations
+Fst of K populations
+Not including plot in figure
 ```{r, Pairwise Fst of genetic clusters}
 pastVcf = read.vcfR("data_files/pastFiltSnpsNoAdmixFINAL.vcf.recode.vcf", verbose = FALSE)
 pastGenlightPopulation = vcfR2genlight(pastVcf, n.cores = 1)
@@ -857,9 +858,9 @@ No outliers identified
 
 ```{r, depth distribution of lineages}
 #using data with clones included, but extra technical replicates removed
-popData = read.csv("data_files/poritesastreoidesMetaData_NOADMIX_notechreps.csv") %>% select("sample" = tube_id, "Population" = lineage, "Depth" = "collection_depth_m")
+popData_depth = read.csv("data_files/poritesastreoidesMetaData_NOADMIX_notechreps.csv") %>% select("sample" = tube_id, "Population" = lineage, "Depth" = "collection_depth_m")
 
-depthAov = aov(Depth ~ Population, data = popData)
+depthAov = aov(Depth ~ Population, data = popData_depth)
 
 summary(depthAov)
 #            Df   Sum Sq  Mean Sq   F value   Pr(>F)    
@@ -872,42 +873,9 @@ TukeyHSD(depthAov)
 #Pink-Green    10.13446   4.030675 16.238253 0.0004748
 #Purple-Green  -2.97000  -7.795469  1.855469 0.3102524
 #Purple-Pink  -13.10446 -20.261791 -5.947137 0.0001124
-
-depth_comp <- list(c("Pink", "Green"), c("Purple", "Pink"))
-
-kColPal3 = c("#AFDE62", "#FF8C8D", "mediumpurple3")
-
-boxTheme = theme(axis.title.x = element_text(color = "black", size = 12),
-    axis.text.x = element_text(color = "black", size = 10),
-    axis.ticks.x = element_line(color = "black"),
-    axis.title.y = element_text(color = "black", size = 12),
-    axis.text.y = element_text(color = "black", size = 10),
-    axis.ticks.y = element_line(color = "black"),
-    legend.position = "none",
-    panel.border = element_rect(color = "black"),
-    panel.background = element_rect(fill = "white"),
-    plot.background = element_rect(fill = "white"),
-    panel.grid.major = element_blank(),
-    panel.grid.minor = element_blank(),
-    panel.grid = element_blank())
-
-dodge <- position_dodge(width = 1)
-
-depLin = ggplot(data = popData, aes(x = Population, y = Depth, fill = Population)) +
-    geom_boxplot(size = 0.5, alpha = 0.7, position = dodge, color = "gray35", outlier.shape = NA) +
-    xlab("Lineage") +
-    ylab("Depth (m)") +
-    scale_y_reverse() +
-    scale_fill_manual(values = kColPal3) +  
-    scale_color_manual(values = kColPal3) +
-    theme_bw() +
-    boxTheme +
-    stat_compare_means(comparisons = depth_comp, label = "p.signif", label.y = c(-2))
-
-ggsave("figures/Depth v Lineage.png", plot = depLin, width = 8, height = 10, units = "cm", dpi = 300)
 ```
 
-Heterozygosity, relatedness, & inbreeding calculations
+Heterozygosity & inbreeding calculations
 ```{r, popStats}
 #packages: tidyverse, rstatix
 #Read in population data
@@ -934,13 +902,6 @@ pastBreed = bind_rows(pastBreed2, pastBreed3) %>% group_by(a) %>% summarise("inb
 #removing admixed samples
 pastBreed <- pastBreed[-c(3, 9, 15, 30), ]
 
-#Still look kind of weird, talk to Ryan
-pastRelate = read.delim("data_files/filtRelate")
-
-pastRelate2 = pastRelate %>% group_by(a, b) %>% select("relate" = rab)
-pastRelate2 = pastRelate2 %>% left_join(popData, by = "a") %>% left_join(popData, by = c("b" = "a"), suffix = c(".a", ".b")) 
-pastRelate = pastRelate2 %>% filter(Population.a == Population.b) %>% rename(Population = Population.a)
-
 #now that have removed admixed samples from above dataframes, import new popData with admixed samples removed
 popData = read.csv("data_files/poritesastreoidesMetaData_clonesremoved_NOADMIX.csv") %>% select("sample" = tube_id, "Population" = lineage)
 
@@ -952,9 +913,8 @@ min(hetStats$meanAll, na.rm = TRUE)
 max(hetStats$meanAll, na.rm = TRUE)
 hetAllLm = lm(data = het, All~Population)
 inbreedLm = lm(data = het, inbreed~Population)
-#relateLm = lm(data = pastRelate, relate~Population)
 
-#summarizing outputs
+#summarizing ou
 hetAllANOVA = summary(aov(hetAllLm))
 hetAllANOVA
 hetAllpwc <- het %>% tukey_hsd(All~Population)
@@ -966,18 +926,12 @@ inbreedANOVA = summary(aov(inbreedLm))
 inbreedANOVA
 #not significant
 
-#some values still very high, unsure about accuracy
-#relateANOVA = summary(aov(relateLm))
-#relateANOVA
-#relatepwc<- aov(relate ~ Population, data = pastRelate) %>% tukey_hsd()
-#relatepwc
-#All significantly different from each other
-
 hetTab = hetStats
 ```
 
-```{r, plots for heterozygosity and inbreeding}
+```{r, Figure 7, plots for depth, heterozygosity, & inbreeding}
 #packages: paletteer, reshape2, patchwork, ggpubr (adds p-values to figures)
+
 hetMelt = melt(het, id.vars = c("sample", "Population"), variable.name = "type", value.name = "heterozygosity")
 
 kColPal3 = c("#AFDE62", "#FF8C8D", "mediumpurple3")
@@ -1001,48 +955,46 @@ hetTheme = theme(axis.title.x = element_text(color = "black", size = 12),
 
 dodge <- position_dodge(width = 1)
 
+#depth
+depth_comp <- list(c("Pink", "Green"), c("Purple", "Pink"))
+
+depLin = ggplot(data = popData_depth, aes(x = Population, y = Depth, fill = Population)) +
+    geom_boxplot(size = 0.5, alpha = 0.7, position = dodge, color = "gray35", outlier.shape = NA) +
+    xlab("Lineage") +
+    ylab("Depth (m)") +
+    scale_y_reverse() +
+    scale_fill_manual(values = kColPal3) +  
+    theme_bw() +
+    hetTheme +
+    stat_compare_means(comparisons = depth_comp, label = "p.signif", label.y = c(-2))
+
+#heterzygosity across all loci
 hetAll_comp <- list( c("Green", "Pink"), c("Green", "Purple"))
 
 hetPlotAll = ggplot(data = subset(hetMelt, subset = hetMelt$type == "All"), aes(x = Population, y = heterozygosity, fill = Population)) +
   geom_point(aes(color = Population),shape = 21, position = position_jitterdodge(seed = 1, dodge.width = 1), size = 2, alpha = 0.7) +
   geom_boxplot(size = 0.5, alpha = 0.7, position = dodge, color = "gray35", outlier.shape = NA) +
   xlab("Lineage") +
-  ylab("Heterozygosity") +
-  ggtitle("All loci") +
+  ylab("Heterozygosity (all loci)") +
   scale_fill_manual(values = kColPal3) +  
   scale_color_manual(values = kColPal3) +
   theme_bw() +
   hetTheme + 
-  stat_compare_means(comparisons = hetAll_comp, label = "p.signif", label.y = c(0.0017))
+  stat_compare_means(comparisons = hetAll_comp, label = "p.signif", label.y = c(0.00155))
 
+#inbreeding
 inbreedingPlot = ggplot(data = het, aes(x = Population, y = inbreed, fill = Population)) +
   geom_point(aes(color = Population), shape = 21, position = position_jitterdodge(seed = 1, dodge.width = 1), size = 2, alpha = 0.7) +
   geom_boxplot(size = 0.5, alpha = 0.7, position = dodge, color = "gray35", outlier.shape = NA) +
   coord_cartesian(ylim = c(0, 0.12)) +
   xlab("Lineage") +
   ylab("Inbreeding coefficient") +
-  ggtitle("Inbreeding") +
   scale_fill_manual(values = kColPal3) +  
   scale_color_manual(values = kColPal3) +
   theme_bw() +
   hetTheme
 
-#results still look weird, talk to Ryan
-#relate_comp <- list( c("Green", "Pink"), c("Green", "Purple"), c("Pink", "Purple"))
-
-#relatePlot = ggplot(data = pastRelate, aes(x = Lineage, y = relate, fill = Population)) +
-#  geom_point(aes(color = Lineage),shape = 21, position = position_jitterdodge(seed = 1, dodge.width = 1), size = 2, alpha = 0.7) +
-#  geom_boxplot(size = 0.5, alpha = 0.7, position = dodge, color = "gray35", outlier.shape = NA) +
-#  xlab("Lineage") +
-#  ylab("Relatedness") +
-#  ggtitle("Relatedness") +
-#  scale_fill_manual(values = kColPal3) +  
-#  scale_color_manual(values = kColPal3) +
-#  theme_bw() +
-#  hetTheme +
-#  stat_compare_means(comparisons = relate_comp, label = "p.signif", label.y = c(0.90, 0.25, 0.85))
-
-hetPlots = ((hetPlotAll | inbreedingPlot)) +
+hetPlots = ((depLin | hetPlotAll | inbreedingPlot)) +
   plot_annotation(tag_levels = 'a') +
   plot_layout(guides = "collect")& 
   theme(plot.tag = element_text(size = 16),
@@ -1056,7 +1008,7 @@ hetPlots = ((hetPlotAll | inbreedingPlot)) +
 
 hetPlots
 
-ggsave("figures/heterozygosityPlot_pval.png", plot = hetPlots, width = 22, height = 16, units = "cm", dpi = 300)
+ggsave("figures/heterozygosityPlot_pval.png", plot = hetPlots, width = 22, height = 10, units = "cm", dpi = 300)
 ggsave("figures/heterozygosityPlot_pval.pdf", plot = hetPlots, width = 22, height = 16, units = "cm", dpi = 300)
 
 ```
@@ -1141,7 +1093,7 @@ baSumm$pop.j = factor(baSumm$pop.j, levels = levels(baSumm$pop.j)[c(4, 3, 5, 1, 
 <br>
 
 Heat map of migration coefficients
-```{r, migrationPlots}
+```{r, Figure 8, migrationPlots}
 library(ggplot2)
 library(paletteer)
 baSumm$mean = sprintf('%.3f', baSumm$mean)
@@ -1185,7 +1137,7 @@ ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/migrate.s
 ```
 
 Map of m coefficients as flow between sites
-```{r, migration map}
+```{r, Figure 9, migration map}
 baSumm$mean = as.numeric(baSumm$mean)
 baSumm$hpdLow = as.numeric(baSumm$hpdLow)
 baSumm$hpdHigh = as.numeric(baSumm$hpdHigh)
