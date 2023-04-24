@@ -937,21 +937,21 @@ hetMelt = melt(het, id.vars = c("sample", "Population"), variable.name = "type",
 kColPal3 = c("#AFDE62", "#FF8C8D", "mediumpurple3")
 
 hetTheme = theme(axis.title.x = element_text(color = "black", size = 12),
-                 axis.text.x = element_blank(),
-                 axis.ticks.x = element_blank(),
-                 axis.title.y = element_text(color = "black", size = 12),
-                 axis.text.y = element_text(color = "black", size = 10),
-                 axis.ticks.y = element_line(color = "black"),
-                 legend.position = "right",
-                 legend.key.size = unit(0.5, 'cm'),
-                 panel.border = element_rect(color = "black"),
-                 panel.background = element_rect(fill = "white"),
-                 plot.background = element_rect(fill = "white"),
-                 panel.grid.major = element_blank(),
-                 panel.grid.minor = element_blank(),
-                 panel.grid = element_blank(),
-                 legend.key = element_blank(),
-                 legend.background = element_blank())
+      axis.text.x = element_blank(),
+      axis.ticks.x = element_blank(),
+      axis.title.y = element_text(color = "black", size = 12),
+      axis.text.y = element_text(color = "black", size = 10),
+      axis.ticks.y = element_line(color = "black"),
+      legend.position = "right",
+      legend.key.size = unit(0.5, 'cm'),
+      panel.border = element_rect(color = "black"),
+      panel.background = element_rect(fill = "white"),
+      plot.background = element_rect(fill = "white"),
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      panel.grid = element_blank(),
+      legend.key = element_blank(),
+      legend.background = element_blank())
 
 dodge <- position_dodge(width = 1)
 
@@ -966,7 +966,7 @@ depLin = ggplot(data = popData_depth, aes(x = Population, y = Depth, fill = Popu
     scale_fill_manual(values = kColPal3) +  
     theme_bw() +
     hetTheme +
-    stat_compare_means(comparisons = depth_comp, label = "p.signif", label.y = c(-2))
+    stat_compare_means(comparisons = depth_comp, label = "p.signif", label.y = c(-2, -5))
 
 #heterzygosity across all loci
 hetAll_comp <- list( c("Green", "Pink"), c("Green", "Purple"))
@@ -980,7 +980,7 @@ hetPlotAll = ggplot(data = subset(hetMelt, subset = hetMelt$type == "All"), aes(
   scale_color_manual(values = kColPal3) +
   theme_bw() +
   hetTheme + 
-  stat_compare_means(comparisons = hetAll_comp, label = "p.signif", label.y = c(0.00155))
+  stat_compare_means(comparisons = hetAll_comp, label = "p.signif", label.y = c(0.00155, 0.00125))
 
 #inbreeding
 inbreedingPlot = ggplot(data = het, aes(x = Population, y = inbreed, fill = Population)) +
