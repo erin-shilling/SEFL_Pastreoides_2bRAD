@@ -5,7 +5,7 @@
 wget https://osf.io/download/wjv8e/
 
 # Creating genome indices for bowtie2
-# put whichever of the paths to the transcriptome file names I want to try where it says GENOME_FASTA
+# put whichever of the paths to the file names I want to use where it says GENOME_FASTA
 echo 'bowtie2-build ~/2bRAD/past/genome/past_genome ~/2bRAD/past/genome/past_genome' >btb
 launcher_creator.py -j btb -n btb -t 6:00:00 -e eshilling2013@fau.edu -q shortq7
 sbatch btb.slurm

@@ -400,7 +400,7 @@ pastDbrdaPlot1
 
 ggsave("genome_mapped/figures/DbrdaPlot.png", plot = pastDbrdaPlot1, height = 3.5, width = 7, units = "in", dpi = 300)
 #add bg = "transparent" to export with no background color
-ggsave("genome_mapped/figures/DbrdaPlot.tiff", plot = pastDbrdaPlot1, height = 3.5, width = 7, units = "in", dpi = 300)
+ggsave("genome_mapped/figures/DbrdaPlot.tiff", plot = pastDbrdaPlot1, height = 3.5, width = 7, units = "in", dpi = 600)
 
 ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/DbrdaPlot.png", plot = pastDbrdaPlot1, height = 3.5, width = 7, units = "in", dpi = 300)
 #add bg = "transparent" to export with no background color
@@ -508,7 +508,7 @@ snpHeatmapA = ggplot(data = snpFst, aes(Pop, Pop2, fill = as.numeric(as.characte
 geom_segment(data = snpFst, aes(x = 0.48, xend = -0.43, y = Pop, yend = Pop, color = region), size = 23) + #edits y-axis pop titles, x changes x-axis width of color bars into the right/Fst side, xend changes width on the left side
 geom_segment(data = snpFst, aes(x = Pop2, xend = Pop2, y = 0.45, yend = -0.7, color = region2), size = 77.5) + #size changes width of color boxes
 scale_color_manual(values = flPal[], guide = NULL) +
-  scale_fill_gradient(low = "white", high = "red", limit = c(0, 0.07), space = "Lab", name = expression(paste(italic("F")[ST])), na.value = "white",  guide = "colourbar") +
+  scale_fill_gradient(low = "white", high = "mediumorchid4", limit = c(0, 0.07), space = "Lab", name = expression(paste(italic("F")[ST])), na.value = "white",  guide = "colourbar") +
   geom_text(data = snpFst, aes(Pop, Pop2, label = Fst), color = ifelse(snpQ$Qval <= 0.05,"black", "darkgrey"), size = ifelse(snpQ$Qval < 0.05, 6, 5), fontface = ifelse (snpQ$Qval < 0.05, "bold", "plain")) +
   guides(fill = guide_colorbar(barwidth = 12, barheight = 1, title.position = "top", title.hjust = 0.5)) +
   scale_y_discrete(position = "left", limits = (levels(snpFst$Pop2))[c(1:4)]) +
@@ -535,7 +535,8 @@ snpHeatmap = snpHeatmapA + theme(
 
 snpHeatmap
 
-ggsave("figures/fstHeatMap_GENOME.png", plot = snpHeatmap, width = 30, height = 9, units = "cm", dpi = 300)
+ggsave("figures/fstHeatMap_GENOME_purple.png", plot = snpHeatmap, width = 30, height = 9, units = "cm", dpi = 300)
+ggsave("figures/fstHeatMap_GENOME_purple.tiff", plot = snpHeatmap, width = 30, height = 9, units = "cm", dpi = 600)
 #export with transparent background
 #ggsave("figures/fstHeatMap_nocolor_nobg.png", plot = snpHeatmap, width = 30, height = 9, units = "cm", dpi = 300, bg = "transparent")
 ggsave("figures/fstHeatMap.eps", plot = snpHeatmap, width = 30, height = 9, units = "cm", dpi = 300)
@@ -631,6 +632,7 @@ admixPlotK3 = admixPlotK3A + admixTheme
 admixPlotK3
 
 ggsave("figures/admixturePlotK3.png", plot = admixPlotK3, width = 15, height = 5, units = "cm", dpi = 300)
+ggsave("figures/admixturePlotK3.tiff", plot = admixPlotK3, width = 15, height = 5, units = "cm", dpi = 600)
 ```
 
 ```{r, Figure 6, no clones dendro}
@@ -702,6 +704,7 @@ NocloneDend = NocloneDendA + theme(
 NocloneDend
 
 ggsave("figures/NocloneDend_GENOME_shapes.png", plot = NocloneDend, height = 5, width = 12, units = "in", dpi = 300)
+ggsave("figures/NocloneDend_GENOME_shapes.tiff", plot = NocloneDend, height = 5, width = 12, units = "in", dpi = 600)
 ```
 
 Fst of K populations
@@ -1010,7 +1013,7 @@ hetPlots
 
 ggsave("figures/heterozygosityPlot_pval.png", plot = hetPlots, width = 22, height = 10, units = "cm", dpi = 300)
 ggsave("figures/heterozygosityPlot_pval.pdf", plot = hetPlots, width = 22, height = 16, units = "cm", dpi = 300)
-
+ggsave("figures/heterozygosityPlot_pval.tiff", plot = hetPlots, width = 22, height = 10, units = "cm", dpi = 600)
 ```
 
 BayesAss Analyses
@@ -1107,9 +1110,9 @@ migrateA = ggplot(data = baSumm, aes(pop.i, pop.j, fill = as.numeric(as.characte
   geom_segment(data = baSumm, aes(x = 0.4755, xend = -0.65, y = pop.j, yend = pop.j, color = pop.j), size = 16) + #changing y bar of pop names
   geom_segment(data = baSumm, aes(x = pop.i, xend = pop.i, y = 0.45, yend = -0.1, color = pop.i), size = 35) + #changing x bar of pop names
   scale_color_manual(values = flPal[c(1:5, 1:5)], guide = NULL) +
-  scale_fill_gradientn(colours = paletteer_c("viridis::viridis", n = 10)[3:10], limit = c(0,0.23), space = "Lab", name = expression(paste(italic("m"))), na.value = "gray85",  guide = "colourbar", values = c(0, 0.05, 0.1, 0.15, 0.2,0.5,0.75,1)) + #key for color scale of heatmap
-  geom_text(data = baSumm, aes(x = pop.i, y = pop.j, label = paste(mean, "\n", sep = "")), color = ifelse(baSumm$mean > 0.6, "red", "gray5"), fontface = "bold") + #format for center values (i.e. PMP vs PMP)
-  geom_text(data = baSumm, aes(x = pop.i, y = pop.j, label = paste("\n(",hpdLow,"–",hpdHigh, ")", sep = "")), color = ifelse(baSumm$mean > 0.6, "red", "gray5"), size = 3.25) +
+  scale_fill_gradientn(colours = paletteer_c("viridis::viridis", n = 10)[3:10], limit = c(0,0.23), space = "Lab", name = expression(paste(italic("m"))), na.value = "gray40",  guide = "colourbar", values = c(0, 0.05, 0.1, 0.15, 0.2,0.5,0.75,1)) + #key for color scale of heatmap
+  geom_text(data = baSumm, aes(x = pop.i, y = pop.j, label = paste(mean, "\n", sep = "")), color = ifelse(baSumm$mean > 0.6, "white", "gray4"), fontface = "bold") + #format for center values (i.e. PMP vs PMP)
+  geom_text(data = baSumm, aes(x = pop.i, y = pop.j, label = paste("\n(",hpdLow,"–",hpdHigh, ")", sep = "")), color = ifelse(baSumm$mean > 0.6, "white", "gray4"), size = 3.25) +
   labs(x = "Sink", y = "Source") +
   guides(fill = guide_colorbar(barwidth = 1, barheight = 10, title.position = "top", title.hjust = 0.5, frame.colour = "black", frame.linewidth = 1, ticks.colour = "black")) + #m coefficient scale key
   scale_y_discrete(limits = rev(levels(baSumm$pop.i))[c(1:5)], position = "left") +
@@ -1132,7 +1135,8 @@ migrate = migrateA + theme(
 
 migrate
 
-ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/migrate.png", plot = migrate, width = 20, height = 8, units = "cm", dpi = 300)
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/migrate_gray.png", plot = migrate, width = 20, height = 8, units = "cm", dpi = 300)
+ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/migrate_gray.tiff", plot = migrate, width = 20, height = 8, units = "cm", dpi = 600)
 ggsave("C:/Users/erin_/Documents/GitHub/SEFL_Pastreoides_2bRAD/figures/migrate.svg", plot = migrate, width = 20, height = 8, units = "cm", dpi = 300)
 ```
 
